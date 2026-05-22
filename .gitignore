@@ -1,0 +1,27 @@
+# Python cache files
+*.pyc
+__pycache__/
+
+# Python virtual env
+.venv/
+
+# Python egg / build files
+build/
+.eggs/
+*.egg-info/
+
+# Javascript package cache
+package-lock.json
+node_modules
+
+# Testing files
+.coverage
+.coveragerc
+.isort.cfg
+.pylintrc
+tox.ini
+eslint.config.mjs
+.stylelintrc.yml
+
+# Data
+data/

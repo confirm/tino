@@ -1,0 +1,60 @@
+---
+services:
+
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  # 📝 Typr.
+  #
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typr:
+
+    #
+    # 🔨 Build
+    #
+
+    build:
+      context: .
+      dockerfile: Dockerfiles/typr
+      args:
+        - MCI_DOCKER_REGISTRY
+
+    image: ${MCI_DOCKER_REGISTRY}/public/typr:${MCI_DOCKER_TAG}
+
+    #
+    # ⚡ Resources
+    #
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '256M'
+
+    #
+    # 🔒 Security
+    #
+
+    security_opt:
+      - no-new-privileges:true
+
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    #
+    # 💾 Volumes
+    #
+
+    volumes:
+      - typr-data:/data
+
+    #
+    # 🔄 Restart policy
+    #
+
+    restart: unless-stopped
+
+volumes:
+  typr-data:

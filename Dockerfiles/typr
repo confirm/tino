@@ -1,0 +1,28 @@
+ARG MCI_DOCKER_REGISTRY
+FROM ${MCI_DOCKER_REGISTRY}/base/python:3.14
+
+WORKDIR /usr/src
+
+COPY build/*.whl .
+COPY Dockerfiles/entrypoint.sh /entrypoint.sh
+
+RUN pip install *whl \
+    && groupadd -r -g 2378 typr \
+    && useradd -r -u 2378 -g 2378 -d /typr -m typr \
+    && mkdir -p /data \
+    && chown typr: /data \
+    && chmod 755 /entrypoint.sh
+
+USER typr
+
+WORKDIR /typr
+
+VOLUME /data
+
+ENV TZ=Europe/Zurich
+ENV TYPR_DATA_DIR=/data
+
+EXPOSE 8000
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8000", "--worker-tmp-dir", "/tmp", "confirm.typr:create_app()"]

@@ -1,0 +1,26 @@
+# Default: track everything through LFS.
+* filter=lfs diff=lfs merge=lfs -text
+
+# Text files: handle normally.
+*.bib text diff
+*.cfg text diff
+*.conf text diff
+*.css text diff
+*.csv text diff
+*.html text diff
+*.js text diff
+*.json text diff
+*.log text diff
+*.md text diff
+*.py text diff
+*.rst text diff
+*.sh text diff
+*.tex text diff
+*.toml text diff
+*.ts text diff
+*.tsv text diff
+*.txt text diff
+*.typ text diff
+*.xml text diff
+*.yaml text diff
+*.yml text diff

@@ -1,0 +1,81 @@
+[project]
+
+name = 'confirm-typr'
+description = 'The web-based Typst editor.'
+readme = 'README.md'
+
+authors = [
+    { name = 'confirm IT' }
+]
+
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent',
+]
+
+dynamic = [
+    'version',
+]
+
+requires-python = '>=3.14'
+
+dependencies = [
+    'anyio',
+    'authlib',
+    'fastapi',
+    'gitpython',
+    'httpx',
+    'itsdangerous',
+    'pycrdt>=0.13.0,<0.14.0',
+    'pycrdt-websocket==0.16.1',
+    'python-multipart',
+    'pyyaml',
+    'uvicorn[standard]',
+]
+
+
+[project.optional-dependencies]
+
+develop = [
+    'build',
+    'confirm-tools',
+    'confirm-sphinx',
+    'isort',
+    'pycodestyle',
+    'pylint',
+    'Sphinx',
+    'sphinx-autobuild',
+]
+
+
+[build-system]
+
+requires = [
+    'setuptools>=65',
+    'setuptools_scm[toml]',
+    'wheel',
+]
+
+build-backend = 'setuptools.build_meta'
+
+
+[tool.setuptools.packages.find]
+
+include = [
+    'confirm.*',
+]
+
+exclude = [
+    'tests',
+    'tests.*',
+]
+
+[tool.setuptools.package-data]
+
+'confirm.typr' = [
+    'static/**/*',
+    'static/*',
+]
+
+[tool.setuptools_scm]
