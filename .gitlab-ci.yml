@@ -1,0 +1,15 @@
+---
+include:
+  - project: confirm/infrastructure/ci
+    file: python-package/.gitlab-ci.yml
+  - project: confirm/infrastructure/ci
+    file: docs/.gitlab-ci.yml
+  - project: confirm/infrastructure/ci
+    file: deploy/.gitlab-ci.yml
+
+variables:
+  MCI_DOCKER_DEPLOY_SERVICES: docs
+
+Build docs:
+  variables:
+    DATA_DIR: /data
