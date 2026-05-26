@@ -73,12 +73,13 @@ export class EditorManager {
   _showTextEditor(content) {
     this.app.els.binaryPreview.classList.add('hidden')
     this.app.els.binaryPreview.innerHTML = ''
+    const role = this.app.bucketRole
+    const canEdit = role === 'editor' || role === 'committer'
     this.app.els.editor.value = content
-    this.app.els.editor.disabled = false
+    this.app.els.editor.disabled = !canEdit
     this.app.els.editor.classList.remove('hidden')
     this.app.els.lineNumbers.classList.remove('hidden')
-    const role = this.app.bucketRole
-    if (role === 'editor' || role === 'committer')
+    if (canEdit)
       this.toolbar.show()
     else
       this.toolbar.hide()
