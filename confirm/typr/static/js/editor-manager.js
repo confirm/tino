@@ -74,7 +74,7 @@ export class EditorManager {
     this.app.els.binaryPreview.classList.add('hidden')
     this.app.els.binaryPreview.innerHTML = ''
     this.app.els.editor.value = content
-    this.app.els.editor.readOnly = false
+    this.app.els.editor.disabled = false
     this.app.els.editor.classList.remove('hidden')
     this.app.els.lineNumbers.classList.remove('hidden')
     const role = this.app.bucketRole
@@ -167,6 +167,7 @@ export class EditorManager {
     this._disconnectCollab()
     this.app.currentFile = null
     this._showTextEditor('')
+    this.app.els.editor.disabled = true
     this.app.els.editor.placeholder = PLACEHOLDER
     this.input.updateLineNumbers()
     this.input.updateStatusBar()
@@ -238,6 +239,7 @@ export class EditorManager {
     this.toolbar.hide()
     this._clearOpenState()
     this._showTextEditor('')
+    this.app.els.editor.disabled = true
     this.app.els.editor.placeholder = PLACEHOLDER
     this.app.els.tabBar.innerHTML = ''
     this.input.updateLineNumbers()
