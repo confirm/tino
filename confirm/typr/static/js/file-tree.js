@@ -284,7 +284,7 @@ export class FileTree {
       this.actions.renameFile(filePath)
     else if (evt.target.closest('.file-reset'))
       this.actions.resetFile(filePath)
-    else
+    else if (!item.classList.contains('file-deleted'))
       this.app.editor.openFile(filePath)
   }
 

@@ -1153,6 +1153,10 @@ html, body {
   padding-left: 10px;
 }
 
+.history-deleted {
+  opacity: 0.5;
+}
+
 .history-message {
   font-size: 12px;
   color: var(--text-primary);

@@ -77,6 +77,7 @@ class CommitInfo(BaseModel):
     message: str
     author: str
     timestamp: str
+    deleted: bool = False
 
 
 class FileStatus(BaseModel):

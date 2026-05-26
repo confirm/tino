@@ -134,23 +134,34 @@ export class GitHistory {
         `<span class="history-meta"><span>${commit.author}</span>` +
         `<span>${ts}</span>` +
         `<span class="history-sha">${commit.sha.substring(0, SHA_SHORT_LEN)}</span></span>`
-      li.addEventListener('click', () => this._selectCommit(commit.sha, li))
+      if (commit.deleted)
+        li.classList.add('history-deleted')
+      li.addEventListener('click', () => this._selectCommit(commit, li))
       list.appendChild(li)
     })
   }
 
-  async _selectCommit(sha, li) {
+  async _selectCommit(commit, li) {
     document.getElementById('history-list')
       .querySelectorAll('.history-item').forEach(el => el.classList.remove('active'))
     li.classList.add('active')
-    Object.assign(this, { _selectedPath: null, _selectedRef: sha })
+    Object.assign(this, { _selectedPath: null, _selectedRef: commit.sha })
     document.getElementById('btn-history-restore').disabled = true
     if (this._historyFile) {
       document.getElementById('history-files').innerHTML = ''
-      await this._showFileContent(sha, this._historyFile)
+      if (commit.deleted)
+        GitHistory._showDeleted()
+      else
+        await this._showFileContent(commit.sha, this._historyFile)
       return
     }
-    await this._renderFileTree(sha)
+    await this._renderFileTree(commit.sha)
+  }
+
+  static _showDeleted() {
+    document.getElementById('history-preview').innerHTML =
+      '<p class="preview-empty">File deleted in this commit.</p>'
+    document.getElementById('btn-history-restore').disabled = true
   }
 
   async _renderFileTree(sha) {
@@ -192,11 +203,9 @@ export class GitHistory {
     const preview = document.getElementById('history-preview')
     const restoreBtn = document.getElementById('btn-history-restore')
     try {
-      if (BinaryPreview.isImage(path))
-        preview.innerHTML = this._imagePreviewHtml(sha, path)
-      else
-        await this._showTextPreview(preview, sha, path)
-      restoreBtn.disabled = false
+      const data = await this.app.api.gitShow(this.app.bucket, sha, path)
+      this._renderPreview(preview, data, sha, path)
+      restoreBtn.disabled = !data.deleted
     }
     catch {
       preview.innerHTML =
@@ -205,10 +214,11 @@ export class GitHistory {
     }
   }
 
-  async _showTextPreview(preview, sha, path) {
-    const data = await this.app.api.gitShow(this.app.bucket, sha, path)
-    if (data.binary)
-      preview.innerHTML = '<p class="preview-empty">Binary file</p>'
+  _renderPreview(preview, data, sha, path) {
+    if (data.deleted)
+      preview.innerHTML = '<p class="preview-empty">File deleted in this commit.</p>'
+    else if (data.binary || BinaryPreview.isImage(path))
+      preview.innerHTML = this._imagePreviewHtml(sha, path)
     else
       preview.innerHTML = `<pre class="history-content">${escapeHtml(data.content)}</pre>`
   }

@@ -26,13 +26,15 @@ class GitService:
             repo.close()
 
     @staticmethod
-    def _to_commit_info(c) -> CommitInfo:
+    def _to_commit_info(c, path: str | None = None) -> CommitInfo:
         '''Convert a git commit object to a CommitInfo model.'''
+        deleted = GitService._file_deleted(c, path) if path else False
         return CommitInfo(
             sha=c.hexsha,
             message=c.message.strip(),
             author=str(c.author),
             timestamp=datetime.fromtimestamp(c.committed_date, tz=timezone.utc).isoformat(),
+            deleted=deleted,
         )
 
     def status(self, slug: str) -> list[FileStatus]:
@@ -80,7 +82,17 @@ class GitService:
             if path:
                 kwargs['paths'] = path
 
-            return [self._to_commit_info(c) for c in repo.iter_commits(**kwargs)]
+            commits = list(repo.iter_commits(**kwargs))
+            return [self._to_commit_info(c, path) for c in commits]
+
+    @staticmethod
+    def _file_deleted(commit, path: str) -> bool:
+        '''Check whether a path was removed in the given commit.'''
+        try:
+            _ = commit.tree / path
+            return False
+        except KeyError:
+            return True
 
     def diff(self, slug: str, path: str | None = None) -> list[DiffEntry]:
         '''Return unified diffs for modified files in the working tree.'''
@@ -132,7 +144,9 @@ class GitService:
                 blob = repo.commit(ref).tree / path
                 content = blob.data_stream.read().decode('utf-8')
                 return {'content': content, 'binary': False}
-            except (KeyError, gitpython.GitCommandError):
+            except KeyError:
+                return {'content': None, 'binary': False, 'deleted': True}
+            except gitpython.GitCommandError:
                 return None
             except UnicodeDecodeError:
                 return {'content': None, 'binary': True}
