@@ -18,7 +18,7 @@ export const readRoute = () => {
   if (idx === INDEX_NOT_FOUND)
     return { path: null, slug: decodeURIComponent(rest) }
   return {
-    path: rest.slice(idx + SINGLE_ITEM),
+    path: decodeURIComponent(rest.slice(idx + SINGLE_ITEM)),
     slug: decodeURIComponent(rest.slice(0, idx)),
   }
 }
@@ -31,6 +31,10 @@ export const writeRoute = (slug, path) => {
     return
   }
   const encoded = encodeURIComponent(slug)
-  const fragment = path ? `${HASH_PREFIX}${encoded}/${path}` : `${HASH_PREFIX}${encoded}`
-  history.replaceState(null, '', fragment)
+  if (!path) {
+    history.replaceState(null, '', `${HASH_PREFIX}${encoded}`)
+    return
+  }
+  const safePath = path.split('/').map(encodeURIComponent).join('/')
+  history.replaceState(null, '', `${HASH_PREFIX}${encoded}/${safePath}`)
 }
