@@ -56,6 +56,9 @@ def resolve_role(user: User, access: list[AccessEntry]) -> str | None:
     '''Return the highest role the user holds in a bucket, or None if no access.'''
     if is_global_admin(user):
         return 'committer'
+    if not access:
+        default = config.DEFAULT_ROLE
+        return default if default != 'none' else None
     best = None
     for entry in access:
         if entry.group in user.groups:
@@ -67,9 +70,6 @@ def resolve_role(user: User, access: list[AccessEntry]) -> str | None:
 def check_access(user: User, access: list[AccessEntry], min_role: str) -> None:
     '''Raise 403 if the user lacks the minimum required role on a bucket.'''
     if is_global_admin(user):
-        return
-
-    if not access:
         return
 
     role = resolve_role(user, access)

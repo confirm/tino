@@ -12,6 +12,7 @@ __all__ = (
     'ACCENT_COLOUR',
     'ADMIN_GROUPS',
     'DATA_DIR',
+    'DEFAULT_ROLE',
     'LOG_LEVEL',
     'OIDC_CLIENT_ID',
     'OIDC_CLIENT_SECRET',
@@ -68,6 +69,11 @@ _ADMIN_GROUPS_RAW = environ.get('ADMIN_GROUPS', 'admins')
 #: ⭕ Comma-separated list of OIDC groups whose members are Typr administrators.
 ADMIN_GROUPS: set[str] = {g.strip() for g in _ADMIN_GROUPS_RAW.split(',') if g.strip()}
 
+#: ⭕ The default role for authenticated users on buckets without an access list.
+#: Must be one of ``viewer``, ``editor``, ``committer``, or ``none``.
+#: When set to ``none``, only global admins can access buckets without an ACL.
+DEFAULT_ROLE = environ.get('DEFAULT_ROLE', 'none')
+
 #
 # OIDC.
 #
@@ -90,14 +96,6 @@ OIDC_GROUPS_CLAIM = environ.get('OIDC_GROUPS_CLAIM', 'groups')
 #
 # Sanity checks.
 #
-
-
-_VALID_ACCENTS = {
-    'grey', 'cold-grey', 'warm-grey',
-    'red', 'orange', 'yellow', 'olive', 'lime',
-    'green', 'sea-green', 'blue', 'azure',
-    'violet', 'purple', 'fuchsia', 'rose',
-}
 
 
 def sanity_checks():  # pylint: disable=too-complex
@@ -127,8 +125,19 @@ def sanity_checks():  # pylint: disable=too-complex
     if not OIDC_GROUPS_CLAIM:
         errors['OIDC_GROUPS_CLAIM'] = 'Set to the OIDC group claim'
 
-    if ACCENT_COLOUR not in _VALID_ACCENTS:
-        errors['ACCENT_COLOUR'] = f'Must be one of: {", ".join(sorted(_VALID_ACCENTS))}'
+    _valid_roles = {'viewer', 'editor', 'committer', 'none'}
+    if DEFAULT_ROLE not in _valid_roles:
+        errors['DEFAULT_ROLE'] = f'Must be one of: {", ".join(sorted(_valid_roles))}'
+
+    _valid_accents = {
+        'grey', 'cold-grey', 'warm-grey',
+        'red', 'orange', 'yellow',
+        'olive', 'lime', 'green', 'sea-green',
+        'blue', 'azure',
+        'violet', 'purple', 'fuchsia', 'rose',
+    }
+    if ACCENT_COLOUR not in _valid_accents:
+        errors['ACCENT_COLOUR'] = f'Must be one of: {", ".join(sorted(_valid_accents))}'
 
     if errors:
         for var, error in errors.items():

@@ -22,7 +22,7 @@ async def list_buckets(
 
         role = resolve_role(user, bucket.access)
 
-        if not bucket.access or role is not None:
+        if role is not None:
             info         = bucket.model_dump()
             info['role'] = role
             results.append(info)
