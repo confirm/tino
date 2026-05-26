@@ -35,8 +35,12 @@ export class EditorManager {
   async openFile(path) {
     if (!this.app.bucket)
       return
-    this._saveCurrentBuffer()
+    clearTimeout(this._saveTimer)
+    this._openGeneration = (this._openGeneration || 0) + 1
+    const gen = this._openGeneration
     await this._loadContent(path)
+    if (gen !== this._openGeneration)
+      return
     this.app.currentFile = path
     this.app.els.editor.placeholder = ''
     if (this.app.openTabs.indexOf(path) === INDEX_NOT_FOUND)
@@ -45,12 +49,6 @@ export class EditorManager {
     this._connectCollab(path)
     this._persistOpenState(path)
     await this.app.preview.update()
-  }
-
-  _saveCurrentBuffer() {
-    const cur = this.app.currentFile
-    if (cur && this.app.dirty.has(cur))
-      this.app.fileBuffers[cur] = this.app.els.editor.value
   }
 
   async _loadContent(path) {
@@ -97,15 +95,17 @@ export class EditorManager {
   /** Save the current file to the backend. */
 
   async saveCurrentFile() {
-    if (!this.app.bucket || !this.app.currentFile)
+    const path = this.app.currentFile
+    if (!this.app.bucket || !path || BinaryPreview.isImage(path))
       return
-    const content = this.app.els.editor.value
+    const content = this.app.fileBuffers[path]
+    if (content === undefined)
+      return
     const result = await this.app.api.saveFile(
-      this.app.bucket, this.app.currentFile, content,
+      this.app.bucket, path, content,
     )
-    this.app.fileBuffers[this.app.currentFile] = content
-    this.app.fileMtimes[this.app.currentFile] = result.modified
-    this.app.dirty.delete(this.app.currentFile)
+    this.app.fileMtimes[path] = result.modified
+    this.app.dirty.delete(path)
     await this._refreshAfterSave()
   }
 

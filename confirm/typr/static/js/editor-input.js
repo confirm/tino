@@ -136,8 +136,10 @@ export class EditorInput {
   _handleInput() {
     this.updateLineNumbers()
     this.updateCursorPos()
-    if (this.app.currentFile) {
-      this.app.dirty.add(this.app.currentFile)
+    const cur = this.app.currentFile
+    if (cur) {
+      this.app.fileBuffers[cur] = this.app.els.editor.value
+      this.app.dirty.add(cur)
       this.renderTabs()
       this.app.editor.debounceSave()
     }
