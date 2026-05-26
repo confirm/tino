@@ -15,6 +15,7 @@
 *.py text diff
 *.rst text diff
 *.sh text diff
+*.svg text diff
 *.tex text diff
 *.toml text diff
 *.ts text diff

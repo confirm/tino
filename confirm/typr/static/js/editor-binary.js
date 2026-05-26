@@ -43,12 +43,14 @@ export class BinaryPreview {
       `download="${escapeHtml(name)}">` +
       '<span class="material-symbols-outlined">download</span>' +
       `Download ${escapeHtml(name)}</a>`
-    if (BinaryPreview._isImage(path))
+    if (BinaryPreview.isImage(path))
       return `<img src="${rawUrl}" alt="${escapeHtml(path)}">${dl}`
     return `<p>Binary file — cannot be edited here.</p>${dl}`
   }
 
-  static _isImage(path) {
+  /** Check whether a path has an image extension. */
+
+  static isImage(path) {
     const ext = path.split('.').pop().toLowerCase()
     return IMAGE_EXTS.includes(ext)
   }

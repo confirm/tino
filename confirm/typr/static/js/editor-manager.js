@@ -61,7 +61,7 @@ export class EditorManager {
     const data = await this.app.api.readFile(
       this.app.bucket, path,
     )
-    if (data.binary) {
+    if (data.binary || BinaryPreview.isImage(path)) {
       this.binary.show(path)
       return
     }
