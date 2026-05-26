@@ -20,7 +20,7 @@ services:
       args:
         - MCI_DOCKER_REGISTRY
 
-    image: ${MCI_DOCKER_REGISTRY}/typr/docs:${MCI_DOCKER_TAG}
+    image: ${MCI_DOCKER_REGISTRY}/public/typr-docs:${MCI_DOCKER_TAG}
 
     #
     # ⚡ Resources
@@ -64,5 +64,5 @@ services:
       args:
         - MCI_DOCKER_REGISTRY
 
-    image: ${MCI_DOCKER_REGISTRY}/typr/typr:${MCI_DOCKER_TAG}
+    image: ${MCI_DOCKER_REGISTRY}/public/typr:${MCI_DOCKER_TAG}
 
