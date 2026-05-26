@@ -28,11 +28,11 @@ export class TreeActions {
     const name = prompt('Rename file:', filePath)
     if (!name || name.trim() === filePath)
       return
+    if (this.app.currentFile === filePath)
+      this.app.editor.closeTab(filePath)
     await this.app.api.renameFile(
       this.app.bucket, filePath, name.trim(),
     )
-    if (this.app.currentFile === filePath)
-      this.app.editor.closeTab(filePath)
     await this._refresh()
     this.app.editor.openFile(name.trim())
   }
