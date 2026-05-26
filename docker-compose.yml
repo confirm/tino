@@ -1,13 +1,14 @@
 ---
 services:
 
+
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #
-  # 📝 Typr.
+  # 🌍 Docs.
   #
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typr:
+  docs:
 
     #
     # 🔨 Build
@@ -15,11 +16,11 @@ services:
 
     build:
       context: .
-      dockerfile: Dockerfiles/typr
+      dockerfile: Dockerfiles/docs
       args:
         - MCI_DOCKER_REGISTRY
 
-    image: ${MCI_DOCKER_REGISTRY}/public/typr:${MCI_DOCKER_TAG}
+    image: ${MCI_DOCKER_REGISTRY}/typr/docs:${MCI_DOCKER_TAG}
 
     #
     # ⚡ Resources
@@ -28,8 +29,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: '256M'
+          cpus: '0.1'
+          memory: '64M'
 
     #
     # 🔒 Security
@@ -44,17 +45,24 @@ services:
       - /tmp
 
     #
-    # 💾 Volumes
-    #
-
-    volumes:
-      - typr-data:/data
-
-    #
     # 🔄 Restart policy
     #
 
     restart: unless-stopped
 
-volumes:
-  typr-data:
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  # 📝 Typr.
+  #
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typr:
+
+    build:
+      context: .
+      dockerfile: Dockerfiles/typr
+      args:
+        - MCI_DOCKER_REGISTRY
+
+    image: ${MCI_DOCKER_REGISTRY}/typr/typr:${MCI_DOCKER_TAG}
+
