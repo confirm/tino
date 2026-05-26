@@ -15,6 +15,9 @@
   --status-bar-height: 24px;
   --radius: 6px;
   --transition: 150ms ease;
+  --accent-50: var(--cd-orange-50);
+  --accent-60: var(--cd-orange-60);
+  --accent-70: var(--cd-orange-70);
 }
 
 /* Dark theme */
@@ -29,9 +32,9 @@
   --text-primary: var(--cd-cold-grey-90);
   --text-secondary: var(--cd-cold-grey-60);
   --text-muted: var(--cd-cold-grey-50);
-  --accent: var(--cd-orange-60);
-  --accent-hover: var(--cd-orange-70);
-  --accent-dim: rgb(223 121 0 / 12%);
+  --accent: var(--accent-60);
+  --accent-hover: var(--accent-70);
+  --accent-dim: color-mix(in srgb, var(--accent-60) 12%, transparent);
   --editor-bg: var(--cd-cold-grey-10);
   --line-number: var(--cd-cold-grey-40);
   --preview-bg: var(--cd-white);
@@ -53,9 +56,9 @@
   --text-primary: var(--cd-cold-grey-20);
   --text-secondary: var(--cd-cold-grey-50);
   --text-muted: var(--cd-cold-grey-60);
-  --accent: var(--cd-orange-60);
-  --accent-hover: var(--cd-orange-50);
-  --accent-dim: rgb(223 121 0 / 10%);
+  --accent: var(--accent-60);
+  --accent-hover: var(--accent-50);
+  --accent-dim: color-mix(in srgb, var(--accent-60) 10%, transparent);
   --editor-bg: var(--cd-white);
   --line-number: var(--cd-cold-grey-70);
   --preview-bg: var(--cd-white);

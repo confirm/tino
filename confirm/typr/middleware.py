@@ -10,10 +10,11 @@ from starlette.middleware.sessions import SessionMiddleware
 from . import config
 
 _PUBLIC_PATHS = {
+    '/api/theme.css',
     '/login',
     '/oidc/login',
     '/oidc-callback',
-    '/logout'
+    '/logout',
 }
 
 _STATIC_PREFIXES = (

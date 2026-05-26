@@ -196,7 +196,7 @@ class TyprApp {
     this._bindBucketSelect()
     this._bindFileButtons()
     this._bindGitButtons()
-    this._bindThemeToggle()
+    TyprApp._bindThemeToggle()
     this._bindTabBar()
     TyprApp._bindLogout()
   }
@@ -243,17 +243,16 @@ class TyprApp {
     this.git.history.bind()
   }
 
-  _bindThemeToggle() {
-    this.themeTarget = document.documentElement
+  static _bindThemeToggle() {
+    const target = document.documentElement
     const saved = localStorage.getItem('typr:theme')
     if (saved)
-      this.themeTarget.setAttribute('data-theme', saved)
+      target.setAttribute('data-theme', saved)
     document.getElementById('btn-theme')
       .addEventListener('click', () => {
-        const current =
-          this.themeTarget.getAttribute('data-theme')
+        const current = target.getAttribute('data-theme')
         const next = current === 'dark' ? 'light' : 'dark'
-        this.themeTarget.setAttribute('data-theme', next)
+        target.setAttribute('data-theme', next)
         localStorage.setItem('typr:theme', next)
       })
   }

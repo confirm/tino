@@ -9,6 +9,7 @@ All settings of Typr.
 
 __all__ = (
     'sanity_checks',
+    'ACCENT_COLOUR',
     'ADMIN_GROUPS',
     'DATA_DIR',
     'LOG_LEVEL',
@@ -36,6 +37,12 @@ from sys import exit as sys_exit
 #: ⭕ The log level (must match one of the
 #: `Python logging levels <https://docs.python.org/3/library/logging.html#logging-levels>`_).
 LOG_LEVEL = environ.get('LOG_LEVEL', 'INFO')
+
+#: ⭕ The CI accent colour family used across the UI.
+#:
+#: .. hint::
+#:  Must match a family from the `confirm design colours <https://assets.confirm.ch/#colours>`_.
+ACCENT_COLOUR = environ.get('ACCENT_COLOUR', 'orange')
 
 #: ⭕ The root directory where bucket git repos are stored.
 _DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent.parent / 'data' / 'buckets')
@@ -80,6 +87,14 @@ OIDC_GROUPS_CLAIM = environ.get('OIDC_GROUPS_CLAIM', 'groups')
 #
 
 
+_VALID_ACCENTS = {
+    'grey', 'cold-grey', 'warm-grey',
+    'red', 'orange', 'yellow', 'olive', 'lime',
+    'green', 'sea-green', 'blue', 'azure',
+    'violet', 'purple', 'fuchsia', 'rose',
+}
+
+
 def sanity_checks():  # pylint: disable=too-complex
     '''Validate all required settings on startup. Exits with code 1 if any are missing.'''
     errors = {}
@@ -106,6 +121,9 @@ def sanity_checks():  # pylint: disable=too-complex
 
     if not OIDC_GROUPS_CLAIM:
         errors['OIDC_GROUPS_CLAIM'] = 'Set to the OIDC group claim'
+
+    if ACCENT_COLOUR not in _VALID_ACCENTS:
+        errors['ACCENT_COLOUR'] = f'Must be one of: {", ".join(sorted(_VALID_ACCENTS))}'
 
     if errors:
         for var, error in errors.items():
