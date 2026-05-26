@@ -222,7 +222,7 @@ export class TyprAPI {
   gitShow(slug, ref, path) {
     const rev = encodeURIComponent(ref)
     return this._fetch(
-      `${TyprAPI._bucketPath(slug)}/git/show/${rev}/${path}`,
+      `${TyprAPI._bucketPath(slug)}/git/show/${rev}/content/${path}`,
     )
   }
 

@@ -137,6 +137,15 @@ class GitService:
             except UnicodeDecodeError:
                 return {'content': None, 'binary': True}
 
+    def show_raw(self, slug: str, ref: str, path: str) -> bytes | None:
+        '''Return a file's raw bytes at a specific commit ref, or None if not found.'''
+        with self._open(slug) as repo:
+            try:
+                blob = repo.commit(ref).tree / path
+                return blob.data_stream.read()
+            except (KeyError, gitpython.GitCommandError):
+                return None
+
     def restore(self, slug: str, ref: str, paths: list[str]) -> list[str]:
         '''Restore files from a specific commit into the working tree.'''
         with self._open(slug) as repo:

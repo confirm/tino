@@ -3,6 +3,7 @@ import {
   SHA_SHORT_LEN,
   escapeHtml,
 } from './constants.js'
+import { BinaryPreview } from './editor-binary.js'
 
 /**
  * Manages the git history dialog: browsing commits,
@@ -191,11 +192,10 @@ export class GitHistory {
     const preview = document.getElementById('history-preview')
     const restoreBtn = document.getElementById('btn-history-restore')
     try {
-      const data = await this.app.api.gitShow(this.app.bucket, sha, path)
-      if (data.binary)
-        preview.innerHTML = '<p class="preview-empty">Binary file</p>'
+      if (BinaryPreview.isImage(path))
+        preview.innerHTML = this._imagePreviewHtml(sha, path)
       else
-        preview.innerHTML = `<pre class="history-content">${escapeHtml(data.content)}</pre>`
+        await this._showTextPreview(preview, sha, path)
       restoreBtn.disabled = false
     }
     catch {
@@ -203,6 +203,21 @@ export class GitHistory {
         '<p class="preview-empty">Could not load file at this commit.</p>'
       restoreBtn.disabled = true
     }
+  }
+
+  async _showTextPreview(preview, sha, path) {
+    const data = await this.app.api.gitShow(this.app.bucket, sha, path)
+    if (data.binary)
+      preview.innerHTML = '<p class="preview-empty">Binary file</p>'
+    else
+      preview.innerHTML = `<pre class="history-content">${escapeHtml(data.content)}</pre>`
+  }
+
+  _imagePreviewHtml(sha, path) {
+    const slug = encodeURIComponent(this.app.bucket)
+    const ref = encodeURIComponent(sha)
+    const url = `/api/buckets/${slug}/git/show/${ref}/raw/${path}`
+    return `<img class="history-image" src="${url}" alt="${escapeHtml(path)}">`
   }
 
   /** Restore the selected file from the chosen commit. */

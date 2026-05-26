@@ -1,6 +1,9 @@
 '''REST endpoints for git operations on a bucket's repository.'''
 
+import mimetypes
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
 
 from ..collab import CollabManager
 from ..dependencies import get_collab_manager, get_git_service, get_notifier, require_committer, \
@@ -89,7 +92,7 @@ async def git_tree(
         raise HTTPException(404, 'Commit not found') from exc
 
 
-@router.get('/show/{ref}/{path:path}')
+@router.get('/show/{ref}/content/{path:path}')
 async def git_show(
     slug: str, ref: str, path: str,
     _user=Depends(require_viewer),
@@ -102,6 +105,22 @@ async def git_show(
         raise HTTPException(404, 'File not found at that ref')
 
     return {'ref': ref, 'path': path, **result}
+
+
+@router.get('/show/{ref}/raw/{path:path}')
+async def git_show_raw(
+    slug: str, ref: str, path: str,
+    _user=Depends(require_viewer),
+    svc: GitService = Depends(get_git_service),
+):
+    '''Serve a file's raw bytes at a specific commit ref (for images).'''
+    data = svc.show_raw(slug, ref, path)
+
+    if data is None:
+        raise HTTPException(404, 'File not found at that ref')
+
+    content_type = mimetypes.guess_type(path)[0] or 'application/octet-stream'
+    return Response(content=data, media_type=content_type)
 
 
 @router.post('/restore')
