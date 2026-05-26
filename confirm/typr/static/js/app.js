@@ -49,6 +49,7 @@ class TyprApp {
       commitMessage: document.getElementById('commit-message'),
       cursorPos: document.getElementById('cursor-pos'),
       editor: document.getElementById('editor'),
+      fileSearch: document.getElementById('file-search'),
       fileTree: document.getElementById('file-tree'),
       lineNumbers: document.getElementById('line-numbers'),
       previewPage: document.getElementById('preview-page'),
@@ -82,12 +83,17 @@ class TyprApp {
     this._bindToolbar()
     this._bindGlobalErrors()
     this.editor.bindEditor()
-    this.fileTree.bindTreeClicks()
-    this.fileTree.bindUploadDrop()
-    this.fileTree.bindBucketPicker()
+    this._bindFileTree()
     this.templatePicker.bind()
     this.preview.bindZoom()
     this._bindPanelResize()
+  }
+
+  _bindFileTree() {
+    this.fileTree.bindTreeClicks()
+    this.fileTree.bindUploadDrop()
+    this.fileTree.bindBucketPicker()
+    this.fileTree.bindSearch()
   }
 
   _bindGlobalErrors() {

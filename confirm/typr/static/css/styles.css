@@ -275,6 +275,11 @@ html, body {
   outline-offset: -2px;
 }
 
+.file-search {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
 .file-tree {
   list-style: none;
   padding: 4px 0;
@@ -1010,6 +1015,13 @@ html, body {
 .form-input:read-only {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.file-search .form-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 11px;
+  padding: 4px 8px;
 }
 
 .access-row {

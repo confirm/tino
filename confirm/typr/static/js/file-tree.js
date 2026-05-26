@@ -23,6 +23,7 @@ export class FileTree {
     this.app = app
     this.actions = new TreeActions(app)
     this.bucketPicker = new BucketPicker(app)
+    this._nodes = []
   }
 
   /** Fetch all buckets and auto-select if only one. */
@@ -60,14 +61,51 @@ export class FileTree {
   /** Fetch file list and render the hierarchical tree. */
 
   async loadFiles() {
-    const collapsed = this._getCollapsedPaths()
     const files = await this.app.api.listFiles(this.app.bucket)
-    const nodes = TreeBuilder.build(
+    this._nodes = TreeBuilder.build(
       files, this.app.gitStatuses, this._canEdit(),
     )
+    this._renderTree()
+  }
+
+  /** Re-render the tree, applying the current search filter. */
+
+  _renderTree() {
+    const query = this.app.els.fileSearch.value
+      .trim().toLowerCase()
+    const collapsed = query ? new Set() : this._getCollapsedPaths()
+    const nodes = FileTree._filterNodes(this._nodes, query)
     const tree = this.app.els.fileTree
     tree.innerHTML = ''
     this._renderNodes(tree, nodes, collapsed)
+  }
+
+  /** Recursively keep only nodes whose path matches the query. */
+
+  static _filterNodes(nodes, query) {
+    if (!query)
+      return nodes
+    const result = []
+    nodes.forEach(node => {
+      if (node.type === 'directory')
+        FileTree._filterDir(result, node, query)
+      else if (node.path.toLowerCase().includes(query))
+        result.push(node)
+    })
+    return result
+  }
+
+  static _filterDir(result, node, query) {
+    const children = FileTree._filterNodes(node.children, query)
+    if (children.length) {
+      result.push({
+        children,
+        name: node.name,
+        path: node.path,
+        status: node.status,
+        type: node.type,
+      })
+    }
   }
 
   _getCollapsedPaths() {
@@ -165,6 +203,14 @@ export class FileTree {
   _canEdit() {
     return this.app.bucketRole === 'editor'
       || this.app.bucketRole === 'committer'
+  }
+
+  /** Bind the file search input to re-render on typing. */
+
+  bindSearch() {
+    this.app.els.fileSearch.addEventListener(
+      'input', () => this._renderTree(),
+    )
   }
 
   /** Bind click events on the file tree. */
