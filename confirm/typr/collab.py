@@ -124,7 +124,7 @@ class CollabManager:
     def _sync_room_to_disk(self, room, slug, path):
         '''Replace the room's YText with the current content on disk.'''
         result = self.file_service.read(slug, path)
-        new_content = result['content'] if result else ''
+        new_content = (result.get('content') or '') if result else ''
         ytext = room.ydoc.get('content', type=Text)
         current = str(ytext)
         if current != new_content:

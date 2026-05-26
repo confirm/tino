@@ -145,9 +145,9 @@ class GitService:
                 if not str(target).startswith(str(working_dir)):
                     continue
                 try:
-                    content = (repo.commit(ref).tree / p).data_stream.read().decode('utf-8')
+                    data = (repo.commit(ref).tree / p).data_stream.read()
                     target.parent.mkdir(parents=True, exist_ok=True)
-                    target.write_text(content, encoding='utf-8')
+                    target.write_bytes(data)
                     restored.append(p)
                 except (KeyError, gitpython.GitCommandError):
                     pass
