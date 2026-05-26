@@ -446,7 +446,10 @@ html, body {
   display: flex;
   align-items: center;
   gap: 2px;
+  min-width: 0;
   height: 100%;
+  overflow: auto hidden;
+  scrollbar-width: none;
 }
 
 .tab {
@@ -455,6 +458,8 @@ html, body {
   gap: 6px;
   height: 100%;
   padding: 0 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
   font-size: 12px;
   color: var(--text-muted);
   cursor: pointer;
