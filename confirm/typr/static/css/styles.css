@@ -1204,6 +1204,11 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 
+.template-search .form-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .template-list {
   list-style: none;
   padding: 0;
