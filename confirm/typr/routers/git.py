@@ -7,7 +7,7 @@ from fastapi.responses import Response
 
 from ..collab import CollabManager
 from ..dependencies import get_collab_manager, get_git_service, get_notifier, require_committer, \
-    require_viewer
+    require_editor, require_viewer
 from ..models import CommitInfo, CommitRequest, DiffEntry, FileStatus, RestoreRequest
 from ..services.git import GitService
 
@@ -126,7 +126,7 @@ async def git_show_raw(
 @router.post('/restore')
 async def git_restore(
     slug: str, body: RestoreRequest,
-    _user=Depends(require_committer),
+    _user=Depends(require_editor),
     svc: GitService = Depends(get_git_service),
     collab: CollabManager = Depends(get_collab_manager),
 ):

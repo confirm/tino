@@ -205,7 +205,7 @@ export class GitHistory {
     try {
       const data = await this.app.api.gitShow(this.app.bucket, sha, path)
       this._renderPreview(preview, data, sha, path)
-      restoreBtn.disabled = !data.deleted
+      restoreBtn.disabled = !!data.deleted
     }
     catch {
       preview.innerHTML =
