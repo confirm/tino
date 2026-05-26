@@ -19,7 +19,10 @@ VOLUME /data
 ENV TZ=Europe/Zurich
 ENV TYPR_DATA_DIR=/data
 
-EXPOSE 8000
+EXPOSE 5000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
 
 ENTRYPOINT ["gunicorn"]
-CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8000", "--worker-tmp-dir", "/tmp", "confirm.typr:create_app()"]
+CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:5000", "--worker-tmp-dir", "/tmp", "confirm.typr:create_app()"]

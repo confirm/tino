@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import config
@@ -34,6 +35,10 @@ async def lifespan(_app: FastAPI):
 def create_app() -> FastAPI:
     '''Create and return the Typr FastAPI application.'''
     app = FastAPI(title='Typr', lifespan=lifespan)
+
+    @app.get('/health', response_class=PlainTextResponse)
+    async def health():
+        return 'ok'
 
     app.include_router(auth_router)
     app.include_router(buckets.router)
