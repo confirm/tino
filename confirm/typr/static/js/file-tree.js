@@ -131,6 +131,8 @@ export class FileTree {
     const li = document.createElement('li')
     li.className = 'folder-item'
     li.dataset.folder = node.path
+    if (this._canEdit())
+      li.draggable = true
     if (collapsed.has(node.path))
       li.classList.add('collapsed')
     this._buildFolderContent(li, node, collapsed)
@@ -163,6 +165,8 @@ export class FileTree {
     const li = document.createElement('li')
     li.className = 'file-item'
     li.dataset.file = node.path
+    if (this._canEdit())
+      li.draggable = true
     if (node.status === 'deleted')
       li.classList.add('file-deleted')
     li.innerHTML = this._fileItemHtml(node)
@@ -244,16 +248,22 @@ export class FileTree {
   bindUploadDrop() {
     const zone = document.getElementById('file-explorer')
     zone.addEventListener('dragover', evt => {
+      if (evt.dataTransfer.types.includes('text/x-typr-path'))
+        return
       evt.preventDefault()
       if (this._canEdit())
-        zone.classList.add('drop-active')
+        this._highlightDropTarget(evt)
     })
-    zone.addEventListener('dragleave', () => {
-      zone.classList.remove('drop-active')
+    zone.addEventListener('dragleave', evt => {
+      const related = evt.relatedTarget
+      if (!related || !zone.contains(related))
+        this._clearDropTargets()
     })
     zone.addEventListener('drop', evt => {
+      if (evt.dataTransfer.types.includes('text/x-typr-path'))
+        return
       evt.preventDefault()
-      zone.classList.remove('drop-active')
+      this._clearDropTargets()
       if (this._canEdit() && evt.dataTransfer.files.length)
         this._uploadFiles(evt.dataTransfer.files, evt)
     })
@@ -271,6 +281,106 @@ export class FileTree {
   static _dropTargetFolder(evt) {
     const folderEl = evt.target.closest('.folder-item')
     return folderEl ? folderEl.dataset.folder : ''
+  }
+
+  /** Bind drag-and-drop events for moving files and folders in the tree. */
+
+  bindTreeDrag() {
+    const tree = this.app.els.fileTree
+
+    tree.addEventListener('dragstart', evt => {
+      const item = evt.target.closest('.file-item') ||
+        evt.target.closest('.folder-item')
+      if (!item)
+        return
+      const path = item.dataset.file || item.dataset.folder
+      const type = item.dataset.file ? 'file' : 'directory'
+      evt.dataTransfer.setData('text/x-typr-path', path)
+      evt.dataTransfer.setData('text/x-typr-type', type)
+      evt.dataTransfer.effectAllowed = 'move'
+    })
+
+    tree.addEventListener('dragover', evt => {
+      if (!evt.dataTransfer.types.includes('text/x-typr-path'))
+        return
+      evt.preventDefault()
+      evt.dataTransfer.dropEffect = 'move'
+      this._highlightDropTarget(evt)
+    })
+
+    tree.addEventListener('dragleave', evt => {
+      const related = evt.relatedTarget
+      if (!related || !tree.contains(related))
+        this._clearDropTargets()
+    })
+
+    tree.addEventListener('drop', async evt => {
+      if (!evt.dataTransfer.types.includes('text/x-typr-path'))
+        return
+      evt.preventDefault()
+      evt.stopPropagation()
+      this._clearDropTargets()
+      const srcPath = evt.dataTransfer.getData('text/x-typr-path')
+      const srcType = evt.dataTransfer.getData('text/x-typr-type')
+      const destFolder = this._resolveDropFolder(evt)
+      if (destFolder === null)
+        return
+      const name = srcPath.split('/').pop()
+      const destPath = destFolder ? `${destFolder}/${name}` : name
+      if (destPath === srcPath || destFolder.startsWith(srcPath + '/'))
+        return
+      try {
+        if (srcType === 'file')
+          await this._dropMoveFile(srcPath, destPath)
+        else
+          await this._dropMoveDir(srcPath, destPath)
+      }
+      catch (err) {
+        this.app.toast.error(`Move failed: ${err.message}`)
+      }
+    })
+  }
+
+  async _dropMoveFile(srcPath, destPath) {
+    if (this.app.currentFile === srcPath)
+      this.app.editor.closeTab(srcPath)
+    await this.app.api.renameFile(
+      this.app.bucket, srcPath, destPath,
+    )
+    await this.actions._refresh()
+  }
+
+  async _dropMoveDir(srcPath, destPath) {
+    this.actions._closeTabsUnder(srcPath)
+    await this.app.api.renameDir(
+      this.app.bucket, srcPath, destPath,
+    )
+    await this.actions._refresh()
+  }
+
+  _resolveDropFolder(evt) {
+    const folder = evt.target.closest('.folder-item')
+    if (folder)
+      return folder.dataset.folder
+    if (evt.target.closest('.file-tree') || evt.target.closest('.file-item'))
+      return ''
+    return null
+  }
+
+  _highlightDropTarget(evt) {
+    this._clearDropTargets()
+    const folder = evt.target.closest('.folder-item')
+    if (folder)
+      folder.classList.add('drop-target')
+    else if (evt.target.closest('.file-tree'))
+      this.app.els.fileTree.classList.add('drop-target-root')
+  }
+
+  _clearDropTargets() {
+    this.app.els.fileTree
+      .querySelectorAll('.drop-target')
+      .forEach(el => el.classList.remove('drop-target'))
+    this.app.els.fileTree.classList.remove('drop-target-root')
   }
 
   _handleFileClick(evt) {

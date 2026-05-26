@@ -99,6 +99,7 @@ class TyprApp {
 
   _bindFileTree() {
     this.fileTree.bindTreeClicks()
+    this.fileTree.bindTreeDrag()
     this.fileTree.bindUploadDrop()
     this.fileTree.bindBucketPicker()
     this.fileTree.bindSearch()

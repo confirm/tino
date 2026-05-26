@@ -278,6 +278,19 @@ html, body {
   outline-offset: -2px;
 }
 
+.file-item[draggable="true"]:active,
+.folder-item[draggable="true"] > .folder-header:active {
+  cursor: grabbing;
+}
+
+.folder-item.drop-target > .folder-header,
+.file-tree.drop-target-root {
+  background: var(--accent-dim);
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+
 .file-search {
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
