@@ -165,10 +165,10 @@ export class FileTree {
     const li = document.createElement('li')
     li.className = 'file-item'
     li.dataset.file = node.path
-    if (this._canEdit())
-      li.draggable = true
     if (node.status === 'deleted')
       li.classList.add('file-deleted')
+    else if (this._canEdit())
+      li.draggable = true
     li.innerHTML = this._fileItemHtml(node)
     if (this.app.currentFile === node.path)
       li.classList.add('active')
@@ -192,6 +192,11 @@ export class FileTree {
   }
 
   static _fileActionsHtml(status) {
+    if (status === 'deleted') {
+      return '<div class="file-actions">' +
+        '<button class="icon-btn file-reset" title="Restore">' +
+        '<span class="material-symbols-outlined">undo</span></button></div>'
+    }
     let resetBtn = ''
     if (status && status !== 'untracked') {
       resetBtn = '<button class="icon-btn file-reset" title="Reset">' +
