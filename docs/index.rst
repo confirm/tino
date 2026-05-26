@@ -1,7 +1,7 @@
 Typr
 ====
 
-Welcome to the official documentation of Typr -- the web-based Typst editor.
+Welcome to the official documentation of Typr - the web-based Typst editor with real-time collaboration and version control.
 
 .. toctree::
    :maxdepth: 1
