@@ -7,6 +7,7 @@ Welcome to the official documentation of Typr -- the web-based Typst editor.
    :maxdepth: 1
 
    introduction
+   usage
    deployment
    configuration
 
