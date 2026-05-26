@@ -80,6 +80,7 @@ class TyprApp {
   async init() {
     const route = readRoute()
     this._bindAll()
+    this._applyRoleVisibility()
     await this._loadUser()
     await this.fileTree.loadBuckets()
     await this._applyRoute(route, true)
@@ -177,6 +178,7 @@ class TyprApp {
   /** Show or hide editor actions based on the user's role in the current bucket. */
 
   _applyRoleVisibility() {
+    const canView = Boolean(this.bucketRole)
     const canEdit =
       this.bucketRole === 'editor' || this.bucketRole === 'committer'
     const canCommit = this.bucketRole === 'committer'
@@ -184,6 +186,8 @@ class TyprApp {
     document.getElementById('btn-template').classList.toggle('hidden', !canEdit)
     document.getElementById('btn-save').classList.toggle('hidden', !canEdit)
     document.getElementById('btn-commit').classList.toggle('hidden', !canCommit)
+    document.getElementById('btn-bucket-history').classList.toggle('hidden', !canView)
+    document.getElementById('btn-history').classList.toggle('hidden', !canView)
   }
 
   // ── Event binding ──
