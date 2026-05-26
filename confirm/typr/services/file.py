@@ -107,6 +107,23 @@ class FileService:
 
         return True
 
+    def rename(self, slug: str, old_path: str, new_path: str) -> bool:
+        '''Rename/move a file. Returns False if source missing, dest exists, or path invalid.'''
+        root   = self._bucket_path(slug)
+        source = self._safe_path(root, old_path)
+        dest   = self._safe_path(root, new_path)
+
+        if source is None or dest is None or not source.is_file():
+            return False
+
+        if dest.exists():
+            return False
+
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        source.rename(dest)
+
+        return True
+
     def resolve(self, slug: str, file_path: str) -> Path | None:
         '''Return the absolute path to a file, or None if invalid/missing.'''
         root   = self._bucket_path(slug)

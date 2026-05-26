@@ -161,6 +161,15 @@ export class TyprAPI {
     )
   }
 
+  /** Rename/move a file. */
+
+  renameFile(slug, oldPath, newPath) {
+    const path = `${TyprAPI._bucketPath(slug)}/files/rename`
+    return this._json(
+      'POST', path, { new_path: newPath, old_path: oldPath },
+    )
+  }
+
   /** Rename/move a directory. */
 
   renameDir(slug, oldPath, newPath) {

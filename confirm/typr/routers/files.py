@@ -104,6 +104,20 @@ async def upload_files(
     return {'uploaded': uploaded}
 
 
+@router.post('/rename')
+async def rename_file(
+    slug: str, body: dict,
+    _user=Depends(require_editor),
+    svc: FileService = Depends(get_file_service),
+):
+    '''Rename/move a single file.'''
+    if not svc.rename(slug, body['old_path'], body['new_path']):
+        raise HTTPException(400, 'Invalid path or target exists')
+
+    await get_notifier().notify(slug)
+    return {'old_path': body['old_path'], 'new_path': body['new_path']}
+
+
 @router.post('/rename-dir')
 async def rename_dir(
     slug: str, body: dict,
