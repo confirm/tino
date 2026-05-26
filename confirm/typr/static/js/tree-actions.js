@@ -15,11 +15,11 @@ export class TreeActions {
     // eslint-disable-next-line no-alert
     if (!confirm(`Delete "${filePath}"?`))
       return
+    if (this.app.currentFile === filePath)
+      this.app.editor.closeTab(filePath)
     await this.app.api.deleteFile(
       this.app.bucket, filePath,
     )
-    if (this.app.currentFile === filePath)
-      this.app.editor.closeTab(filePath)
     await this._refresh()
   }
 
