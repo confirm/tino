@@ -138,6 +138,13 @@ class BucketService:
 
         self._write_meta(path, meta)
 
+        repo = git.Repo(path)
+        try:
+            repo.index.add([META_FILE])
+            repo.index.commit('Update bucket metadata')
+        finally:
+            repo.close()
+
         return self._to_info(slug, path)
 
     def delete(self, slug: str) -> bool:
