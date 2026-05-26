@@ -15,10 +15,11 @@ export class CollabSession {
    * @param {HTMLTextAreaElement} textarea - Editor textarea element.
    */
 
-  constructor(slug, path, textarea) {
+  constructor(slug, path, textarea, onStatusCb) {
     this._slug = slug
     this._path = path
     this._textarea = textarea
+    this._onStatusCb = onStatusCb || null
     this._lastValue = ''
     this._resetState()
   }
@@ -33,6 +34,7 @@ export class CollabSession {
       wsUrl, this._path, this._doc,
     )
     this._provider.on('sync', synced => this._onSync(synced))
+    this._provider.on('status', evt => this._onProviderStatus(evt.status))
     this._bindTextarea()
     this._observeYtext()
   }
@@ -74,6 +76,19 @@ export class CollabSession {
     this._lastValue = this._textarea.value
     this._remoteUpdate = false
     this._textarea.dispatchEvent(new Event('input'))
+  }
+
+  _onProviderStatus(status) {
+    if (status === 'disconnected' && this._synced && !this._offline) {
+      this._offline = true
+      if (this._onStatusCb)
+        this._onStatusCb('disconnected')
+    }
+    else if (status === 'connected' && this._offline) {
+      this._offline = false
+      if (this._onStatusCb)
+        this._onStatusCb('reconnected')
+    }
   }
 
   _bindTextarea() {
@@ -220,6 +235,7 @@ export class CollabSession {
     this._remoteUpdate = false
     this._observer = null
     this._inputHandler = null
+    this._offline = false
   }
 
 }

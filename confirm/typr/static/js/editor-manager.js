@@ -244,7 +244,10 @@ export class EditorManager {
     if (!path || !canEdit || !isText)
       return
     this.collab = new CollabSession(
-      this.app.bucket, path, this.app.els.editor,
+      this.app.bucket,
+      path,
+      this.app.els.editor,
+      st => this._onCollabStatus(st),
     )
     this.collab.connect()
   }
@@ -254,6 +257,13 @@ export class EditorManager {
       this.collab.disconnect()
       this.collab = null
     }
+  }
+
+  _onCollabStatus(status) {
+    if (status === 'disconnected')
+      this.app.toast.error('Collaboration disconnected')
+    else if (status === 'reconnected')
+      this.app.toast.success('Collaboration reconnected')
   }
 
 }
