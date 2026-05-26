@@ -38,7 +38,7 @@ export class EditorManager {
     if (this._saveTimer) {
       clearTimeout(this._saveTimer)
       this._saveTimer = null
-      await this.saveCurrentFile()
+      this.saveCurrentFile()
     }
     this._openGeneration = (this._openGeneration || 0) + 1
     const gen = this._openGeneration
