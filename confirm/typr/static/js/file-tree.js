@@ -23,6 +23,7 @@ export class FileTree {
     this.app = app
     this.actions = new TreeActions(app)
     this.bucketPicker = new BucketPicker(app)
+    this.filePaths = new Set()
     this._nodes = []
   }
 
@@ -62,6 +63,7 @@ export class FileTree {
 
   async loadFiles() {
     const files = await this.app.api.listFiles(this.app.bucket)
+    this.filePaths = new Set(files.map(fl => fl.path))
     this._nodes = TreeBuilder.build(
       files, this.app.gitStatuses, this._canEdit(),
     )

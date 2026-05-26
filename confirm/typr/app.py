@@ -13,7 +13,7 @@ from .dependencies import get_collab_manager
 from .middleware import register_middleware
 from .routers import buckets, collab
 from .routers import compile as compile_router
-from .routers import files, git, templates
+from .routers import events, files, git, templates
 
 _STATIC_DIR = str(Path(__file__).parent / 'static')
 
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(buckets.router)
     app.include_router(collab.router)
     app.include_router(compile_router.router)
+    app.include_router(events.router)
     app.include_router(files.router)
     app.include_router(git.router)
     app.include_router(templates.router)

@@ -3,7 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..collab import CollabManager
-from ..dependencies import get_collab_manager, get_git_service, require_committer, require_viewer
+from ..dependencies import get_collab_manager, get_git_service, get_notifier, require_committer, \
+    require_viewer
 from ..models import CommitInfo, CommitRequest, DiffEntry, FileStatus, RestoreRequest
 from ..services.git import GitService
 
@@ -35,10 +36,12 @@ async def git_commit(
         raise HTTPException(400, 'No files specified')
 
     try:
-        return svc.commit(slug, body.files, body.message, author=user.username, email=user.email)
-
+        result = svc.commit(slug, body.files, body.message, author=user.username, email=user.email)
     except Exception as exc:
         raise HTTPException(400, str(exc)) from exc
+
+    await get_notifier().notify(slug)
+    return result
 
 
 @router.get('/log', response_model=list[CommitInfo])
@@ -115,5 +118,6 @@ async def git_restore(
         raise HTTPException(404, 'No files could be restored')
 
     await collab.reload_rooms(slug, restored)
+    await get_notifier().notify(slug)
 
     return {'restored': restored}

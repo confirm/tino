@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.params import File
 from fastapi.responses import FileResponse
 
-from ..dependencies import get_file_service, require_editor, require_viewer
+from ..dependencies import get_file_service, get_notifier, require_editor, require_viewer
 from ..models import FileCreate, FileEntry, FileSave
 from ..services.file import FileService
 
@@ -61,6 +61,7 @@ async def create_file(
     if not svc.create(slug, body.path, body.content):
         raise HTTPException(409, 'File already exists or invalid path')
 
+    await get_notifier().notify(slug)
     return {'path': body.path}
 
 
@@ -99,6 +100,7 @@ async def upload_files(
 
         uploaded.append(path)
 
+    await get_notifier().notify(slug)
     return {'uploaded': uploaded}
 
 
@@ -114,6 +116,7 @@ async def rename_dir(
     if affected is None:
         raise HTTPException(400, 'Invalid path or target exists')
 
+    await get_notifier().notify(slug)
     return {'affected': affected}
 
 
@@ -127,6 +130,8 @@ async def delete_dir(
     if svc.delete_dir(slug, path) is None:
         raise HTTPException(404, 'Directory not found')
 
+    await get_notifier().notify(slug)
+
 
 @router.delete('/{path:path}', status_code=204)
 async def delete_file(
@@ -137,3 +142,5 @@ async def delete_file(
     '''Delete a file from the bucket's working tree.'''
     if not svc.delete(slug, path):
         raise HTTPException(404, 'File not found')
+
+    await get_notifier().notify(slug)

@@ -8,6 +8,7 @@ from . import config
 from .auth import check_access, get_current_user, is_global_admin
 from .collab import CollabManager
 from .models import User
+from .notifier import BucketNotifier
 from .services.bucket import BucketService
 from .services.compiler import CompilerService
 from .services.file import FileService
@@ -69,6 +70,12 @@ def get_compiler_service() -> CompilerService:
 def get_template_service() -> TemplateService:
     '''Singleton TemplateService bound to the configured data directory.'''
     return TemplateService(config.DATA_DIR, config.PACKAGE_DIR)
+
+
+@lru_cache
+def get_notifier() -> BucketNotifier:
+    '''Singleton BucketNotifier for broadcasting file-change events.'''
+    return BucketNotifier()
 
 
 @lru_cache

@@ -1,3 +1,4 @@
+import { BucketEvents } from './bucket-events.js'
 import { EditorManager } from './editor-manager.js'
 import { FileTree } from './file-tree.js'
 import { GitManager } from './git-manager.js'
@@ -62,6 +63,9 @@ class TyprApp {
 
   _initManagers() {
     this.toast = new Toast()
+    this.bucketEvents = new BucketEvents(
+      () => this._onFilesChanged(),
+    )
     this.editor = new EditorManager(this)
     this.fileTree = new FileTree(this)
     this.git = new GitManager(this)
@@ -128,8 +132,15 @@ class TyprApp {
     this.bucketRole = role || null
     this.editor.resetState()
     this._applyRoleVisibility()
+    this.bucketEvents.connect(slug)
     await this.git.loadStatus()
     await this.fileTree.loadFiles()
+  }
+
+  async _onFilesChanged() {
+    await this.git.loadStatus()
+    await this.fileTree.loadFiles()
+    this.editor.reconcileTabs(this.fileTree.filePaths)
   }
 
   /** Show or hide editor actions based on the user's role in the current bucket. */

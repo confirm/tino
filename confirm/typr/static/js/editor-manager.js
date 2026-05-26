@@ -197,6 +197,27 @@ export class EditorManager {
     this.input.updateStatusBar()
   }
 
+  /** Close tabs for files that no longer exist on disk. */
+
+  reconcileTabs(existingPaths) {
+    const stale = this.app.openTabs.filter(
+      tp => !existingPaths.has(tp),
+    )
+    if (!stale.length)
+      return
+    stale.forEach(tp => {
+      const idx = this.app.openTabs.indexOf(tp)
+      if (idx !== INDEX_NOT_FOUND)
+        this.app.openTabs.splice(idx, SINGLE_ITEM)
+      delete this.app.fileBuffers[tp]
+      this.app.dirty.delete(tp)
+    })
+    if (this.app.openTabs.includes(this.app.currentFile))
+      this.input.renderTabs()
+    else
+      this._switchAfterClose(0)
+  }
+
   /** Schedule an auto-save after typing stops. */
 
   debounceSave() {
