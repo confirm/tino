@@ -2,7 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from ..dependencies import get_git_service, require_committer, require_viewer
+from ..collab import CollabManager
+from ..dependencies import get_collab_manager, get_git_service, require_committer, require_viewer
 from ..models import CommitInfo, CommitRequest, DiffEntry, FileStatus, RestoreRequest
 from ..services.git import GitService
 
@@ -97,9 +98,11 @@ async def git_restore(
     slug: str, body: RestoreRequest,
     _user=Depends(require_committer),
     svc: GitService = Depends(get_git_service),
+    collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Restore file(s) from a specific commit into the working tree.'''
     restored = svc.restore(slug, body.ref, body.paths)
     if not restored:
         raise HTTPException(404, 'No files could be restored')
+    await collab.reload_rooms(slug, restored)
     return {'restored': restored}

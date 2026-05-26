@@ -115,24 +115,22 @@ export class EditorInput {
 
   _handleKeydown(evt, ed) {
     if (evt.key === 'Tab')
-      this._insertTab(evt, ed)
+      EditorInput._insertTab(evt, ed)
     else if (evt.key === 'Enter')
-      this._continueList(evt, ed)
+      EditorInput._continueList(evt, ed)
     if ((evt.ctrlKey || evt.metaKey) && evt.key === 's') {
       evt.preventDefault()
       this.app.editor.saveCurrentFile()
     }
   }
 
-  _insertTab(evt, ed) {
+  static _insertTab(evt, ed) {
     evt.preventDefault()
     const start = ed.selectionStart
-    const before = ed.value.substring(0, start)
-    const after = ed.value.substring(ed.selectionEnd)
-    ed.value = `${before}  ${after}`
+    ed.setRangeText('  ', start, ed.selectionEnd)
     ed.selectionStart = start + TAB_SPACES
     ed.selectionEnd = start + TAB_SPACES
-    this.updateLineNumbers()
+    ed.dispatchEvent(new Event('input'))
   }
 
   _handleInput() {
@@ -152,7 +150,7 @@ export class EditorInput {
    * on Enter or clear the empty item.
    */
 
-  _continueList(evt, ed) {
+  static _continueList(evt, ed) {
     if (ed.selectionStart !== ed.selectionEnd)
       return
     const info = EditorInput._matchListLine(ed)
@@ -160,9 +158,9 @@ export class EditorInput {
       return
     evt.preventDefault()
     if (info.isEmpty)
-      this._clearLine(ed, info.lineStart)
+      EditorInput._clearLine(ed, info.lineStart)
     else
-      this._insertContinuation(ed, info.prefix)
+      EditorInput._insertContinuation(ed, info.prefix)
   }
 
   /** Extract the list prefix from the current line, if any. */
@@ -181,23 +179,23 @@ export class EditorInput {
 
   /** Remove an empty list item (bare prefix with no content). */
 
-  _clearLine(ed, lineStart) {
+  static _clearLine(ed, lineStart) {
     const pos = ed.selectionStart
     ed.setRangeText('', lineStart, pos)
     ed.selectionStart = lineStart
     ed.selectionEnd = lineStart
-    this._handleInput()
+    ed.dispatchEvent(new Event('input'))
   }
 
   /** Insert a newline followed by the same list prefix. */
 
-  _insertContinuation(ed, prefix) {
+  static _insertContinuation(ed, prefix) {
     const pos = ed.selectionStart
     const insertion = `\n${prefix}`
     ed.setRangeText(insertion, pos, ed.selectionEnd)
     ed.selectionStart = pos + insertion.length
     ed.selectionEnd = ed.selectionStart
-    this._handleInput()
+    ed.dispatchEvent(new Event('input'))
   }
 
 }

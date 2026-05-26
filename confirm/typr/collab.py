@@ -106,6 +106,38 @@ class CollabManager:
                 del self._rooms[key]
                 logger.info('Cleaned up room for %s/%s', slug, file_path)
 
+    async def reload_rooms(self, slug: str, paths: list[str]) -> None:
+        '''Reload room content from disk after external file changes.
+
+        Called after git restore or other operations that change files on disk
+        outside the CRDT. Connected clients receive the update via sync.
+        '''
+        for path in paths:
+            key = (slug, path)
+            lock = self._get_lock(key)
+            async with lock:
+                room = self._rooms.get(key)
+                if room:
+                    self._sync_room_to_disk(room, slug, path)
+
+    def _sync_room_to_disk(self, room, slug, path):
+        '''Replace the room's YText with the current content on disk.'''
+        result = self.file_service.read(slug, path)
+        new_content = result['content'] if result else ''
+        ytext = room.ydoc.get('content', type=Text)
+        current = str(ytext)
+        if current != new_content:
+            CollabManager._replace_ytext(ytext, current, new_content)
+            logger.info('Reloaded room for %s/%s', slug, path)
+
+    @staticmethod
+    def _replace_ytext(ytext, current, new_content):
+        '''Clear existing YText and insert new content.'''
+        if current:
+            del ytext[0:len(current)]
+        if new_content:
+            ytext += new_content
+
     def start(self) -> None:
         '''Called on application startup (reserved for future use).'''
 

@@ -4,6 +4,7 @@ import {
   SINGLE_ITEM,
   escapeHtml,
 } from './constants.js'
+import { CollabSession } from './collab.js'
 import { EditorInput } from './editor-input.js'
 import { EditorToolbar } from './editor-toolbar.js'
 
@@ -22,6 +23,7 @@ export class EditorManager {
     this.app = app
     this.input = new EditorInput(app)
     this.toolbar = new EditorToolbar(app)
+    this.collab = null
     this._saveTimer = null
   }
 
@@ -37,6 +39,7 @@ export class EditorManager {
     if (this.app.openTabs.indexOf(path) === INDEX_NOT_FOUND)
       this.app.openTabs.push(path)
     this._refreshEditorUi()
+    this._connectCollab(path)
     await this.app.preview.update()
   }
 
@@ -171,8 +174,10 @@ export class EditorManager {
     this.app.openTabs.splice(idx, SINGLE_ITEM)
     delete this.app.fileBuffers[path]
     this.app.dirty.delete(path)
-    if (this.app.currentFile === path)
+    if (this.app.currentFile === path) {
+      this._disconnectCollab()
       this._switchAfterClose(idx)
+    }
     this.input.renderTabs()
   }
 
@@ -183,6 +188,7 @@ export class EditorManager {
       this.openFile(next)
       return
     }
+    this._disconnectCollab()
     this.app.currentFile = null
     this._showTextEditor('')
     this.app.els.editor.placeholder = PLACEHOLDER
@@ -203,16 +209,21 @@ export class EditorManager {
   /** Reset editor state when switching buckets. */
 
   resetState() {
+    this._disconnectCollab()
     this.toolbar.hide()
+    this._clearOpenState()
+    this._showTextEditor('')
+    this.app.els.editor.placeholder = PLACEHOLDER
+    this.app.els.tabBar.innerHTML = ''
+    this.input.updateLineNumbers()
+  }
+
+  _clearOpenState() {
     this.app.openTabs = []
     this.app.currentFile = null
     this.app.fileBuffers = {}
     this.app.fileMtimes = {}
     this.app.dirty.clear()
-    this._showTextEditor('')
-    this.app.els.editor.placeholder = PLACEHOLDER
-    this.app.els.tabBar.innerHTML = ''
-    this.input.updateLineNumbers()
   }
 
   /** Bind editor events (delegates to EditorInput). */
@@ -220,6 +231,28 @@ export class EditorManager {
   bindEditor() {
     this.input.bind()
     this.toolbar.bind()
+  }
+
+  // ── Collab ──
+
+  _connectCollab(path) {
+    this._disconnectCollab()
+    const role = this.app.bucketRole
+    const canEdit = role === 'editor' || role === 'committer'
+    const isText = !this.app.els.editor.classList.contains('hidden')
+    if (!path || !canEdit || !isText)
+      return
+    this.collab = new CollabSession(
+      this.app.bucket, path, this.app.els.editor,
+    )
+    this.collab.connect()
+  }
+
+  _disconnectCollab() {
+    if (this.collab) {
+      this.collab.disconnect()
+      this.collab = null
+    }
   }
 
 }
