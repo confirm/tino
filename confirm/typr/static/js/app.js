@@ -1,3 +1,4 @@
+import { readRoute, writeRoute } from './router.js'
 import { BucketEvents } from './bucket-events.js'
 import { EditorManager } from './editor-manager.js'
 import { FileTree } from './file-tree.js'
@@ -80,6 +81,7 @@ class TyprApp {
     this._bindAll()
     await this._loadUser()
     await this.fileTree.loadBuckets()
+    await this._restoreRoute()
   }
 
   _bindAll() {
@@ -91,6 +93,7 @@ class TyprApp {
     this.templatePicker.bind()
     this.preview.bindZoom()
     this._bindPanelResize()
+    this._bindHashChange()
   }
 
   _bindFileTree() {
@@ -133,8 +136,26 @@ class TyprApp {
     this.editor.resetState()
     this._applyRoleVisibility()
     this.bucketEvents.connect(slug)
+    writeRoute(slug, null)
     await this.git.loadStatus()
     await this.fileTree.loadFiles()
+  }
+
+  async _restoreRoute() {
+    const route = readRoute()
+    if (!route.slug)
+      return
+    if (route.slug !== this.bucket) {
+      const bkt = this.fileTree._buckets.find(
+        item => item.slug === route.slug,
+      )
+      if (!bkt)
+        return
+      this.els.bucketLabel.textContent = bkt.slug
+      await this.selectBucket(bkt.slug, bkt.role)
+    }
+    if (route.path && route.path !== this.currentFile)
+      await this.editor.openFile(route.path)
   }
 
   async _onFilesChanged() {
@@ -205,39 +226,7 @@ class TyprApp {
       if (evt.target === this.els.commitDialog)
         this.git.closeDialog()
     })
-    this._bindHistoryButtons()
-  }
-
-  _bindHistoryButtons() {
-    const historyDialog = document.getElementById('history-dialog')
-    document.getElementById('btn-history')
-      .addEventListener('click', () => {
-        this.git.openHistory(this.currentFile)
-      })
-    document.getElementById('btn-bucket-history')
-      .addEventListener('click', () => {
-        this.git.openHistory()
-      })
-    document.getElementById('history-search')
-      .addEventListener('input', evt => {
-        this.git.filterHistory(evt.target.value)
-      })
-    document.getElementById('btn-history-close')
-      .addEventListener('click', () => {
-        this.git.closeHistory()
-      })
-    document.getElementById('btn-history-cancel')
-      .addEventListener('click', () => {
-        this.git.closeHistory()
-      })
-    document.getElementById('btn-history-restore')
-      .addEventListener('click', () => {
-        this.git.restoreFromHistory()
-      })
-    historyDialog.addEventListener('click', evt => {
-      if (evt.target === historyDialog)
-        this.git.closeHistory()
-    })
+    this.git.history.bind()
   }
 
   _bindThemeToggle() {
@@ -274,6 +263,12 @@ class TyprApp {
       .addEventListener('click', () => {
         window.location.href = '/logout'
       })
+  }
+
+  _bindHashChange() {
+    window.addEventListener(
+      'hashchange', () => this._restoreRoute(),
+    )
   }
 
   _bindPanelResize() {

@@ -1,13 +1,13 @@
 import {
-  ISO_DATETIME_LEN,
-  SHA_SHORT_LEN,
   STATUS_CLASSES,
   STATUS_ICONS,
   escapeHtml,
 } from './constants.js'
+import { GitHistory } from './git-history.js'
 
 /**
- * Manages git operations and the commit dialog.
+ * Manages git operations: status, commit dialog, and history.
+ * Delegates history browsing to GitHistory.
  */
 
 export class GitManager {
@@ -16,7 +16,7 @@ export class GitManager {
 
   constructor(app) {
     this.app = app
-    this._selectedRef = null
+    this.history = new GitHistory(app)
   }
 
   /** Fetch git status for all files. */
@@ -112,185 +112,6 @@ export class GitManager {
     catch (err) {
       this.app.toast.error(`Commit failed: ${err.message}`)
     }
-  }
-
-  // ── History ──
-
-  /** Open the history dialog, optionally filtered to a single file. */
-
-  async openHistory(filePath) {
-    if (!this.app.bucket)
-      return
-    this._historyFile = filePath || null
-    this._selectedRef = null
-    this._selectedPath = null
-    this._allCommits = []
-    GitManager._resetHistoryUi(filePath)
-    await this._loadHistoryCommits(filePath)
-    document.getElementById('history-dialog').classList.add('visible')
-  }
-
-  static _resetHistoryUi(filePath) {
-    const title = document.getElementById('history-title')
-    const search = document.getElementById('history-search')
-    title.textContent = filePath ? `History — ${filePath}` : 'Bucket History'
-    search.value = ''
-    document.getElementById('history-list').innerHTML = ''
-    document.getElementById('history-files').innerHTML = ''
-    document.getElementById('history-preview').innerHTML =
-      '<p class="preview-empty">Select a commit to browse files.</p>'
-    document.getElementById('btn-history-restore').disabled = true
-  }
-
-  async _loadHistoryCommits(filePath) {
-    try {
-      this._allCommits = await this.app.api.gitLog(
-        this.app.bucket, filePath || null,
-      )
-      this._renderCommitList(this._allCommits)
-    }
-    catch {
-      document.getElementById('history-list').innerHTML =
-        '<li class="history-empty">Could not load history.</li>'
-    }
-  }
-
-  /** Filter the commit list by message, author, or SHA prefix. */
-
-  filterHistory(query) {
-    const lowerQuery = query.toLowerCase()
-    const filtered = lowerQuery ? this._filterCommits(lowerQuery) : this._allCommits
-    this._renderCommitList(filtered)
-  }
-
-  _filterCommits(lowerQuery) {
-    return this._allCommits.filter(commit =>
-      commit.message.toLowerCase().includes(lowerQuery) ||
-        commit.author.toLowerCase().includes(lowerQuery) ||
-        commit.sha.startsWith(lowerQuery),
-    )
-  }
-
-  _renderCommitList(commits) {
-    const list = document.getElementById('history-list')
-    list.innerHTML = ''
-    if (commits.length === 0) {
-      list.innerHTML = '<li class="history-empty">No commits found.</li>'
-      return
-    }
-    commits.forEach(commit => {
-      const li = document.createElement('li')
-      li.className = 'history-item'
-      li.dataset.sha = commit.sha
-      const date = new Date(commit.timestamp)
-      const ts = date.toISOString().slice(0, ISO_DATETIME_LEN).replace('T', ' ')
-      li.innerHTML =
-        `<span class="history-message">${escapeHtml(commit.message)}</span>` +
-        `<span class="history-meta"><span>${commit.author}</span>` +
-        `<span>${ts}</span>` +
-        `<span class="history-sha">${commit.sha.substring(0, SHA_SHORT_LEN)}</span></span>`
-      li.addEventListener('click', () => this._selectCommit(commit.sha, li))
-      list.appendChild(li)
-    })
-  }
-
-  async _selectCommit(sha, li) {
-    document.getElementById('history-list')
-      .querySelectorAll('.history-item').forEach(el => el.classList.remove('active'))
-    li.classList.add('active')
-    Object.assign(this, { _selectedPath: null, _selectedRef: sha })
-    document.getElementById('btn-history-restore').disabled = true
-    if (this._historyFile) {
-      document.getElementById('history-files').innerHTML = ''
-      await this._showFileContent(sha, this._historyFile)
-      return
-    }
-    await this._renderFileTree(sha)
-  }
-
-  async _renderFileTree(sha) {
-    const files = document.getElementById('history-files')
-    const preview = document.getElementById('history-preview')
-    try {
-      const tree = await this.app.api.gitTree(this.app.bucket, sha)
-      files.innerHTML = ''
-      tree.forEach(path => {
-        const fli = document.createElement('li')
-        fli.className = 'history-file-item'
-        fli.dataset.path = path
-        fli.innerHTML =
-          '<span class="material-symbols-outlined">description</span>' +
-          `<span>${escapeHtml(path)}</span>`
-        fli.addEventListener('click', () => this._selectFile(sha, path, fli))
-        files.appendChild(fli)
-      })
-      preview.innerHTML =
-        '<p class="preview-empty">Select a file to view its content.</p>'
-    }
-    catch {
-      files.innerHTML = ''
-      preview.innerHTML =
-        '<p class="preview-empty">Could not load file tree.</p>'
-    }
-  }
-
-  async _selectFile(sha, path, li) {
-    document.getElementById('history-files')
-      .querySelectorAll('.history-file-item')
-      .forEach(el => el.classList.remove('active'))
-    li.classList.add('active')
-    this._selectedPath = path
-    await this._showFileContent(sha, path)
-  }
-
-  async _showFileContent(sha, path) {
-    const preview = document.getElementById('history-preview')
-    const restoreBtn = document.getElementById('btn-history-restore')
-    try {
-      const data = await this.app.api.gitShow(this.app.bucket, sha, path)
-      if (data.binary)
-        preview.innerHTML = '<p class="preview-empty">Binary file</p>'
-      else
-        preview.innerHTML = `<pre class="history-content">${escapeHtml(data.content)}</pre>`
-      restoreBtn.disabled = false
-    }
-    catch {
-      preview.innerHTML =
-        '<p class="preview-empty">Could not load file at this commit.</p>'
-      restoreBtn.disabled = true
-    }
-  }
-
-  /** Restore the selected file from the chosen commit into the working tree. */
-
-  async restoreFromHistory() {
-    const path = this._selectedPath || this._historyFile
-    if (!this._selectedRef || !path)
-      return
-    try {
-      await this.app.api.gitRestore(this.app.bucket, this._selectedRef, [path])
-      this.closeHistory()
-      this._clearFileCache(path)
-      await this.loadStatus()
-      await this.app.fileTree.loadFiles()
-      await this.app.editor.openFile(path)
-    }
-    catch (err) {
-      this.app.toast.error(`Restore failed: ${err.message}`)
-    }
-  }
-
-  _clearFileCache(path) {
-    delete this.app.fileBuffers[path]
-    this.app.dirty.delete(path)
-  }
-
-  /** Close the history dialog and reset selection state. */
-
-  closeHistory() {
-    document.getElementById('history-dialog').classList.remove('visible')
-    this._selectedRef = null
-    this._selectedPath = null
   }
 
 }

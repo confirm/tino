@@ -7,6 +7,7 @@ import {
 import { CollabSession } from './collab.js'
 import { EditorInput } from './editor-input.js'
 import { EditorToolbar } from './editor-toolbar.js'
+import { writeRoute } from './router.js'
 
 const PLACEHOLDER = 'Select a file to start editing...'
 
@@ -41,6 +42,7 @@ export class EditorManager {
     this._refreshEditorUi()
     this._connectCollab(path)
     await this.app.preview.update()
+    writeRoute(this.app.bucket, path)
   }
 
   _saveCurrentBuffer() {
@@ -189,12 +191,17 @@ export class EditorManager {
       this.openFile(next)
       return
     }
+    this._clearEditor()
+  }
+
+  _clearEditor() {
     this._disconnectCollab()
     this.app.currentFile = null
     this._showTextEditor('')
     this.app.els.editor.placeholder = PLACEHOLDER
     this.input.updateLineNumbers()
     this.input.updateStatusBar()
+    writeRoute(this.app.bucket, null)
   }
 
   /** Close tabs for files that no longer exist on disk. */
