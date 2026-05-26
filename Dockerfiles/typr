@@ -24,6 +24,7 @@ VOLUME /data
 
 ENV TZ=Europe/Zurich
 ENV DATA_DIR=/data
+ENV XDG_CACHE_HOME=/tmp/.cache
 
 EXPOSE 5000
 
