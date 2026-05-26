@@ -11,6 +11,7 @@ from . import config
 
 _PUBLIC_PATHS = {
     '/api/theme.css',
+    '/health',
     '/login',
     '/oidc/login',
     '/oidc-callback',
