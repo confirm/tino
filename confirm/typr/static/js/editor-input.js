@@ -33,6 +33,7 @@ export class EditorInput {
     })
     ed.addEventListener('click', () => this.updateCursorPos())
     ed.addEventListener('keyup', () => this.updateCursorPos())
+    new ResizeObserver(() => this.updateLineNumbers()).observe(ed)
   }
 
   /** Rebuild the tab bar, marking dirty files. */
@@ -73,16 +74,54 @@ export class EditorInput {
       })
   }
 
-  /** Recalculate line numbers in the editor gutter. */
+  /** Recalculate line numbers in the editor gutter, accounting for wrapped lines. */
 
   updateLineNumbers() {
-    const count = this.app.els.editor.value.split('\n').length
-    const lines = Array.from(
-      { length: count },
-      (unused, idx) => idx + SINGLE_ITEM,
-    )
-    this.app.els.lineNumbers.textContent =
-      `${lines.join('\n')}\n`
+    const ed = this.app.els.editor
+    if (!ed.clientWidth)
+      return
+    const gutter = this.app.els.lineNumbers
+    const lines = ed.value.split('\n')
+    const mirror = this._getOrUpdateMirror(ed)
+    const cs = getComputedStyle(ed)
+    const lineHeight = parseFloat(cs.lineHeight)
+    gutter.style.paddingTop = cs.paddingTop
+    gutter.style.paddingBottom = cs.paddingBottom
+    mirror.value = 'X'
+    const singleLineHeight = mirror.scrollHeight
+    gutter.innerHTML = ''
+    for (let i = 0; i < lines.length; i++) {
+      const span = document.createElement('span')
+      span.className = 'line-number'
+      span.textContent = i + SINGLE_ITEM
+      mirror.value = lines[i] || ' '
+      const h = mirror.scrollHeight
+      if (h > singleLineHeight)
+        span.style.height = `${h}px`
+      gutter.appendChild(span)
+    }
+    gutter.scrollTop = ed.scrollTop
+  }
+
+  /** Create or update a hidden textarea mirror matching the editor's styling. */
+
+  _getOrUpdateMirror(ed) {
+    const width = `${ed.clientWidth}px`
+    if (this._mirror) {
+      this._mirror.style.width = width
+      return this._mirror
+    }
+    const cs = getComputedStyle(ed)
+    const m = document.createElement('textarea')
+    m.style.cssText =
+      `position:absolute;visibility:hidden;height:auto;border:none;` +
+      `white-space:pre-wrap;overflow-wrap:break-word;box-sizing:border-box;` +
+      `font:${cs.font};line-height:${cs.lineHeight};tab-size:${cs.tabSize};` +
+      `padding:0 ${cs.paddingRight} 0 ${cs.paddingLeft};width:${width}`
+    m.rows = 1
+    document.body.appendChild(m)
+    this._mirror = m
+    return m
   }
 
   /** Update the cursor position display. */

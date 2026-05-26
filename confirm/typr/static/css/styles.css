@@ -563,18 +563,23 @@ html, body {
 
 .line-numbers {
   width: 48px;
-  padding: 12px 8px 12px 0;
+  padding: 0 8px 0 0;
   text-align: right;
   font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1.6;
   color: var(--line-number);
   user-select: none;
-  white-space: pre;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
   flex-shrink: 0;
   background: var(--editor-bg);
   border-right: 1px solid var(--border);
+}
+
+.line-number {
+  display: block;
+  line-height: 1.6;
 }
 
 .editor {
@@ -589,7 +594,8 @@ html, body {
   font-size: 13px;
   line-height: 1.6;
   tab-size: 2;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   overflow: auto;
 }
 
@@ -1178,6 +1184,7 @@ html, body {
   gap: 8px;
   font-size: 10px;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .history-sha {
