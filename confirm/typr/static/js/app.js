@@ -78,22 +78,22 @@ class TyprApp {
   /** Initialize the app: bind events and load buckets. */
 
   async init() {
+    const route = readRoute()
     this._bindAll()
     await this._loadUser()
     await this.fileTree.loadBuckets()
-    await this._restoreRoute()
+    await this._applyRoute(route, true)
   }
 
   _bindAll() {
     this.toast.bind()
     this._bindToolbar()
-    this._bindGlobalErrors()
+    this._bindWindowEvents()
     this.editor.bindEditor()
     this._bindFileTree()
     this.templatePicker.bind()
     this.preview.bindZoom()
     this._bindPanelResize()
-    this._bindHashChange()
   }
 
   _bindFileTree() {
@@ -103,11 +103,17 @@ class TyprApp {
     this.fileTree.bindSearch()
   }
 
-  _bindGlobalErrors() {
+  _bindWindowEvents() {
     window.addEventListener('unhandledrejection', evt => {
       const msg = evt.reason && evt.reason.message
       if (msg)
         this.toast.error(msg)
+    })
+    window.addEventListener(
+      'hashchange', () => this._applyRoute(readRoute(), false),
+    )
+    window.addEventListener('beforeunload', () => {
+      this.editor.saveTabs()
     })
   }
 
@@ -131,6 +137,7 @@ class TyprApp {
   async selectBucket(slug, role) {
     if (!slug)
       return
+    this.editor.saveTabs()
     this.bucket = slug
     this.bucketRole = role || null
     this.editor.resetState()
@@ -141,8 +148,7 @@ class TyprApp {
     await this.fileTree.loadFiles()
   }
 
-  async _restoreRoute() {
-    const route = readRoute()
+  async _applyRoute(route, restoreTabs) {
     if (!route.slug)
       return
     if (route.slug !== this.bucket) {
@@ -154,8 +160,12 @@ class TyprApp {
       this.els.bucketLabel.textContent = bkt.slug
       await this.selectBucket(bkt.slug, bkt.role)
     }
-    if (route.path && route.path !== this.currentFile)
-      await this.editor.openFile(route.path)
+    if (restoreTabs)
+      this.editor.restoreTabs()
+    const target =
+      route.path || (restoreTabs && this.openTabs[0]) || null
+    if (target && target !== this.currentFile)
+      await this.editor.openFile(target)
   }
 
   async _onFilesChanged() {
@@ -263,12 +273,6 @@ class TyprApp {
       .addEventListener('click', () => {
         window.location.href = '/logout'
       })
-  }
-
-  _bindHashChange() {
-    window.addEventListener(
-      'hashchange', () => this._restoreRoute(),
-    )
   }
 
   _bindPanelResize() {

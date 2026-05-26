@@ -2,8 +2,9 @@ import {
   DEBOUNCE_MS,
   INDEX_NOT_FOUND,
   SINGLE_ITEM,
-  escapeHtml,
 } from './constants.js'
+import { loadSavedTabs, persistTabs } from './tab-store.js'
+import { BinaryPreview } from './editor-binary.js'
 import { CollabSession } from './collab.js'
 import { EditorInput } from './editor-input.js'
 import { EditorToolbar } from './editor-toolbar.js'
@@ -24,6 +25,7 @@ export class EditorManager {
     this.app = app
     this.input = new EditorInput(app)
     this.toolbar = new EditorToolbar(app)
+    this.binary = new BinaryPreview(app, this.toolbar)
     this.collab = null
     this._saveTimer = null
   }
@@ -41,8 +43,8 @@ export class EditorManager {
       this.app.openTabs.push(path)
     this._refreshEditorUi()
     this._connectCollab(path)
+    this._persistOpenState(path)
     await this.app.preview.update()
-    writeRoute(this.app.bucket, path)
   }
 
   _saveCurrentBuffer() {
@@ -60,7 +62,7 @@ export class EditorManager {
       this.app.bucket, path,
     )
     if (data.binary) {
-      this._showBinaryPreview(path)
+      this.binary.show(path)
       return
     }
     this.app.fileBuffers[path] = data.content
@@ -75,45 +77,11 @@ export class EditorManager {
     this.app.els.editor.readOnly = false
     this.app.els.editor.classList.remove('hidden')
     this.app.els.lineNumbers.classList.remove('hidden')
-    this._showToolbarIfEditable()
-  }
-
-  _showToolbarIfEditable() {
     const role = this.app.bucketRole
     if (role === 'editor' || role === 'committer')
       this.toolbar.show()
     else
       this.toolbar.hide()
-  }
-
-  _showBinaryPreview(path) {
-    this.toolbar.hide()
-    this.app.els.editor.classList.add('hidden')
-    this.app.els.lineNumbers.classList.add('hidden')
-    const bp = this.app.els.binaryPreview
-    const rawUrl = this._rawFileUrl(path)
-    const name = path.split('/').pop()
-    bp.innerHTML = EditorManager._binaryHtml(path, rawUrl, name)
-    bp.classList.remove('hidden')
-  }
-
-  static _binaryHtml(path, rawUrl, name) {
-    const dl = `<a class="btn-download" href="${rawUrl}" download="${escapeHtml(name)}">` +
-      '<span class="material-symbols-outlined">download</span>' +
-      `Download ${escapeHtml(name)}</a>`
-    if (EditorManager._isImage(path))
-      return `<img src="${rawUrl}" alt="${escapeHtml(path)}">${dl}`
-    return `<p>Binary file — cannot be edited here.</p>${dl}`
-  }
-
-  _rawFileUrl(path) {
-    const slug = encodeURIComponent(this.app.bucket)
-    return `/api/buckets/${slug}/files/raw/${path}`
-  }
-
-  static _isImage(path) {
-    const ext = path.split('.').pop().toLowerCase()
-    return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)
   }
 
   _refreshEditorUi() {
@@ -182,6 +150,7 @@ export class EditorManager {
       this._switchAfterClose(idx)
     }
     this.input.renderTabs()
+    this.saveTabs()
   }
 
   _switchAfterClose(idx) {
@@ -204,6 +173,32 @@ export class EditorManager {
     writeRoute(this.app.bucket, null)
   }
 
+  /** Persist open tabs to localStorage for the current bucket. */
+
+  saveTabs() {
+    if (this.app.bucket)
+      persistTabs(this.app.bucket, this.app.openTabs)
+  }
+
+  /** Restore saved tabs from localStorage, filtering stale paths. */
+
+  restoreTabs() {
+    if (!this.app.bucket)
+      return
+    const valid = loadSavedTabs(
+      this.app.bucket, this.app.fileTree.filePaths,
+    )
+    if (valid.length > 0) {
+      this.app.openTabs = valid
+      this.input.renderTabs()
+    }
+  }
+
+  _persistOpenState(path) {
+    writeRoute(this.app.bucket, path)
+    this.saveTabs()
+  }
+
   /** Close tabs for files that no longer exist on disk. */
 
   reconcileTabs(existingPaths) {
@@ -223,6 +218,7 @@ export class EditorManager {
       this.input.renderTabs()
     else
       this._switchAfterClose(0)
+    this.saveTabs()
   }
 
   /** Schedule an auto-save after typing stops. */
