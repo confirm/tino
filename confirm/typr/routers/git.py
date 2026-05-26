@@ -93,12 +93,12 @@ async def git_show(
     svc: GitService = Depends(get_git_service),
 ):
     '''Retrieve a file's content at a specific commit ref.'''
-    content = svc.show(slug, ref, path)
+    result = svc.show(slug, ref, path)
 
-    if content is None:
+    if result is None:
         raise HTTPException(404, 'File not found at that ref')
 
-    return {'ref': ref, 'path': path, 'content': content}
+    return {'ref': ref, 'path': path, **result}
 
 
 @router.post('/restore')

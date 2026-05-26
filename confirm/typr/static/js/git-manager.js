@@ -248,8 +248,10 @@ export class GitManager {
     const restoreBtn = document.getElementById('btn-history-restore')
     try {
       const data = await this.app.api.gitShow(this.app.bucket, sha, path)
-      preview.innerHTML =
-        `<pre class="history-content">${escapeHtml(data.content)}</pre>`
+      if (data.binary)
+        preview.innerHTML = '<p class="preview-empty">Binary file</p>'
+      else
+        preview.innerHTML = `<pre class="history-content">${escapeHtml(data.content)}</pre>`
       restoreBtn.disabled = false
     }
     catch {

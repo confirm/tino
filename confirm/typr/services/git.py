@@ -125,14 +125,17 @@ class GitService:
                 if blob.type == 'blob' and not blob.path.startswith('.')
             )
 
-    def show(self, slug: str, ref: str, path: str) -> str | None:
+    def show(self, slug: str, ref: str, path: str) -> dict | None:
         '''Return a file's content at a specific commit ref, or None if not found.'''
         with self._open(slug) as repo:
             try:
                 blob = repo.commit(ref).tree / path
-                return blob.data_stream.read().decode('utf-8')
+                content = blob.data_stream.read().decode('utf-8')
+                return {'content': content, 'binary': False}
             except (KeyError, gitpython.GitCommandError):
                 return None
+            except UnicodeDecodeError:
+                return {'content': None, 'binary': True}
 
     def restore(self, slug: str, ref: str, paths: list[str]) -> list[str]:
         '''Restore files from a specific commit into the working tree.'''
