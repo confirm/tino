@@ -64,8 +64,8 @@ PACKAGE_DIR = Path(environ.get('PACKAGE_DIR', _DEFAULT_PACKAGE_DIR))
 #:  If not set explicitly, a random 32-char token will be generated.
 SECRET_KEY = environ.get('SECRET_KEY', token_hex(32))
 
-#: ⭕ Comma-separated list of OIDC groups whose members are Typr administrators.
 _ADMIN_GROUPS_RAW = environ.get('ADMIN_GROUPS', 'admins')
+#: ⭕ Comma-separated list of OIDC groups whose members are Typr administrators.
 ADMIN_GROUPS: set[str] = {g.strip() for g in _ADMIN_GROUPS_RAW.split(',') if g.strip()}
 
 #

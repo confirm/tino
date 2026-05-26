@@ -15,7 +15,7 @@ _PUBLIC_PATHS = {
     '/health',
     '/login',
     '/oidc/login',
-    '/oidc-callback',
+    '/oidc/callback',
     '/logout',
 }
 

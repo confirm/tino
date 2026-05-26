@@ -96,7 +96,7 @@ async def login(request: Request):
     return await oauth.oidc.authorize_redirect(request, redirect_uri)
 
 
-@router.get('/oidc-callback')
+@router.get('/oidc/callback')
 async def callback(request: Request):
     '''Handle the OIDC callback, exchange code for tokens, and create a session.'''
     token    = await oauth.oidc.authorize_access_token(request)
