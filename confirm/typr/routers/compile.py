@@ -20,14 +20,16 @@ async def compile_pdf(
         pdf_path = svc.compile_pdf(slug, path)
         filename = path.rsplit('/', maxsplit=1)[-1].replace('.typ', '.pdf')
         return FileResponse(pdf_path, filename=filename, media_type='application/pdf')
+
     except FileNotFoundError as exc:
         raise HTTPException(404, 'File not found') from exc
+
     except RuntimeError as exc:
         raise HTTPException(422, str(exc)) from exc
 
 
 @router.get('/svg/{path:path}')
-async def compile_file(
+async def compile_svg(
     slug: str, path: str,
     _user=Depends(require_viewer),
     svc: CompilerService = Depends(get_compiler_service),
@@ -36,7 +38,9 @@ async def compile_file(
     try:
         pages = svc.compile_svg(slug, path)
         return {'pages': pages}
+
     except FileNotFoundError as exc:
         raise HTTPException(404, 'File not found') from exc
+
     except RuntimeError as exc:
         raise HTTPException(422, str(exc)) from exc

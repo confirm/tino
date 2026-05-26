@@ -23,10 +23,13 @@ def _require_role(min_role: str):
         svc: BucketService = Depends(get_bucket_service),
     ) -> User:
         bucket = svc.get(slug)
+
         if not bucket:
             raise HTTPException(404, 'Bucket not found')
+
         check_access(user, bucket.access, min_role)
         return user
+
     return dependency
 
 
@@ -34,6 +37,7 @@ def require_global_admin(user: User = Depends(get_current_user)) -> User:
     '''Require the user to be a global Typr administrator.'''
     if not is_global_admin(user):
         raise HTTPException(403, 'Global admin role required')
+
     return user
 
 
@@ -76,6 +80,6 @@ def get_collab_manager() -> CollabManager:
     )
 
 
-require_viewer = _require_role('viewer')
-require_editor = _require_role('editor')
+require_viewer    = _require_role('viewer')
+require_editor    = _require_role('editor')
 require_committer = _require_role('committer')

@@ -40,9 +40,12 @@ async def init_template(
             slug, body.name, body.version, body.namespace,
         )
         return {'status': 'ok'}
+
     except FileNotFoundError as exc:
         raise HTTPException(404, str(exc)) from exc
+
     except FileExistsError as exc:
         raise HTTPException(409, str(exc)) from exc
+
     except RuntimeError as exc:
         raise HTTPException(422, str(exc)) from exc

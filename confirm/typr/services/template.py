@@ -20,10 +20,10 @@ class TemplateService:
     '''Fetches Typst templates and initializes buckets from them.'''
 
     def __init__(self, data_dir: Path, package_dir: Path | None = None):
-        self.data_dir = data_dir
-        self.package_dir = package_dir
+        self.data_dir                  = data_dir
+        self.package_dir               = package_dir
         self._cache: list[dict] | None = None
-        self._cache_time: float = 0
+        self._cache_time: float        = 0
 
     def list_templates(self) -> list[dict]:
         '''Return all Typst packages that are templates (have a template field).'''
@@ -47,8 +47,9 @@ class TemplateService:
             if pkg.get('template')
         ]
 
-        self._cache = templates
+        self._cache      = templates
         self._cache_time = now
+
         return templates
 
     def init_template(
@@ -70,9 +71,12 @@ class TemplateService:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / 'project'
             cmd = ['typst', 'init']
+
             if self.package_dir:
                 cmd.extend(['--package-path', str(self.package_dir)])
+
             cmd.extend([f'@{namespace}/{name}:{version}', str(out)])
+
             result = subprocess.run(
                 cmd,
                 capture_output=True,
@@ -145,10 +149,14 @@ class TemplateService:
 def _find_conflicts(src: Path, dest: Path) -> list[str]:
     '''Return relative paths from src that already exist under dest.'''
     conflicts = []
+
     for item in src.rglob('*'):
         if not item.is_file():
             continue
+
         rel = item.relative_to(src)
+
         if (dest / rel).exists():
             conflicts.append(str(rel))
+
     return conflicts

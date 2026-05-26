@@ -19,6 +19,7 @@ class GitService:
     def _open(self, slug: str):
         '''Open a git repo and ensure it is closed after use.'''
         repo = gitpython.Repo(self.data_dir / slug)
+
         try:
             yield repo
         finally:
@@ -38,6 +39,7 @@ class GitService:
         '''Return the working tree status of all user files (excludes .meta.yml and dotfiles).'''
         with self._open(slug) as repo:
             result = []
+
             for path in repo.untracked_files:
                 if not path.startswith('.'):
                     result.append(FileStatus(path=path, status='untracked'))
@@ -57,23 +59,27 @@ class GitService:
             safe = [f for f in files
                     if str((working_dir / f).resolve()).startswith(str(working_dir))]
             existing = [f for f in safe if (working_dir / f).exists()]
-            deleted = [f for f in safe if not (working_dir / f).exists()]
+            deleted  = [f for f in safe if not (working_dir / f).exists()]
 
             if existing:
                 repo.index.add(existing)
+
             if deleted:
                 repo.index.remove(deleted, working_tree=False)
 
-            actor = gitpython.Actor(author, email or f'{author}@typr')
-            c = repo.index.commit(message, author=actor)
-            return self._to_commit_info(c)
+            actor  = gitpython.Actor(author, email or f'{author}@typr')
+            commit = repo.index.commit(message, author=actor)
+
+            return self._to_commit_info(commit)
 
     def log(self, slug: str, path: str | None = None, max_count: int = 50) -> list[CommitInfo]:
         '''Return commit history, optionally filtered to a single file.'''
         with self._open(slug) as repo:
             kwargs: dict = {'max_count': max_count}
+
             if path:
                 kwargs['paths'] = path
+
             return [self._to_commit_info(c) for c in repo.iter_commits(**kwargs)]
 
     def diff(self, slug: str, path: str | None = None) -> list[DiffEntry]:
@@ -88,18 +94,23 @@ class GitService:
         if not diff_text:
             return []
 
-        entries = []
-        current_path = None
+        entries                  = []
+        current_path             = None
         current_lines: list[str] = []
+
         for line in diff_text.split('\n'):
+
             if line.startswith('diff --git'):
                 if current_path:
                     entries.append(DiffEntry(path=current_path, diff='\n'.join(current_lines)))
-                parts = line.split(' b/')
-                current_path = parts[-1] if len(parts) > 1 else 'unknown'
+
+                parts         = line.split(' b/')
+                current_path  = parts[-1] if len(parts) > 1 else 'unknown'
                 current_lines = [line]
+
             else:
                 current_lines.append(line)
+
         if current_path:
             entries.append(DiffEntry(path=current_path, diff='\n'.join(current_lines)))
 
@@ -127,7 +138,8 @@ class GitService:
         '''Restore files from a specific commit into the working tree.'''
         with self._open(slug) as repo:
             working_dir = Path(repo.working_dir).resolve()
-            restored = []
+            restored    = []
+
             for p in paths:
                 target = (working_dir / p).resolve()
                 if not str(target).startswith(str(working_dir)):
@@ -139,4 +151,5 @@ class GitService:
                     restored.append(p)
                 except (KeyError, gitpython.GitCommandError):
                     pass
+
             return restored

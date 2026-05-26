@@ -1,12 +1,14 @@
-'''Typst compiler service. Shells out to the system `typst` binary to produce SVG output.'''
+'''Typst compiler service. Shells out to the system `typst` binary to produce SVG or PDF output.'''
 
 import subprocess
 import tempfile
 from pathlib import Path
 
+_COMPILE_TIMEOUT = 30
+
 
 class CompilerService:
-    '''Compiles .typ files to SVG by invoking the Typst CLI.'''
+    '''Compiles .typ files to SVG or PDF by invoking the Typst CLI.'''
 
     def __init__(self, data_dir: Path, package_dir: Path | None = None):
         self.data_dir = data_dir
@@ -19,6 +21,7 @@ class CompilerService:
             ['typst', '--version'],
             capture_output=True, text=True, check=True,
         )
+
         return result.stdout.strip()
 
     def compile_svg(self, slug: str, path: str) -> list[str]:
@@ -27,30 +30,11 @@ class CompilerService:
         Raises FileNotFoundError if the source file doesn't exist,
         or RuntimeError if compilation fails (with the stderr message).
         '''
-        bucket_dir = (self.data_dir / slug).resolve()
-        source = (bucket_dir / path).resolve()
-        if not str(source).startswith(str(bucket_dir)):
-            raise FileNotFoundError(f'{path} is outside the bucket')
-        if not source.is_file():
-            raise FileNotFoundError(f'{path} not found in bucket {slug}')
+        bucket_dir, source = self._resolve_source(slug, path)
 
         with tempfile.TemporaryDirectory() as tmp:
-            output_pattern = Path(tmp) / 'page-{n}.svg'
-            cmd = ['typst', 'compile', '--format', 'svg']
-            if self.package_dir:
-                cmd.extend(['--package-path', str(self.package_dir)])
-            cmd.extend([str(source), str(output_pattern)])
-            result = subprocess.run(
-                cmd,
-                cwd=str(self.data_dir / slug),
-                capture_output=True,
-                text=True,
-                timeout=30,
-                check=False,
-            )
-
-            if result.returncode != 0:
-                raise RuntimeError(result.stderr.strip() or 'Compilation failed')
+            output = Path(tmp) / 'page-{n}.svg'
+            self._run(source, output, bucket_dir, fmt='svg')
 
             pages = []
             for svg_file in sorted(Path(tmp).glob('page-*.svg')):
@@ -64,28 +48,50 @@ class CompilerService:
         Raises FileNotFoundError if the source file doesn't exist,
         or RuntimeError if compilation fails (with the stderr message).
         '''
+        bucket_dir, source = self._resolve_source(slug, path)
+        output             = bucket_dir / '.typst-output.pdf'
+
+        self._run(source, output, bucket_dir)
+
+        return output
+
+    # ── Internal ──
+
+    def _resolve_source(self, slug, path):
+        '''Validate that the source file exists and is inside the bucket.'''
         bucket_dir = (self.data_dir / slug).resolve()
-        source = (bucket_dir / path).resolve()
+        source     = (bucket_dir / path).resolve()
+
         if not str(source).startswith(str(bucket_dir)):
             raise FileNotFoundError(f'{path} is outside the bucket')
+
         if not source.is_file():
             raise FileNotFoundError(f'{path} not found in bucket {slug}')
 
-        output = bucket_dir / '.typst-output.pdf'
-        cmd = ['typst', 'compile']
-        if self.package_dir:
-            cmd.extend(['--package-path', str(self.package_dir)])
-        cmd.extend([str(source), str(output)])
+        return bucket_dir, source
+
+    def _run(self, source, output, cwd, fmt=None):
+        '''Build the typst compile command, run it, and raise on failure.'''
         result = subprocess.run(
-            cmd,
-            cwd=str(bucket_dir),
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
+            self._build_cmd(source, output, fmt),
+            cwd=str(cwd),
+            capture_output=True, text=True,
+            timeout=_COMPILE_TIMEOUT, check=False,
         )
 
         if result.returncode != 0:
             raise RuntimeError(result.stderr.strip() or 'Compilation failed')
 
-        return output
+    def _build_cmd(self, source, output, fmt=None):
+        '''Assemble the typst compile argument list.'''
+        cmd = ['typst', 'compile']
+
+        if fmt:
+            cmd.extend(['--format', fmt])
+
+        if self.package_dir:
+            cmd.extend(['--package-path', str(self.package_dir)])
+
+        cmd.extend([str(source), str(output)])
+
+        return cmd

@@ -28,8 +28,10 @@ class BucketService:
     def _read_meta(path: Path) -> dict:
         '''Parse the .meta.yml file from a bucket directory.'''
         meta_file = path / META_FILE
+
         if meta_file.exists():
             return yaml.safe_load(meta_file.read_text()) or {}
+
         return {}
 
     @staticmethod
@@ -51,13 +53,16 @@ class BucketService:
                     return ts.isoformat()
             finally:
                 repo.close()
+
         except (git.InvalidGitRepositoryError, git.GitCommandError):
             pass
+
         return None
 
     def _to_info(self, slug: str, path: Path) -> BucketInfo:
         '''Build a BucketInfo response from the bucket directory on disk.'''
         meta = self._read_meta(path)
+
         return BucketInfo(
             slug=slug,
             description=meta.get('description', ''),
@@ -76,16 +81,20 @@ class BucketService:
     def list(self) -> list[BucketInfo]:
         '''List all buckets (directories with a .git folder) in the data dir.'''
         buckets = []
+
         for entry in sorted(self.data_dir.iterdir()):
             if entry.is_dir() and (entry / '.git').is_dir():
                 buckets.append(self._to_info(entry.name, entry))
+
         return buckets
 
     def get(self, slug: str) -> BucketInfo | None:
         '''Get a single bucket by slug, or None if it doesn't exist.'''
         path = self._path(slug)
+
         if not path.is_dir() or not (path / '.git').is_dir():
             return None
+
         return self._to_info(slug, path)
 
     def create(
@@ -117,6 +126,7 @@ class BucketService:
     ) -> BucketInfo | None:
         '''Update a bucket's .meta.yml. Only provided fields are changed.'''
         path = self._path(slug)
+
         if not path.is_dir():
             return None
 
@@ -125,6 +135,7 @@ class BucketService:
             meta['description'] = description
         if access is not None:
             meta['access'] = [a.model_dump() for a in access]
+
         self._write_meta(path, meta)
 
         return self._to_info(slug, path)
@@ -132,7 +143,10 @@ class BucketService:
     def delete(self, slug: str) -> bool:
         '''Delete a bucket and its entire git repo from disk.'''
         path = self._path(slug)
+
         if not path.is_dir():
             return False
+
         shutil.rmtree(path)
+
         return True

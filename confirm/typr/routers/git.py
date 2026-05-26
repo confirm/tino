@@ -19,6 +19,7 @@ async def git_status(
     '''Return per-file working tree status (modified, untracked, deleted, staged).'''
     try:
         return svc.status(slug)
+
     except Exception as exc:
         raise HTTPException(404, 'Bucket not found or not a git repo') from exc
 
@@ -32,8 +33,10 @@ async def git_commit(
     '''Stage the selected files and create a new commit.'''
     if not body.files:
         raise HTTPException(400, 'No files specified')
+
     try:
         return svc.commit(slug, body.files, body.message, author=user.username, email=user.email)
+
     except Exception as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -49,6 +52,7 @@ async def git_log(
     '''Return commit history, optionally filtered to a single file path.'''
     try:
         return svc.log(slug, path, max_count=max_count)
+
     except Exception as exc:
         raise HTTPException(404, 'Bucket not found') from exc
 
@@ -63,6 +67,7 @@ async def git_diff(
     '''Return unified diffs for modified files in the working tree.'''
     try:
         return svc.diff(slug, path)
+
     except Exception as exc:
         raise HTTPException(404, 'Bucket not found') from exc
 
@@ -76,6 +81,7 @@ async def git_tree(
     '''List all files at a specific commit ref.'''
     try:
         return svc.tree(slug, ref)
+
     except Exception as exc:
         raise HTTPException(404, 'Commit not found') from exc
 
@@ -88,8 +94,10 @@ async def git_show(
 ):
     '''Retrieve a file's content at a specific commit ref.'''
     content = svc.show(slug, ref, path)
+
     if content is None:
         raise HTTPException(404, 'File not found at that ref')
+
     return {'ref': ref, 'path': path, 'content': content}
 
 
@@ -102,7 +110,10 @@ async def git_restore(
 ):
     '''Restore file(s) from a specific commit into the working tree.'''
     restored = svc.restore(slug, body.ref, body.paths)
+
     if not restored:
         raise HTTPException(404, 'No files could be restored')
+
     await collab.reload_rooms(slug, restored)
+
     return {'restored': restored}

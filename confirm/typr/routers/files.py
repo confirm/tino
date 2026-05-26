@@ -29,8 +29,10 @@ async def raw_file(
 ):
     '''Serve a file's raw content (for images, binary previews, etc.).'''
     target = svc.resolve(slug, path)
+
     if target is None:
         raise HTTPException(404, 'File not found')
+
     return FileResponse(target)
 
 
@@ -42,8 +44,10 @@ async def read_file(
 ):
     '''Read a single file's content by path.'''
     result = svc.read(slug, path)
+
     if result is None:
         raise HTTPException(404, 'File not found')
+
     return {'path': path, **result}
 
 
@@ -56,6 +60,7 @@ async def create_file(
     '''Create a new file in the bucket. Fails if the file already exists.'''
     if not svc.create(slug, body.path, body.content):
         raise HTTPException(409, 'File already exists or invalid path')
+
     return {'path': body.path}
 
 
@@ -67,8 +72,10 @@ async def save_file(
 ):
     '''Overwrite a file's content (used by manual save and auto-save).'''
     modified = svc.write(slug, path, body.content)
+
     if not modified:
         raise HTTPException(400, 'Invalid path')
+
     return {'path': path, 'modified': modified}
 
 
@@ -82,12 +89,16 @@ async def upload_files(
 ):
     '''Upload one or more binary/text files via multipart form data.'''
     uploaded = []
+
     for file in files:
         path = f'{prefix}/{file.filename}' if prefix else file.filename
         data = await file.read()
+
         if not svc.upload(slug, path, data):
             raise HTTPException(400, f'Invalid path: {path}')
+
         uploaded.append(path)
+
     return {'uploaded': uploaded}
 
 
@@ -99,8 +110,10 @@ async def rename_dir(
 ):
     '''Rename/move a directory and all its contents.'''
     affected = svc.rename_dir(slug, body['old_path'], body['new_path'])
+
     if affected is None:
         raise HTTPException(400, 'Invalid path or target exists')
+
     return {'affected': affected}
 
 

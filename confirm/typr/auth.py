@@ -99,18 +99,20 @@ async def login(request: Request):
 @router.get('/oidc-callback')
 async def callback(request: Request):
     '''Handle the OIDC callback, exchange code for tokens, and create a session.'''
-    token = await oauth.oidc.authorize_access_token(request)
+    token    = await oauth.oidc.authorize_access_token(request)
     userinfo = token.get('userinfo', {})
 
     if not userinfo:
         raise HTTPException(400, 'No user info in token response')
 
     groups_claim = config.OIDC_GROUPS_CLAIM
+
     request.session['user'] = {
         'username': userinfo.get('preferred_username', userinfo.get('sub', '')),
         'email': userinfo.get('email', ''),
         'groups': userinfo.get(groups_claim, []),
     }
+
     if token.get('id_token'):
         request.session['id_token'] = token['id_token']
 

@@ -17,12 +17,16 @@ async def list_buckets(
 ):
     '''List buckets the user has access to, with their resolved role.'''
     results = []
+
     for bucket in svc.list():
+
         role = resolve_role(user, bucket.access)
+
         if not bucket.access or role is not None:
-            info = bucket.model_dump()
+            info         = bucket.model_dump()
             info['role'] = role
             results.append(info)
+
     return results
 
 
@@ -30,10 +34,12 @@ async def list_buckets(
 async def get_bucket(slug: str, _user=Depends(require_viewer),
                      svc: BucketService = Depends(get_bucket_service)):
     '''Get metadata for a single bucket.'''
-    b = svc.get(slug)
-    if not b:
+    bucket = svc.get(slug)
+
+    if not bucket:
         raise HTTPException(404, 'Bucket not found')
-    return b
+
+    return bucket
 
 
 @router.post('', response_model=BucketInfo, status_code=201)
@@ -56,10 +62,12 @@ async def update_bucket(
     svc: BucketService = Depends(get_bucket_service),
 ):
     '''Update a bucket's description or access rules.'''
-    b = svc.update(slug, body.description, body.access)
-    if not b:
+    bucket = svc.update(slug, body.description, body.access)
+
+    if not bucket:
         raise HTTPException(404, 'Bucket not found')
-    return b
+
+    return bucket
 
 
 @router.delete('/{slug}', status_code=204)

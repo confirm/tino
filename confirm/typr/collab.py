@@ -64,6 +64,7 @@ class CollabManager:
         '''Return a per-room asyncio lock, creating it if needed.'''
         if key not in self._room_locks:
             self._room_locks[key] = asyncio.Lock()
+
         return self._room_locks[key]
 
     async def _get_or_create_room(self, slug: str, file_path: str) -> YRoom:
