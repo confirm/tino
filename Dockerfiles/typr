@@ -7,7 +7,8 @@ ARG TYPST_VERSION=0.14.2
 WORKDIR /usr/src
 
 COPY build/*.whl .
-RUN pip install *whl \
+RUN pip install *.whl \
+    && rm -f *.whl \
     && curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz \
        | tar -xJ --strip-components=1 -C /usr/local/bin typst-x86_64-unknown-linux-musl/typst \
     && groupadd -r -g 2378 typr \
