@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from . import config
 
@@ -54,3 +55,4 @@ def register_middleware(app: FastAPI) -> None:
     app.add_middleware(AuthMiddleware)
     secret_key = config.SECRET_KEY or secrets.token_hex(32)
     app.add_middleware(SessionMiddleware, secret_key=secret_key)
+    app.add_middleware(ProxyHeadersMiddleware, trusted_hosts='*')
