@@ -113,8 +113,9 @@ export class TemplatePicker {
         this.app.editor.openFile(entrypoint)
     }
     catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(`Template init failed: ${err.message}`)
+      this.app.toast.error(
+        `Template init failed: ${err.message}`,
+      )
     }
   }
 

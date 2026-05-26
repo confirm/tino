@@ -160,8 +160,9 @@ export class EditorManager {
       await this.openFile(name)
     }
     catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(`Could not create file: ${err.message}`)
+      this.app.toast.error(
+        `Could not create file: ${err.message}`,
+      )
     }
   }
 

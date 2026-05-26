@@ -86,13 +86,11 @@ export class GitManager {
     const files = this._collectCheckedFiles()
     const message = this.app.els.commitMessage.value.trim()
     if (!message) {
-      // eslint-disable-next-line no-alert
-      alert('Please enter a commit message.')
+      this.app.toast.error('Please enter a commit message.')
       return
     }
     if (files.length === 0) {
-      // eslint-disable-next-line no-alert
-      alert('Please select at least one file.')
+      this.app.toast.error('Please select at least one file.')
       return
     }
     await this._executeCommit(files, message)
@@ -112,8 +110,7 @@ export class GitManager {
       await this.app.fileTree.loadFiles()
     }
     catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(`Commit failed: ${err.message}`)
+      this.app.toast.error(`Commit failed: ${err.message}`)
     }
   }
 
@@ -277,8 +274,7 @@ export class GitManager {
       await this.app.editor.openFile(path)
     }
     catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(`Restore failed: ${err.message}`)
+      this.app.toast.error(`Restore failed: ${err.message}`)
     }
   }
 

@@ -1,4 +1,4 @@
-import { HTTP_NO_CONTENT } from './constants.js'
+import { HTTP_NO_CONTENT, HTTP_UNAUTHORIZED } from './constants.js'
 
 /**
  * HTTP client for the Typr REST API.
@@ -20,13 +20,25 @@ export class TyprAPI {
 
   async _fetch(path, options) {
     const res = await fetch(this.baseUrl + path, options)
-    if (!res.ok) {
-      const body = await res.text()
-      throw new Error(`${res.status}: ${body}`)
+    if (res.status === HTTP_UNAUTHORIZED) {
+      window.location.href = '/login'
+      throw new Error('Session expired')
     }
+    if (!res.ok)
+      throw new Error(await TyprAPI._parseError(res))
     if (res.status === HTTP_NO_CONTENT)
       return null
     return res.json()
+  }
+
+  static async _parseError(res) {
+    const body = await res.text()
+    try {
+      return JSON.parse(body).detail || body
+    }
+    catch {
+      return body
+    }
   }
 
   /** Send a JSON-body request (POST/PUT). */

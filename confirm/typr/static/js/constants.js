@@ -1,4 +1,5 @@
 export const HTTP_NO_CONTENT = 204
+export const HTTP_UNAUTHORIZED = 401
 export const DEBOUNCE_MS = 1000
 export const TAB_SPACES = 2
 export const ZOOM_STEP = 10

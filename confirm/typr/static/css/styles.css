@@ -1279,6 +1279,77 @@ html, body {
   font-size: 13px;
 }
 
+/* ── Toast notifications ── */
+
+.toast-container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--text-primary);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 300ms ease, transform 300ms ease;
+  max-width: 420px;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.toast-error .toast-icon { color: var(--cd-red-50); }
+.toast-success .toast-icon { color: var(--cd-green-60); }
+.toast-info .toast-icon { color: var(--cd-blue-60); }
+
+.toast-message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.toast-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--transition), background var(--transition);
+}
+
+.toast-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 /* ── Selection highlight ── */
 
 ::selection {

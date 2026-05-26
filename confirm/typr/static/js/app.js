@@ -4,6 +4,7 @@ import { GitManager } from './git-manager.js'
 import { PanelResize } from './panel-resize.js'
 import { PreviewManager } from './preview-manager.js'
 import { TemplatePicker } from './template-picker.js'
+import { Toast } from './toast.js'
 import { TyprAPI } from './api.js'
 
 /**
@@ -59,6 +60,7 @@ class TyprApp {
   }
 
   _initManagers() {
+    this.toast = new Toast()
     this.editor = new EditorManager(this)
     this.fileTree = new FileTree(this)
     this.git = new GitManager(this)
@@ -70,7 +72,15 @@ class TyprApp {
   /** Initialize the app: bind events and load buckets. */
 
   async init() {
+    this._bindAll()
+    await this._loadUser()
+    await this.fileTree.loadBuckets()
+  }
+
+  _bindAll() {
+    this.toast.bind()
     this._bindToolbar()
+    this._bindGlobalErrors()
     this.editor.bindEditor()
     this.fileTree.bindTreeClicks()
     this.fileTree.bindUploadDrop()
@@ -78,8 +88,14 @@ class TyprApp {
     this.templatePicker.bind()
     this.preview.bindZoom()
     this._bindPanelResize()
-    await this._loadUser()
-    await this.fileTree.loadBuckets()
+  }
+
+  _bindGlobalErrors() {
+    window.addEventListener('unhandledrejection', evt => {
+      const msg = evt.reason && evt.reason.message
+      if (msg)
+        this.toast.error(msg)
+    })
   }
 
   async _loadUser() {
