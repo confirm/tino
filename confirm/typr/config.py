@@ -34,6 +34,7 @@ from sys import exit as sys_exit
 # Application level settings.
 #
 
+
 #: ⭕ The log level (must match one of the
 #: `Python logging levels <https://docs.python.org/3/library/logging.html#logging-levels>`_).
 LOG_LEVEL = environ.get('LOG_LEVEL', 'INFO')
@@ -44,13 +45,17 @@ LOG_LEVEL = environ.get('LOG_LEVEL', 'INFO')
 #:  Must match a family from the `confirm design colours <https://assets.confirm.ch/#colours>`_.
 ACCENT_COLOUR = environ.get('ACCENT_COLOUR', 'orange')
 
+_DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent.parent / 'data')
 #: ⭕ The root directory where bucket git repos are stored.
-_DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent.parent / 'data' / 'buckets')
 DATA_DIR = Path(environ.get('DATA_DIR', _DEFAULT_DATA_DIR))
 
+_DEFAULT_PACKAGE_DIR = str(DATA_DIR / 'packages')
 #: ⭕ Optional directory for local Typst packages (``@local/name:version``).
 #: Passed as ``--package-path`` to the Typst CLI.
-_DEFAULT_PACKAGE_DIR = str(Path(__file__).resolve().parent.parent.parent / 'data' / 'packages')
+#:
+#: .. hint::
+#:  When set to a sub-directory of the :attr:`DATA_DIR`, the package directory acts like a bucket,
+#:  and it can be edited in Typr directly.
 PACKAGE_DIR = Path(environ.get('PACKAGE_DIR', _DEFAULT_PACKAGE_DIR))
 
 #: ⭕ Secret key for signing session cookies.
