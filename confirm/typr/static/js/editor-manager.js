@@ -35,7 +35,11 @@ export class EditorManager {
   async openFile(path) {
     if (!this.app.bucket)
       return
-    clearTimeout(this._saveTimer)
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer)
+      this._saveTimer = null
+      await this.saveCurrentFile()
+    }
     this._openGeneration = (this._openGeneration || 0) + 1
     const gen = this._openGeneration
     await this._loadContent(path)
