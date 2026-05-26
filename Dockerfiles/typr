@@ -21,8 +21,8 @@ ENV TYPR_DATA_DIR=/data
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+HEALTHCHECK --start-period=10s --start-interval=2s --interval=10s --timeout=10s --retries=3 \
+    CMD curl -sSfL http://127.0.0.1:5000/health
 
 ENTRYPOINT ["gunicorn"]
 CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:5000", "--worker-tmp-dir", "/tmp", "confirm.typr:create_app()"]
