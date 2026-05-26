@@ -1,10 +1,15 @@
 ARG MCI_DOCKER_REGISTRY
 FROM ${MCI_DOCKER_REGISTRY}/base/python:3.14
 
+# renovate: github-releases depName=typst/typst
+ARG TYPST_VERSION=0.14.2
+
 WORKDIR /usr/src
 
 COPY build/*.whl .
 RUN pip install *whl \
+    && curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz \
+       | tar -xJ --strip-components=1 -C /usr/local/bin typst-x86_64-unknown-linux-musl/typst \
     && groupadd -r -g 2378 typr \
     && useradd -r -u 2378 -g 2378 -d /typr -m typr \
     && mkdir -p /data \
