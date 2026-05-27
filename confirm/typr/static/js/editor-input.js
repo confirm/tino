@@ -152,19 +152,20 @@ export class EditorInput {
       this._mirror.style.width = width
       return this._mirror
     }
-    this._mirror = EditorInput._createMirror(cs, width)
+    this._mirror = EditorInput._createMirror(cs, width, ed.parentNode)
     return this._mirror
   }
 
-  static _createMirror(cs, width) {
+  static _createMirror(cs, width, container) {
     const mirror = document.createElement('textarea')
+    mirror.setAttribute('aria-hidden', 'true')
     mirror.style.cssText =
       'position:absolute;visibility:hidden;height:auto;border:none;'
       + 'white-space:pre-wrap;overflow-wrap:break-word;box-sizing:border-box;'
       + `font:${cs.font};line-height:${cs.lineHeight};tab-size:${cs.tabSize};`
       + `padding:0 ${cs.paddingRight} 0 ${cs.paddingLeft};width:${width}`
     mirror.rows = SINGLE_ITEM
-    document.body.appendChild(mirror)
+    container.appendChild(mirror)
     return mirror
   }
 
