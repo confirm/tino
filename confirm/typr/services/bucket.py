@@ -1,6 +1,7 @@
 '''Bucket management service. Each bucket is a git repo on disk with a .meta.yml.'''
 
 import shutil
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -19,6 +20,17 @@ class BucketService:
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir
         self.data_dir.mkdir(parents=True, exist_ok=True)
+        self._slug_locks: dict[str, threading.Lock] = {}
+        self._locks_guard = threading.Lock()
+
+    def _slug_lock(self, slug: str) -> threading.Lock:
+        '''Return a per-slug lock that serializes meta read-modify-write.'''
+        with self._locks_guard:
+            lock = self._slug_locks.get(slug)
+            if lock is None:
+                lock = threading.Lock()
+                self._slug_locks[slug] = lock
+            return lock
 
     def _path(self, slug: str) -> Path:
         '''Resolve a bucket slug to its directory path.'''
@@ -125,27 +137,28 @@ class BucketService:
         access: list[AccessEntry] | None = None,
     ) -> BucketInfo | None:
         '''Update a bucket's .meta.yml. Only provided fields are changed.'''
-        path = self._path(slug)
+        with self._slug_lock(slug):
+            path = self._path(slug)
 
-        if not path.is_dir():
-            return None
+            if not path.is_dir():
+                return None
 
-        meta = self._read_meta(path)
-        if description is not None:
-            meta['description'] = description
-        if access is not None:
-            meta['access'] = [a.model_dump() for a in access]
+            meta = self._read_meta(path)
+            if description is not None:
+                meta['description'] = description
+            if access is not None:
+                meta['access'] = [a.model_dump() for a in access]
 
-        self._write_meta(path, meta)
+            self._write_meta(path, meta)
 
-        repo = git.Repo(path)
-        try:
-            repo.index.add([META_FILE])
-            repo.index.commit('Update bucket metadata')
-        finally:
-            repo.close()
+            repo = git.Repo(path)
+            try:
+                repo.index.add([META_FILE])
+                repo.index.commit('Update bucket metadata')
+            finally:
+                repo.close()
 
-        return self._to_info(slug, path)
+            return self._to_info(slug, path)
 
     def delete(self, slug: str) -> bool:
         '''Delete a bucket and its entire git repo from disk.'''
