@@ -136,13 +136,11 @@ export class EditorInput {
   }
 
   _measureLineCached(line, mirror) {
-    let height = this._heightCache.get(line)
-    if (height === undefined) {
+    if (!this._heightCache.has(line)) {
       mirror.value = line || ' '
-      height = mirror.scrollHeight
-      this._heightCache.set(line, height)
+      this._heightCache.set(line, mirror.scrollHeight)
     }
-    return height
+    return this._heightCache.get(line)
   }
 
   /** Create or update a hidden textarea mirror matching the editor's styling. */

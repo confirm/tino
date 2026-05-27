@@ -114,7 +114,7 @@ export class GitHistory {
       this._allCommits = await this.app.api.gitLog(
         this.app.bucket, filePath || null,
       )
-      this._renderCommitList(this._allCommits)
+      GitHistory._renderCommitList(this._allCommits)
     }
     catch {
       document.getElementById('history-list').innerHTML =
@@ -127,7 +127,7 @@ export class GitHistory {
   filter(query) {
     const lowerQuery = query.toLowerCase()
     const filtered = lowerQuery ? this._filterCommits(lowerQuery) : this._allCommits
-    this._renderCommitList(filtered)
+    GitHistory._renderCommitList(filtered)
   }
 
   _filterCommits(lowerQuery) {
@@ -138,7 +138,7 @@ export class GitHistory {
     )
   }
 
-  _renderCommitList(commits) {
+  static _renderCommitList(commits) {
     const list = document.getElementById('history-list')
     list.innerHTML = ''
     if (commits.length === 0) {
