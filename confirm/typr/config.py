@@ -110,9 +110,6 @@ def sanity_checks():  # pylint: disable=too-complex
     if not ADMIN_GROUPS:
         errors['ADMIN_GROUPS'] = 'Set to a comma-separated list of admin groups'
 
-    if not SECRET_KEY:
-        errors['SECRET_KEY'] = 'Set to a random secret for signing session cookies'
-
     if not OIDC_DISCOVERY_URL:
         errors['OIDC_DISCOVERY_URL'] = 'Set to the OIDC discovery URL'
 
