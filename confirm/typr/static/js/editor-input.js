@@ -33,7 +33,16 @@ export class EditorInput {
     })
     ed.addEventListener('click', () => this.updateCursorPos())
     ed.addEventListener('keyup', () => this.updateCursorPos())
-    new ResizeObserver(() => this.updateLineNumbers()).observe(ed)
+    new ResizeObserver(() => this._scheduleLineUpdate()).observe(ed)
+  }
+
+  _scheduleLineUpdate() {
+    if (this._lineUpdateRaf)
+      return
+    this._lineUpdateRaf = requestAnimationFrame(() => {
+      this._lineUpdateRaf = null
+      this.updateLineNumbers()
+    })
   }
 
   /** Rebuild the tab bar, marking dirty files. */
