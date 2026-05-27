@@ -293,8 +293,10 @@ export class EditorManager {
   _onCollabStatus(status) {
     if (status === 'disconnected')
       this.app.toast.error('Collaboration disconnected')
-    else if (status === 'reconnected')
+    else if (status === 'reconnected') {
       this.app.toast.success('Collaboration reconnected')
+      this._connectCollab(this.app.currentFile)
+    }
   }
 
 }
