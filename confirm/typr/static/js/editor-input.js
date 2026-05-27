@@ -85,9 +85,7 @@ export class EditorInput {
     EditorInput._syncGutterPadding(gutter, ed)
     mirror.value = 'X'
     const baseHeight = mirror.scrollHeight
-    EditorInput._buildLineSpans(
-      gutter, ed, mirror, baseHeight,
-    )
+    this._buildLineSpans(gutter, ed, mirror, baseHeight)
     gutter.scrollTop = ed.scrollTop
   }
 
@@ -97,23 +95,44 @@ export class EditorInput {
     gutter.style.paddingBottom = cs.paddingBottom
   }
 
-  static _buildLineSpans(gutter, ed, mirror, baseHeight) {
+  _buildLineSpans(gutter, ed, mirror, baseHeight) {
+    this._refreshHeightCache(ed.clientWidth)
     const lines = ed.value.split('\n')
-    gutter.innerHTML = ''
+    const fragment = document.createDocumentFragment()
     lines.forEach((line, idx) => {
-      const span = document.createElement('span')
-      span.className = 'line-number'
-      span.textContent = idx + SINGLE_ITEM
-      EditorInput._measureLine(span, mirror, line, baseHeight)
-      gutter.appendChild(span)
+      fragment.appendChild(
+        this._createLineSpan(idx, line, mirror, baseHeight),
+      )
     })
+    gutter.innerHTML = ''
+    gutter.appendChild(fragment)
   }
 
-  static _measureLine(span, mirror, line, baseHeight) {
-    mirror.value = line || ' '
-    const height = mirror.scrollHeight
+  _refreshHeightCache(width) {
+    if (this._cacheWidth !== width) {
+      this._heightCache = new Map()
+      this._cacheWidth = width
+    }
+  }
+
+  _createLineSpan(idx, line, mirror, baseHeight) {
+    const span = document.createElement('span')
+    span.className = 'line-number'
+    span.textContent = idx + SINGLE_ITEM
+    const height = this._measureLineCached(line, mirror)
     if (height > baseHeight)
       span.style.height = `${height}px`
+    return span
+  }
+
+  _measureLineCached(line, mirror) {
+    let height = this._heightCache.get(line)
+    if (height === undefined) {
+      mirror.value = line || ' '
+      height = mirror.scrollHeight
+      this._heightCache.set(line, height)
+    }
+    return height
   }
 
   /** Create or update a hidden textarea mirror matching the editor's styling. */
@@ -193,12 +212,14 @@ export class EditorInput {
     this.updateLineNumbers()
     this.updateCursorPos()
     const cur = this.app.currentFile
-    if (cur) {
-      this.app.fileBuffers[cur] = this.app.els.editor.value
-      this.app.dirty.add(cur)
+    if (!cur)
+      return
+    this.app.fileBuffers[cur] = this.app.els.editor.value
+    const wasClean = !this.app.dirty.has(cur)
+    this.app.dirty.add(cur)
+    if (wasClean)
       this.renderTabs()
-      this.app.editor.debounceSave()
-    }
+    this.app.editor.debounceSave()
   }
 
   // ── List continuation ──

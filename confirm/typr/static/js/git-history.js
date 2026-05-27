@@ -24,6 +24,28 @@ export class GitHistory {
   bind() {
     this._bindButtons()
     this._bindDialog()
+    this._bindLists()
+  }
+
+  _bindLists() {
+    document.getElementById('history-list')
+      .addEventListener('click', evt => {
+        const li = evt.target.closest('.history-item')
+        if (!li)
+          return
+        const commit = this._allCommits.find(
+          cm => cm.sha === li.dataset.sha,
+        )
+        if (commit)
+          this._selectCommit(commit, li)
+      })
+    document.getElementById('history-files')
+      .addEventListener('click', evt => {
+        const li = evt.target.closest('.history-file-item')
+        if (!li || !this._selectedRef)
+          return
+        this._selectFile(this._selectedRef, li.dataset.path, li)
+      })
   }
 
   _bindButtons() {
@@ -136,7 +158,6 @@ export class GitHistory {
         `<span class="history-sha">${commit.sha.substring(0, SHA_SHORT_LEN)}</span></span>`
       if (commit.deleted)
         li.classList.add('history-deleted')
-      li.addEventListener('click', () => this._selectCommit(commit, li))
       list.appendChild(li)
     })
   }
@@ -177,7 +198,6 @@ export class GitHistory {
         fli.innerHTML =
           '<span class="material-symbols-outlined">description</span>' +
           `<span>${escapeHtml(path)}</span>`
-        fli.addEventListener('click', () => this._selectFile(sha, path, fli))
         files.appendChild(fli)
       })
       preview.innerHTML =
