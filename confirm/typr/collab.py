@@ -7,6 +7,7 @@ last client disconnects, the document is flushed to disk.
 
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from anyio import Lock as AnyioLock
@@ -67,13 +68,22 @@ class CollabManager:
 
         return self._room_locks[key]
 
-    async def _get_or_create_room(self, slug: str, file_path: str) -> YRoom:
-        '''Return an existing room or create one by loading the file from disk.'''
+    async def _get_or_create_room(self, slug: str, file_path: str) -> YRoom | None:
+        '''Return an existing room, or create one by loading the file from disk.
+
+        Returns None when the file does not exist on disk: without this guard,
+        a client reconnecting to a deleted path would create an empty room,
+        then flush empty content on disconnect, silently re-creating the file.
+        '''
         key = (slug, file_path)
         lock = self._get_lock(key)
         async with lock:
             if key in self._rooms:
                 return self._rooms[key]
+
+            target = (self.data_dir / slug / file_path).resolve()
+            if not target.is_file():
+                return None
 
             ydoc = Doc()
             ytext = ydoc.get('content', type=Text)
@@ -88,6 +98,38 @@ class CollabManager:
             self._rooms[key] = room
             logger.info('Created room for %s/%s', slug, file_path)
             return room
+
+    @asynccontextmanager
+    async def lock_path(self, slug: str, file_path: str):
+        '''Hold the per-path lock and evict any existing room without flushing.
+
+        Used by file delete/rename handlers to atomically tear down collab
+        state and prevent the race where a pending flush re-creates the file
+        the client just asked the server to remove.
+        '''
+        key = (slug, file_path)
+        lock = self._get_lock(key)
+        async with lock:
+            room = self._rooms.pop(key, None)
+            if room:
+                try:
+                    await room.stop()
+                    logger.info('Evicted room for %s/%s', slug, file_path)
+                except Exception:  # pylint: disable=broad-exception-caught
+                    logger.exception('Failed to stop room for %s/%s', slug, file_path)
+            yield
+
+        self._room_locks.pop(key, None)
+
+    async def evict_under(self, slug: str, prefix: str) -> None:
+        '''Evict every room whose path is under `prefix` (used for dir operations).'''
+        match = [
+            path for (s, path) in list(self._rooms.keys())
+            if s == slug and (path == prefix or path.startswith(f'{prefix}/'))
+        ]
+        for path in match:
+            async with self.lock_path(slug, path):
+                pass
 
     async def _flush_room(self, slug: str, file_path: str, room: YRoom) -> None:
         '''Write the current Yjs document content to disk.'''
@@ -170,6 +212,10 @@ class CollabManager:
             return
 
         room = await self._get_or_create_room(slug, path)
+        if room is None:
+            await websocket.close(code=4404, reason='File not found')
+            return
+
         await websocket.accept()
 
         channel = FastAPIChannel(websocket, f'{slug}/{path}')

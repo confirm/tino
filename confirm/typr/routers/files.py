@@ -4,7 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.params import File
 from fastapi.responses import FileResponse
 
-from ..dependencies import get_file_service, get_notifier, require_editor, require_viewer
+from ..collab import CollabManager
+from ..dependencies import get_collab_manager, get_file_service, get_notifier, require_editor, \
+    require_viewer
 from ..models import FileCreate, FileEntry, FileSave
 from ..services.file import FileService
 
@@ -109,10 +111,12 @@ async def rename_file(
     slug: str, body: dict,
     _user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
+    collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Rename/move a single file.'''
-    if not svc.rename(slug, body['old_path'], body['new_path']):
-        raise HTTPException(400, 'Invalid path or target exists')
+    async with collab.lock_path(slug, body['old_path']):
+        if not svc.rename(slug, body['old_path'], body['new_path']):
+            raise HTTPException(400, 'Invalid path or target exists')
 
     await get_notifier().notify(slug)
     return {'old_path': body['old_path'], 'new_path': body['new_path']}
@@ -123,8 +127,10 @@ async def rename_dir(
     slug: str, body: dict,
     _user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
+    collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Rename/move a directory and all its contents.'''
+    await collab.evict_under(slug, body['old_path'])
     affected = svc.rename_dir(slug, body['old_path'], body['new_path'])
 
     if affected is None:
@@ -139,8 +145,10 @@ async def delete_dir(
     slug: str, path: str,
     _user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
+    collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Delete a directory and all its contents.'''
+    await collab.evict_under(slug, path)
     if svc.delete_dir(slug, path) is None:
         raise HTTPException(404, 'Directory not found')
 
@@ -152,9 +160,11 @@ async def delete_file(
     slug: str, path: str,
     _user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
+    collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Delete a file from the bucket's working tree.'''
-    if not svc.delete(slug, path):
-        raise HTTPException(404, 'File not found')
+    async with collab.lock_path(slug, path):
+        if not svc.delete(slug, path):
+            raise HTTPException(404, 'File not found')
 
     await get_notifier().notify(slug)
