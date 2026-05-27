@@ -26,9 +26,8 @@ class GitService:
             repo.close()
 
     @staticmethod
-    def _to_commit_info(c, path: str | None = None) -> CommitInfo:
+    def _to_commit_info(c, deleted: bool = False) -> CommitInfo:
         '''Convert a git commit object to a CommitInfo model.'''
-        deleted = GitService._file_deleted(c, path) if path else False
         return CommitInfo(
             sha=c.hexsha,
             message=c.message.strip(),
@@ -82,17 +81,16 @@ class GitService:
             if path:
                 kwargs['paths'] = path
 
-            commits = list(repo.iter_commits(**kwargs))
-            return [self._to_commit_info(c, path) for c in commits]
+            commits      = list(repo.iter_commits(**kwargs))
+            deleted_shas = self._deleted_shas(repo, path) if path else set()
+
+            return [self._to_commit_info(c, c.hexsha in deleted_shas) for c in commits]
 
     @staticmethod
-    def _file_deleted(commit, path: str) -> bool:
-        '''Check whether a path was removed in the given commit.'''
-        try:
-            _ = commit.tree / path
-            return False
-        except KeyError:
-            return True
+    def _deleted_shas(repo, path: str) -> set[str]:
+        '''Return the set of commit SHAs where `path` was deleted.'''
+        output = repo.git.log('--format=%H', '--diff-filter=D', '--', path)
+        return set(output.split('\n')) if output else set()
 
     def diff(self, slug: str, path: str | None = None) -> list[DiffEntry]:
         '''Return unified diffs for modified files in the working tree.'''
