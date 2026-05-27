@@ -174,11 +174,20 @@ export class EditorInput {
   updateCursorPos() {
     const val = this.app.els.editor.value
     const pos = this.app.els.editor.selectionStart
-    const lines = val.substring(0, pos).split('\n')
-    const last = lines.length - SINGLE_ITEM
-    const col = lines[last].length + SINGLE_ITEM
-    this.app.els.cursorPos.textContent =
-      `Ln ${lines.length}, Col ${col}`
+    const { col, line } = EditorInput._cursorPosition(val, pos)
+    this.app.els.cursorPos.textContent = `Ln ${line}, Col ${col}`
+  }
+
+  static _cursorPosition(val, pos) {
+    let line = SINGLE_ITEM
+    let lastNewline = INDEX_NOT_FOUND
+    for (let idx = 0; idx < pos; idx += SINGLE_ITEM) {
+      if (val[idx] === '\n') {
+        line += SINGLE_ITEM
+        lastNewline = idx
+      }
+    }
+    return { col: pos - lastNewline, line }
   }
 
   /** Show the file's last-modified timestamp in the status bar. */
