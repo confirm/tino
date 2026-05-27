@@ -80,6 +80,7 @@ export class FileTree {
     const collapsed = query ? new Set() : this._getCollapsedPaths()
     const nodes = FileTree._filterNodes(this._nodes, query)
     const tree = this.app.els.fileTree
+    this._canEditCached = this._canEdit()
     tree.innerHTML = ''
     this._renderNodes(tree, nodes, collapsed)
   }
@@ -133,7 +134,7 @@ export class FileTree {
     const li = document.createElement('li')
     li.className = 'folder-item'
     li.dataset.folder = node.path
-    if (this._canEdit())
+    if (this._canEditCached)
       li.draggable = true
     if (collapsed.has(node.path))
       li.classList.add('collapsed')
@@ -142,7 +143,7 @@ export class FileTree {
   }
 
   _buildFolderContent(li, node, collapsed) {
-    const actions = this._canEdit() ? FileTree._folderActionsHtml() : ''
+    const actions = this._canEditCached ? FileTree._folderActionsHtml() : ''
     li.innerHTML =
       `<div class="folder-header">${TOGGLE_ICON}` +
       `${FOLDER_ICON}<span>${escapeHtml(node.name)}</span>` +
@@ -169,7 +170,7 @@ export class FileTree {
     li.dataset.file = node.path
     if (node.status === 'deleted')
       li.classList.add('file-deleted')
-    else if (this._canEdit())
+    else if (this._canEditCached)
       li.draggable = true
     li.innerHTML = this._fileItemHtml(node)
     if (this.app.currentFile === node.path)
@@ -180,7 +181,7 @@ export class FileTree {
   _fileItemHtml(node) {
     const status = node.status || this.app.gitStatuses[node.path]
     const badge = FileTree._badgeHtml(status)
-    if (!this._canEdit())
+    if (!this._canEditCached)
       return `${FILE_ICON}<span>${escapeHtml(node.name)}</span>${badge}`
     const actions = FileTree._fileActionsHtml(status)
     return `${FILE_ICON}<span>${escapeHtml(node.name)}</span>${badge}${actions}`
