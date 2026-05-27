@@ -36,6 +36,13 @@ export class EditorManager {
     if (!this.app.bucket)
       return
     this._flushPendingSave()
+
+    /*
+     * Generation counter: a slow _loadContent must not overwrite a newer
+     * tab switch. If the user clicks B while A is still loading, A's
+     * post-load UI updates are dropped when gen no longer matches.
+     */
+
     this._openGeneration =
       (this._openGeneration || 0) + SINGLE_ITEM
     const gen = this._openGeneration

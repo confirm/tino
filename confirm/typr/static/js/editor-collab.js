@@ -47,6 +47,14 @@ export class EditorCollab {
       this.app.toast.error('Collaboration disconnected')
     else if (status === 'reconnected') {
       this.app.toast.success('Collaboration reconnected')
+
+      /*
+       * Recreate the session with a fresh Y.Doc on reconnect. The server
+       * destroys its room when the last client disconnects and rebuilds
+       * it from disk as a new CRDT insert. Reusing our old Doc would
+       * merge two independent inserts of the same content, duplicating.
+       */
+
       this.connect(this.app.currentFile)
     }
   }

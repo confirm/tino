@@ -107,6 +107,10 @@ class CollabManager:
                 del self._rooms[key]
                 logger.info('Cleaned up room for %s/%s', slug, file_path)
 
+        # Pop the lock AFTER releasing it (outside the `async with`).
+        # If a new request raced in and created another room for this key
+        # while we were inside the lock, the room exists again and we
+        # leave the lock alone.
         if key not in self._rooms:
             self._room_locks.pop(key, None)
 

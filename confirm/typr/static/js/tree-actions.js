@@ -15,6 +15,13 @@ export class TreeActions {
     // eslint-disable-next-line no-alert
     if (!confirm(`Delete "${filePath}"?`))
       return
+
+    /*
+     * Close the tab BEFORE the API call. closeTab disconnects collab,
+     * which flushes the room to disk. Deleting first would race the
+     * flush and re-create the file.
+     */
+
     if (this.app.currentFile === filePath)
       this.app.editor.closeTab(filePath)
     await this.app.api.deleteFile(
@@ -28,6 +35,8 @@ export class TreeActions {
     const name = prompt('Rename file:', filePath)
     if (!name || name.trim() === filePath)
       return
+
+    // Close BEFORE rename: same collab flush race as deleteFile.
     if (this.app.currentFile === filePath)
       this.app.editor.closeTab(filePath)
     await this.app.api.renameFile(

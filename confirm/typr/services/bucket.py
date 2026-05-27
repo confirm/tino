@@ -137,6 +137,9 @@ class BucketService:
         access: list[AccessEntry] | None = None,
     ) -> BucketInfo | None:
         '''Update a bucket's .meta.yml. Only provided fields are changed.'''
+        # Read-modify-write of .meta.yml must be serialized per-slug.
+        # Two concurrent updates could otherwise lose each other's changes
+        # (each reads the same starting state, last write wins).
         with self._slug_lock(slug):
             path = self._path(slug)
 

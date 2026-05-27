@@ -118,6 +118,7 @@ export class EditorInput {
   }
 
   _refreshHeightCache(width) {
+    // Width change invalidates the cache: wrapping depends on width.
     if (this._cacheWidth !== width) {
       this._heightCache = new Map()
       this._cacheWidth = width
@@ -233,6 +234,8 @@ export class EditorInput {
     if (!cur)
       return
     this.app.fileBuffers[cur] = this.app.els.editor.value
+
+    // Only rebuild tab bar on clean -> dirty transition, not every keystroke.
     const wasClean = !this.app.dirty.has(cur)
     this.app.dirty.add(cur)
     if (wasClean)
