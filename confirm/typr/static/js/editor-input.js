@@ -89,17 +89,17 @@ export class EditorInput {
     const ed = this.app.els.editor
     if (!ed.clientWidth)
       return
+    const cs = getComputedStyle(ed)
     const gutter = this.app.els.lineNumbers
-    const mirror = this._getOrUpdateMirror(ed)
-    EditorInput._syncGutterPadding(gutter, ed)
+    const mirror = this._getOrUpdateMirror(ed, cs)
+    EditorInput._syncGutterPadding(gutter, cs)
     mirror.value = 'X'
     const baseHeight = mirror.scrollHeight
     this._buildLineSpans(gutter, ed, mirror, baseHeight)
     gutter.scrollTop = ed.scrollTop
   }
 
-  static _syncGutterPadding(gutter, ed) {
-    const cs = getComputedStyle(ed)
+  static _syncGutterPadding(gutter, cs) {
     gutter.style.paddingTop = cs.paddingTop
     gutter.style.paddingBottom = cs.paddingBottom
   }
@@ -146,18 +146,17 @@ export class EditorInput {
 
   /** Create or update a hidden textarea mirror matching the editor's styling. */
 
-  _getOrUpdateMirror(ed) {
+  _getOrUpdateMirror(ed, cs) {
     const width = `${ed.clientWidth}px`
     if (this._mirror) {
       this._mirror.style.width = width
       return this._mirror
     }
-    this._mirror = EditorInput._createMirror(ed, width)
+    this._mirror = EditorInput._createMirror(cs, width)
     return this._mirror
   }
 
-  static _createMirror(ed, width) {
-    const cs = getComputedStyle(ed)
+  static _createMirror(cs, width) {
     const mirror = document.createElement('textarea')
     mirror.style.cssText =
       'position:absolute;visibility:hidden;height:auto;border:none;'
