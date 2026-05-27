@@ -5,7 +5,7 @@ import {
 } from './constants.js'
 import { loadSavedTabs, persistTabs } from './tab-store.js'
 import { BinaryPreview } from './editor-binary.js'
-import { CollabSession } from './collab.js'
+import { EditorCollab } from './editor-collab.js'
 import { EditorInput } from './editor-input.js'
 import { EditorToolbar } from './editor-toolbar.js'
 import { writeRoute } from './router.js'
@@ -26,7 +26,7 @@ export class EditorManager {
     this.input = new EditorInput(app)
     this.toolbar = new EditorToolbar(app)
     this.binary = new BinaryPreview(app, this.toolbar)
-    this.collab = null
+    this.collab = new EditorCollab(app)
     this._saveTimer = null
   }
 
@@ -35,24 +35,33 @@ export class EditorManager {
   async openFile(path) {
     if (!this.app.bucket)
       return
+    this._flushPendingSave()
+    this._openGeneration =
+      (this._openGeneration || 0) + SINGLE_ITEM
+    const gen = this._openGeneration
+    await this._loadContent(path)
+    if (gen !== this._openGeneration)
+      return
+    this._activateTab(path)
+    await this.app.preview.update()
+  }
+
+  _flushPendingSave() {
     if (this._saveTimer) {
       clearTimeout(this._saveTimer)
       this._saveTimer = null
       this.saveCurrentFile()
     }
-    this._openGeneration = (this._openGeneration || 0) + 1
-    const gen = this._openGeneration
-    await this._loadContent(path)
-    if (gen !== this._openGeneration)
-      return
+  }
+
+  _activateTab(path) {
     this.app.currentFile = path
     this.app.els.editor.placeholder = ''
     if (this.app.openTabs.indexOf(path) === INDEX_NOT_FOUND)
       this.app.openTabs.push(path)
     this._refreshEditorUi()
-    this._connectCollab(path)
+    this.collab.connect(path)
     this._persistOpenState(path)
-    await this.app.preview.update()
   }
 
   async _loadContent(path) {
@@ -102,9 +111,9 @@ export class EditorManager {
     const path = this.app.currentFile
     if (!this.app.bucket || !path || BinaryPreview.isImage(path))
       return
-    const content = this.app.fileBuffers[path]
-    if (content === undefined)
+    if (!(path in this.app.fileBuffers))
       return
+    const content = this.app.fileBuffers[path]
     const result = await this.app.api.saveFile(
       this.app.bucket, path, content,
     )
@@ -151,7 +160,7 @@ export class EditorManager {
     delete this.app.fileBuffers[path]
     this.app.dirty.delete(path)
     if (this.app.currentFile === path) {
-      this._disconnectCollab()
+      this.collab.disconnect()
       this._switchAfterClose(idx)
     }
     this.input.renderTabs()
@@ -169,7 +178,7 @@ export class EditorManager {
   }
 
   _clearEditor() {
-    this._disconnectCollab()
+    this.collab.disconnect()
     this.app.currentFile = null
     this._showTextEditor('')
     this.app.els.editor.disabled = true
@@ -240,7 +249,7 @@ export class EditorManager {
   /** Reset editor state when switching buckets. */
 
   resetState() {
-    this._disconnectCollab()
+    this.collab.disconnect()
     this.toolbar.hide()
     this._clearOpenState()
     this._showTextEditor('')
@@ -263,40 +272,6 @@ export class EditorManager {
   bindEditor() {
     this.input.bind()
     this.toolbar.bind()
-  }
-
-  // ── Collab ──
-
-  _connectCollab(path) {
-    this._disconnectCollab()
-    const role = this.app.bucketRole
-    const canEdit = role === 'editor' || role === 'committer'
-    const isText = !this.app.els.editor.classList.contains('hidden')
-    if (!path || !canEdit || !isText)
-      return
-    this.collab = new CollabSession(
-      this.app.bucket,
-      path,
-      this.app.els.editor,
-      st => this._onCollabStatus(st),
-    )
-    this.collab.connect()
-  }
-
-  _disconnectCollab() {
-    if (this.collab) {
-      this.collab.disconnect()
-      this.collab = null
-    }
-  }
-
-  _onCollabStatus(status) {
-    if (status === 'disconnected')
-      this.app.toast.error('Collaboration disconnected')
-    else if (status === 'reconnected') {
-      this.app.toast.success('Collaboration reconnected')
-      this._connectCollab(this.app.currentFile)
-    }
   }
 
 }

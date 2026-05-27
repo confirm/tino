@@ -81,26 +81,39 @@ export class EditorInput {
     if (!ed.clientWidth)
       return
     const gutter = this.app.els.lineNumbers
-    const lines = ed.value.split('\n')
     const mirror = this._getOrUpdateMirror(ed)
+    EditorInput._syncGutterPadding(gutter, ed)
+    mirror.value = 'X'
+    const baseHeight = mirror.scrollHeight
+    EditorInput._buildLineSpans(
+      gutter, ed, mirror, baseHeight,
+    )
+    gutter.scrollTop = ed.scrollTop
+  }
+
+  static _syncGutterPadding(gutter, ed) {
     const cs = getComputedStyle(ed)
-    const lineHeight = parseFloat(cs.lineHeight)
     gutter.style.paddingTop = cs.paddingTop
     gutter.style.paddingBottom = cs.paddingBottom
-    mirror.value = 'X'
-    const singleLineHeight = mirror.scrollHeight
+  }
+
+  static _buildLineSpans(gutter, ed, mirror, baseHeight) {
+    const lines = ed.value.split('\n')
     gutter.innerHTML = ''
-    for (let i = 0; i < lines.length; i++) {
+    lines.forEach((line, idx) => {
       const span = document.createElement('span')
       span.className = 'line-number'
-      span.textContent = i + SINGLE_ITEM
-      mirror.value = lines[i] || ' '
-      const h = mirror.scrollHeight
-      if (h > singleLineHeight)
-        span.style.height = `${h}px`
+      span.textContent = idx + SINGLE_ITEM
+      EditorInput._measureLine(span, mirror, line, baseHeight)
       gutter.appendChild(span)
-    }
-    gutter.scrollTop = ed.scrollTop
+    })
+  }
+
+  static _measureLine(span, mirror, line, baseHeight) {
+    mirror.value = line || ' '
+    const height = mirror.scrollHeight
+    if (height > baseHeight)
+      span.style.height = `${height}px`
   }
 
   /** Create or update a hidden textarea mirror matching the editor's styling. */
@@ -111,17 +124,21 @@ export class EditorInput {
       this._mirror.style.width = width
       return this._mirror
     }
+    this._mirror = EditorInput._createMirror(ed, width)
+    return this._mirror
+  }
+
+  static _createMirror(ed, width) {
     const cs = getComputedStyle(ed)
-    const m = document.createElement('textarea')
-    m.style.cssText =
-      `position:absolute;visibility:hidden;height:auto;border:none;` +
-      `white-space:pre-wrap;overflow-wrap:break-word;box-sizing:border-box;` +
-      `font:${cs.font};line-height:${cs.lineHeight};tab-size:${cs.tabSize};` +
-      `padding:0 ${cs.paddingRight} 0 ${cs.paddingLeft};width:${width}`
-    m.rows = 1
-    document.body.appendChild(m)
-    this._mirror = m
-    return m
+    const mirror = document.createElement('textarea')
+    mirror.style.cssText =
+      'position:absolute;visibility:hidden;height:auto;border:none;'
+      + 'white-space:pre-wrap;overflow-wrap:break-word;box-sizing:border-box;'
+      + `font:${cs.font};line-height:${cs.lineHeight};tab-size:${cs.tabSize};`
+      + `padding:0 ${cs.paddingRight} 0 ${cs.paddingLeft};width:${width}`
+    mirror.rows = SINGLE_ITEM
+    document.body.appendChild(mirror)
+    return mirror
   }
 
   /** Update the cursor position display. */
