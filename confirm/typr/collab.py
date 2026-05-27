@@ -107,6 +107,9 @@ class CollabManager:
                 del self._rooms[key]
                 logger.info('Cleaned up room for %s/%s', slug, file_path)
 
+        if key not in self._rooms:
+            self._room_locks.pop(key, None)
+
     async def reload_rooms(self, slug: str, paths: list[str]) -> None:
         '''Reload room content from disk after external file changes.
 
