@@ -23,8 +23,9 @@ class FileService:
     def _safe_path(bucket_path: Path, file_path: str) -> Path | None:
         '''Resolve a file path and reject any traversal outside the bucket.'''
         resolved = (bucket_path / file_path).resolve()
+        root     = bucket_path.resolve()
 
-        if not str(resolved).startswith(str(bucket_path.resolve())):
+        if resolved != root and not resolved.is_relative_to(root):
             return None
 
         return resolved

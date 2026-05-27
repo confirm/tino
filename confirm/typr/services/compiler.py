@@ -62,7 +62,7 @@ class CompilerService:
         bucket_dir = (self.data_dir / slug).resolve()
         source     = (bucket_dir / path).resolve()
 
-        if not str(source).startswith(str(bucket_dir)):
+        if not source.is_relative_to(bucket_dir):
             raise FileNotFoundError(f'{path} is outside the bucket')
 
         if not source.is_file():

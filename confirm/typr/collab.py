@@ -158,7 +158,7 @@ class CollabManager:
             return
 
         file_target = (bucket_path / path).resolve()
-        if not str(file_target).startswith(str(bucket_path.resolve())):
+        if not file_target.is_relative_to(bucket_path.resolve()):
             await websocket.close(code=4003, reason='Invalid path')
             return
 

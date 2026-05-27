@@ -59,7 +59,7 @@ class GitService:
         with self._open(slug) as repo:
             working_dir = Path(repo.working_dir).resolve()
             safe = [f for f in files
-                    if str((working_dir / f).resolve()).startswith(str(working_dir))]
+                    if (working_dir / f).resolve().is_relative_to(working_dir)]
             existing = [f for f in safe if (working_dir / f).exists()]
             deleted  = [f for f in safe if not (working_dir / f).exists()]
 
@@ -168,7 +168,7 @@ class GitService:
 
             for p in paths:
                 target = (working_dir / p).resolve()
-                if not str(target).startswith(str(working_dir)):
+                if not target.is_relative_to(working_dir):
                     continue
                 try:
                     data = (repo.commit(ref).tree / p).data_stream.read()
