@@ -45,13 +45,21 @@ class CompilerService:
     def compile_pdf(self, slug: str, path: str) -> Path:
         '''Compile a Typst file and return the path to the resulting PDF.
 
+        Writes to a temporary file; the caller is responsible for deleting it
+        (typically via a BackgroundTask on the FileResponse).
         Raises FileNotFoundError if the source file doesn't exist,
         or RuntimeError if compilation fails (with the stderr message).
         '''
         bucket_dir, source = self._resolve_source(slug, path)
-        output             = bucket_dir / '.typst-output.pdf'
 
-        self._run(source, output, bucket_dir)
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+            output = Path(tmp.name)
+
+        try:
+            self._run(source, output, bucket_dir)
+        except Exception:
+            output.unlink(missing_ok=True)
+            raise
 
         return output
 

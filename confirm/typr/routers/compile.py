@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+from starlette.background import BackgroundTask
 
 from ..dependencies import get_compiler_service, require_viewer
 from ..services.compiler import CompilerService
@@ -19,7 +20,13 @@ async def compile_pdf(
     try:
         pdf_path = svc.compile_pdf(slug, path)
         filename = path.rsplit('/', maxsplit=1)[-1].replace('.typ', '.pdf')
-        return FileResponse(pdf_path, filename=filename, media_type='application/pdf')
+
+        return FileResponse(
+            pdf_path,
+            filename=filename,
+            media_type='application/pdf',
+            background=BackgroundTask(pdf_path.unlink, missing_ok=True),
+        )
 
     except FileNotFoundError as exc:
         raise HTTPException(404, 'File not found') from exc
