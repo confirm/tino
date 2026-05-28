@@ -11,6 +11,7 @@ __all__ = (
     'sanity_checks',
     'ACCENT_COLOUR',
     'ADMIN_GROUPS',
+    'BUCKET_DIR',
     'DATA_DIR',
     'DEFAULT_ROLE',
     'LOG_LEVEL',
@@ -50,12 +51,16 @@ _DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent.parent / 'data')
 #: ⭕ The root directory where bucket git repos are stored.
 DATA_DIR = Path(environ.get('DATA_DIR', _DEFAULT_DATA_DIR))
 
-_DEFAULT_PACKAGE_DIR = str(DATA_DIR / 'packages')
+_DEFAULT_BUCKET_DIR = str(DATA_DIR / 'buckets')
+#: ⭕ The directory where bucket git repos are stored.
+BUCKET_DIR = Path(environ.get('BUCKET_DIR', _DEFAULT_BUCKET_DIR))
+
+_DEFAULT_PACKAGE_DIR = str(BUCKET_DIR / 'packages')
 #: ⭕ Optional directory for local Typst packages (``@local/name:version``).
 #: Passed as ``--package-path`` to the Typst CLI.
 #:
 #: .. hint::
-#:  When set to a sub-directory of the :attr:`DATA_DIR`, the package directory acts like a bucket,
+#:  When set to a sub-directory of the :attr:`BUCKET_DIR`, the package directory acts like a bucket,
 #:  and it can be edited in Typr directly.
 PACKAGE_DIR = Path(environ.get('PACKAGE_DIR', _DEFAULT_PACKAGE_DIR))
 

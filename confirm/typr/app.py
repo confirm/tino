@@ -23,6 +23,7 @@ _STATIC_DIR = str(Path(__file__).parent / 'static')
 async def lifespan(_app: FastAPI):
     '''Ensure the data directory exists on startup and flush collab rooms on shutdown.'''
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    config.BUCKET_DIR.mkdir(parents=True, exist_ok=True)
     config.PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
     config.sanity_checks()
     await setup_oauth()
