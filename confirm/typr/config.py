@@ -64,6 +64,11 @@ _DEFAULT_PACKAGE_DIR = str(BUCKET_DIR / 'packages')
 #:  and it can be edited in Typr directly.
 PACKAGE_DIR = Path(environ.get('PACKAGE_DIR', _DEFAULT_PACKAGE_DIR))
 
+_DEFAULT_FONT_DIR = str(DATA_DIR / 'fonts')
+#: ⭕ Optional directory for custom fonts.
+#: Passed as ``--font-path`` to the Typst CLI.
+FONT_DIR = Path(environ.get('FONT_DIR', _DEFAULT_FONT_DIR))
+
 #: ⭕ Secret key for signing session cookies.
 #:
 #: .. hint::
