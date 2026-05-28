@@ -595,25 +595,137 @@ html, body {
   line-height: 1.6;
 }
 
-.editor {
+.editor-stack {
   flex: 1;
-  padding: 12px 16px;
-  border: none;
-  outline: none;
-  resize: none;
+  position: relative;
+  overflow: hidden;
   background: var(--editor-bg);
-  color: var(--text-primary);
+}
+
+.editor-stack:has(.editor.hidden) {
+  display: none;
+}
+
+.editor,
+.editor-highlight {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 12px 16px;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.6;
   tab-size: 2;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+  border: none;
+}
+
+.editor-highlight {
+  pointer-events: none;
   overflow: auto;
+  z-index: 0;
+  color: var(--text-primary);
+  background: transparent;
+  scrollbar-width: none;
+}
+
+.editor-highlight::-webkit-scrollbar {
+  display: none;
+}
+
+.editor-highlight code {
+  font: inherit;
+  white-space: inherit;
+  word-break: inherit;
+  background: transparent;
+  display: block;
+}
+
+.editor {
+  z-index: 1;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text-primary);
+  overflow: auto;
+}
+
+.editor::selection {
+  background: var(--selection, rgb(100 150 255 / 30%));
+  color: transparent;
 }
 
 .editor::placeholder {
   color: var(--text-muted);
+}
+
+/* Prism token colors — match against current theme. */
+
+.editor-highlight .token.comment {
+  color: var(--syntax-comment, #6a9955);
+  font-style: italic;
+}
+
+.editor-highlight .token.string,
+.editor-highlight .token.raw-block,
+.editor-highlight .token.raw-inline {
+  color: var(--syntax-string, #ce9178);
+}
+
+.editor-highlight .token.keyword {
+  color: var(--syntax-keyword, #c586c0);
+  font-weight: 500;
+}
+
+.editor-highlight .token.function,
+.editor-highlight .token.function-name {
+  color: var(--syntax-function, #dcdcaa);
+}
+
+.editor-highlight .token.number {
+  color: var(--syntax-number, #b5cea8);
+}
+
+.editor-highlight .token.heading,
+.editor-highlight .token.important {
+  color: var(--syntax-heading, #4ec9b0);
+  font-weight: 700;
+}
+
+.editor-highlight .token.strong {
+  font-weight: 700;
+}
+
+.editor-highlight .token.emphasis {
+  font-style: italic;
+}
+
+.editor-highlight .token.symbol {
+  color: var(--syntax-symbol, #569cd6);
+}
+
+.editor-highlight .token.variable,
+.editor-highlight .token.hash-expression {
+  color: var(--syntax-variable, #9cdcfe);
+}
+
+.editor-highlight .token.math {
+  color: var(--syntax-math, #d7ba7d);
+}
+
+.editor-highlight .token.punctuation {
+  color: var(--syntax-punctuation, #808080);
+}
+
+.editor-highlight .token.escape {
+  color: var(--syntax-escape, #d7ba7d);
+}
+
+.editor-highlight .token.url {
+  color: var(--syntax-url, #569cd6);
+  text-decoration: underline;
 }
 
 .binary-preview {

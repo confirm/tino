@@ -7,7 +7,7 @@ BUILD_DIR = build
 LINTER_CONFIGS = https://gitlab.confirm.ch/confirm/dev-configs/-/raw/main/linter
 PYPI_INDEX = https://pypi.confirm.ch/
 
-.PHONY: build docs
+.PHONY: build docs vendor-js
 
 #
 # Cleanup
@@ -77,11 +77,11 @@ test-pylint:
 
 test-eslint:
 	curl -sSfo eslint.config.mjs $(LINTER_CONFIGS)/eslint.config.mjs
-	npx eslint $(SOURCE_DIRS)/**/*.js
+	npx eslint $(SOURCE_DIRS)/static/js/*.js
 
 test-stylelint:
 	curl -sSfLo .stylelintrc.yml $(LINTER_CONFIGS)/stylelintrc.yml
-	npx stylelint $(SOURCE_DIRS)/**/*.css
+	npx stylelint $(SOURCE_DIRS)/static/css/*.css
 
 test: test-commits test-isort test-pycodestyle test-pylint test-eslint test-stylelint
 
@@ -98,4 +98,7 @@ docs:
 autodocs:
 	sphinx-autobuild --open-browser --port 8888 --watch confirm docs $(BUILD_DIR)/docs
 
-build: package docs
+vendor-js:
+	npm run build
+
+build: vendor-js package docs

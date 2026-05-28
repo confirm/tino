@@ -1,6 +1,5 @@
-import { Doc } from 'yjs'
+import { Doc, WebsocketProvider } from './vendor/yjs.js'
 import { SINGLE_ITEM } from './constants.js'
-import { WebsocketProvider } from 'y-websocket'
 
 /**
  * Manages a single Yjs collaboration session for one file.

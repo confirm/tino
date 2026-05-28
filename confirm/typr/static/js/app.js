@@ -51,6 +51,7 @@ class TyprApp {
       commitMessage: document.getElementById('commit-message'),
       cursorPos: document.getElementById('cursor-pos'),
       editor: document.getElementById('editor'),
+      editorHighlight: document.getElementById('editor-highlight'),
       fileSearch: document.getElementById('file-search'),
       fileTree: document.getElementById('file-tree'),
       lineNumbers: document.getElementById('line-numbers'),
@@ -280,16 +281,10 @@ class TyprApp {
   }
 
   _bindPanelResize() {
-    const fileExplorer =
-      document.getElementById('file-explorer')
-    const previewPanel =
-      document.getElementById('preview-panel')
-    this.panelResize.init(
-      'resize-left', () => fileExplorer, 'left',
-    )
-    this.panelResize.init(
-      'resize-right', () => previewPanel, 'right',
-    )
+    const fileExplorer = document.getElementById('file-explorer')
+    const previewPanel = document.getElementById('preview-panel')
+    this.panelResize.init('resize-left', () => fileExplorer, 'left')
+    this.panelResize.init('resize-right', () => previewPanel, 'right')
   }
 
 }

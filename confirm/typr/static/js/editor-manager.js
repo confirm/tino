@@ -6,6 +6,7 @@ import {
 import { loadSavedTabs, persistTabs } from './tab-store.js'
 import { BinaryPreview } from './editor-binary.js'
 import { EditorCollab } from './editor-collab.js'
+import { EditorHighlight } from './editor-highlight.js'
 import { EditorInput } from './editor-input.js'
 import { EditorToolbar } from './editor-toolbar.js'
 import { writeRoute } from './router.js'
@@ -27,6 +28,9 @@ export class EditorManager {
     this.toolbar = new EditorToolbar(app)
     this.binary = new BinaryPreview(app, this.toolbar)
     this.collab = new EditorCollab(app)
+    this.highlight = new EditorHighlight(
+      app.els.editor, app.els.editorHighlight,
+    )
     this._saveTimer = null
   }
 
@@ -109,6 +113,7 @@ export class EditorManager {
     this.input.updateLineNumbers()
     this.input.updateCursorPos()
     this.input.updateStatusBar()
+    this.highlight.sync()
     this.app.els.editor.focus()
   }
 

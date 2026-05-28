@@ -5,10 +5,11 @@ __pycache__/
 # Python virtual env
 .venv/
 
-# Python egg / build files
+# Build files
 build/
 .eggs/
 *.egg-info/
+confirm/typr/static/js/vendor/
 
 # Javascript package cache
 package-lock.json
