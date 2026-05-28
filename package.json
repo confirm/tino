@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "npm run build:prism && npm run build:yjs",
+    "build": "mkdir -p confirm/typr/static/js/vendor && npm run build:prism && npm run build:yjs",
     "build:prism": "cat node_modules/prismjs/prism.js confirm/typr/static/js/prism-typst.js | esbuild --minify --loader=js --log-level=warning > confirm/typr/static/js/vendor/prism.js",
     "build:yjs": "esbuild --bundle --minify --format=esm --log-level=warning --outfile=confirm/typr/static/js/vendor/yjs.js confirm/typr/static/js/yjs-entry.js"
   },
