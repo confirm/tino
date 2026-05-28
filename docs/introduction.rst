@@ -1,12 +1,12 @@
 .. _Introduction:
 
 💁🏻‍♂️ Introduction
-====================
+==================
 
 .. _Rationale:
 
 🤷🏻‍♂️ Rationale
------------------
+---------------
 
 Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully automated — but document production still relied on native desktop applications with templates that were hard to control and impossible to version.
 
@@ -24,14 +24,14 @@ That left the question of which document format to build on. `Markdown <https://
 
 `Typst <https://typst.app/>`_ struck the right balance — expressive enough for professional output, approachable enough for the whole team. 
 
-So we built Typr: a collaborative, self-hosted editing platform around `Typst`_.
+So we built Typarr: a collaborative, self-hosted editing platform around `Typst`_.
 
 .. _Purpose:
 
 🎯 Purpose
-----------
+---------
 
-Typr is a self-hosted web editor for `Typst`_ documents, built for teams that want to author, review, and publish together.
+Typarr is a self-hosted web editor for `Typst`_ documents, built for teams that want to author, review, and publish together.
 
 - | **Replace desktop word processors**
   | Move document production to the browser, with version control and collaboration built in.
@@ -43,9 +43,9 @@ Typr is a self-hosted web editor for `Typst`_ documents, built for teams that wa
 .. _Features:
 
 ✨ Features
------------
+----------
 
-The Typr editor ships with the following features out of the box:
+The Typarr editor ships with the following features out of the box:
 
 - | **Inline SVG preview**
   | Live-rendered preview next to the editor, updated on every change.

@@ -1,6 +1,6 @@
 [project]
 
-name = 'confirm-typr'
+name = 'confirm-typarr'
 description = 'The web-based Typst editor.'
 readme = 'README.md'
 
@@ -74,7 +74,7 @@ exclude = [
 
 [tool.setuptools.package-data]
 
-'confirm.typr' = [
+'confirm.typarr' = [
     'static/**/*',
     'static/*',
 ]

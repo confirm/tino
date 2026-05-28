@@ -9,7 +9,7 @@ __pycache__/
 build/
 .eggs/
 *.egg-info/
-confirm/typr/static/js/vendor/
+confirm/typarr/static/js/vendor/
 
 # Javascript package cache
 package-lock.json

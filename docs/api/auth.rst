@@ -1,5 +1,5 @@
-``typr.auth``
-=============
+``typarr.auth``
+===============
 
-.. automodule:: confirm.typr.auth
+.. automodule:: confirm.typarr.auth
    :members:

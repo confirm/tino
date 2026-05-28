@@ -1,7 +1,7 @@
 .. _Buckets:
 
 🪣 Buckets
-----------
+---------
 
 Documents are organised into **buckets**.
 Each bucket is a self-contained git repository that holds one or more (Typst) files.
@@ -39,4 +39,4 @@ Entries map an OIDC group to one of three roles:
 
 .. note::
 
-  Members of the configured admin groups (see :attr:`ADMIN_GROUPS <confirm.typr.config.ADMIN_GROUPS>`) are implicitly treated as **Committer** on every bucket.
+  Members of the configured admin groups (see :attr:`ADMIN_GROUPS <confirm.typarr.config.ADMIN_GROUPS>`) are implicitly treated as **Committer** on every bucket.

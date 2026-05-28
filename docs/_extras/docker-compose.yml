@@ -1,9 +1,9 @@
 ---
 services:
 
-  typr:
+  typarr:
 
-    image: harbor.confirm.ch/typr/typr
+    image: harbor.confirm.ch/typarr/typarr
 
     environment:
       OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration

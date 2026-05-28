@@ -1,6 +1,6 @@
 from confirm.sphinx.defaults import *
 
-project = 'Typr'
+project = 'Typarr'
 
 intersphinx_mapping = {
     'handbook': ('https://handbook.confirm.ch', None),

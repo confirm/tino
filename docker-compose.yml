@@ -20,7 +20,7 @@ services:
       args:
         - MCI_DOCKER_REGISTRY
 
-    image: ${MCI_DOCKER_REGISTRY}/typr/docs:${MCI_DOCKER_TAG}
+    image: ${MCI_DOCKER_REGISTRY}/typarr/docs:${MCI_DOCKER_TAG}
 
     #
     # ⚡ Resources
@@ -52,17 +52,17 @@ services:
 
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #
-  # 📝 Typr.
+  # 📝 Typarr.
   #
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typr:
+  typarr:
 
     build:
       context: .
-      dockerfile: Dockerfiles/typr
+      dockerfile: Dockerfiles/typarr
       args:
         - MCI_DOCKER_REGISTRY
 
-    image: ${MCI_DOCKER_REGISTRY}/typr/typr:${MCI_DOCKER_TAG}
+    image: ${MCI_DOCKER_REGISTRY}/typarr/typarr:${MCI_DOCKER_TAG}
 
