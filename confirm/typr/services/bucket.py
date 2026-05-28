@@ -8,7 +8,7 @@ from pathlib import Path
 import git
 import yaml
 
-from ..models import AccessEntry, BucketInfo
+from ..models import AccessEntry, BucketInfo, User
 
 META_FILE = '.meta.yml'
 GITATTRIBUTES = Path(__file__).resolve().parent.parent / 'gitattributes'
@@ -109,9 +109,14 @@ class BucketService:
 
         return self._to_info(slug, path)
 
+    @staticmethod
+    def _actor(user: User) -> git.Actor:
+        return git.Actor(user.username, user.email)
+
     def create(
         self, slug: str, description: str = '',
         access: list[AccessEntry] | None = None,
+        user: User | None = None,
     ) -> BucketInfo:
         '''Create a new bucket: mkdir, git init, write .meta.yml, initial commit.'''
         path = self._path(slug)
@@ -130,7 +135,8 @@ class BucketService:
         try:
             self._apply_shared_gitattributes(repo)
             repo.index.add([META_FILE])
-            repo.index.commit('Initialize bucket\n\nTypr-Meta: true')
+            actor = self._actor(user) if user else None
+            repo.index.commit('Initialize bucket\n\nTypr-Meta: true', author=actor, committer=actor)
         finally:
             repo.close()
 
@@ -139,6 +145,7 @@ class BucketService:
     def update(
         self, slug: str, description: str | None = None,
         access: list[AccessEntry] | None = None,
+        user: User | None = None,
     ) -> BucketInfo | None:
         '''Update a bucket's .meta.yml. Only provided fields are changed.'''
         # Read-modify-write of .meta.yml must be serialized per-slug.
@@ -161,7 +168,11 @@ class BucketService:
             repo = git.Repo(path)
             try:
                 repo.index.add([META_FILE])
-                repo.index.commit('Update bucket metadata\n\nTypr-Meta: true')
+                actor = self._actor(user) if user else None
+                repo.index.commit(
+                    'Update bucket metadata\n\nTypr-Meta: true',
+                    author=actor, committer=actor,
+                )
             finally:
                 repo.close()
 

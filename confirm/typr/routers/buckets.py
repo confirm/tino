@@ -45,12 +45,12 @@ async def get_bucket(slug: str, _user=Depends(require_viewer),
 @router.post('', response_model=BucketInfo, status_code=201)
 async def create_bucket(
     body: BucketCreate,
-    _user=Depends(require_global_admin),
+    user=Depends(require_global_admin),
     svc: BucketService = Depends(get_bucket_service),
 ):
     '''Create a new bucket (initializes a git repo with .meta.yml).'''
     try:
-        return svc.create(body.slug, body.description, body.access)
+        return svc.create(body.slug, body.description, body.access, user=user)
     except FileExistsError as exc:
         raise HTTPException(409, 'Bucket already exists') from exc
 
@@ -58,11 +58,11 @@ async def create_bucket(
 @router.put('/{slug}', response_model=BucketInfo)
 async def update_bucket(
     slug: str, body: BucketUpdate,
-    _user=Depends(require_global_admin),
+    user=Depends(require_global_admin),
     svc: BucketService = Depends(get_bucket_service),
 ):
     '''Update a bucket's description or access rules.'''
-    bucket = svc.update(slug, body.description, body.access)
+    bucket = svc.update(slug, body.description, body.access, user=user)
 
     if not bucket:
         raise HTTPException(404, 'Bucket not found')
