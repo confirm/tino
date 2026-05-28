@@ -172,7 +172,7 @@
       <div id="bucket-view-form" class="hidden">
         <div class="bucket-form">
           <label class="form-label">Slug</label>
-          <input class="form-input" id="bucket-form-slug" type="text" placeholder="my-bucket">
+          <input class="form-input" id="bucket-form-slug" type="text" placeholder="my-bucket" pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="64">
 
           <label class="form-label">Description</label>
           <textarea class="form-input" id="bucket-form-desc" rows="2" placeholder="Optional description..."></textarea>

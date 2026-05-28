@@ -1,6 +1,8 @@
 '''Pydantic models for API request/response schemas.'''
 
-from pydantic import BaseModel
+from typing import Annotated
+
+from pydantic import BaseModel, Field
 
 # ── Auth ──
 
@@ -21,9 +23,12 @@ class AccessEntry(BaseModel):
     role: str  # viewer | editor
 
 
+Slug = Annotated[str, Field(pattern=r'^[a-z0-9]+(?:-[a-z0-9]+)*$', min_length=1, max_length=64)]
+
+
 class BucketCreate(BaseModel):
     '''Request body for creating a new bucket.'''
-    slug: str
+    slug: Slug
     description: str = ''
     access: list[AccessEntry] = []
 

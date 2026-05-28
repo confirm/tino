@@ -191,8 +191,10 @@ export class BucketPicker {
     const slug = this.app.els.bucketFormSlug.value.trim()
     const description = this.app.els.bucketFormDesc.value.trim()
     const access = BucketPicker._collectAccessEntries()
-    if (!slug)
+    if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      this.app.toast.error('Slug must be lowercase alphanumeric with hyphens (e.g. "my-bucket").')
       return
+    }
     if (this._editingSlug) {
       await this.app.api.updateBucket(
         this._editingSlug, { access, description },
