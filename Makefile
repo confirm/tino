@@ -21,7 +21,13 @@ clean-cache:
 clean-test:
 	rm -vf .coverage .coveragerc .isort.cfg .pylintrc tox.ini
 
-clean-build:
+clean-docs:
+	rm -vrf $(BUILD_DIR)/docs
+
+clean-vendor-js:
+	rm -vrf $(SOURCE_DIRS)/static/js/vendor
+
+clean-build: clean-vendor-js
 	rm -vrf $(BUILD_DIR) .eggs *.egg-info
 
 clean-venv:
