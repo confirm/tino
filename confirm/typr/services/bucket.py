@@ -130,7 +130,7 @@ class BucketService:
         try:
             self._apply_shared_gitattributes(repo)
             repo.index.add([META_FILE])
-            repo.index.commit('Initialize bucket')
+            repo.index.commit('Initialize bucket\n\nTypr-Meta: true')
         finally:
             repo.close()
 
@@ -161,7 +161,7 @@ class BucketService:
             repo = git.Repo(path)
             try:
                 repo.index.add([META_FILE])
-                repo.index.commit('Update bucket metadata')
+                repo.index.commit('Update bucket metadata\n\nTypr-Meta: true')
             finally:
                 repo.close()
 
