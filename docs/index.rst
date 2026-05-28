@@ -28,7 +28,6 @@ Welcome to the official documentation of Typarr - a collaborative, self-hosted e
    :caption: Python API
 
    api/app
-   api/config
    api/models
    api/auth
    api/collab

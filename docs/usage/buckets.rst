@@ -1,7 +1,7 @@
 .. _Buckets:
 
 🪣 Buckets
----------
+----------
 
 Documents are organised into **buckets**.
 Each bucket is a self-contained git repository that holds one or more (Typst) files.

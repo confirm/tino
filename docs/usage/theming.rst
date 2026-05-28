@@ -1,7 +1,7 @@
 .. _Theming:
 
 🎨 Theming
----------
+----------
 
 Dark and light mode
 ~~~~~~~~~~~~~~~~~~~
