@@ -78,11 +78,11 @@ class CompilerService:
 
         return bucket_dir, source
 
-    def _run(self, source, output, cwd, fmt=None):
+    def _run(self, source, output, root, fmt=None):
         '''Build the typst compile command, run it, and raise on failure.'''
         result = subprocess.run(
-            self._build_cmd(source, output, fmt),
-            cwd=str(cwd),
+            self._build_cmd(source, output, root, fmt),
+            cwd=str(root),
             capture_output=True, text=True,
             timeout=_COMPILE_TIMEOUT, check=False,
         )
@@ -90,7 +90,7 @@ class CompilerService:
         if result.returncode != 0:
             raise RuntimeError(result.stderr.strip() or 'Compilation failed')
 
-    def _build_cmd(self, source, output, fmt=None):
+    def _build_cmd(self, source, output, root, fmt=None):
         '''Assemble the typst compile argument list.'''
         cmd = ['typst', 'compile']
 
@@ -100,6 +100,6 @@ class CompilerService:
         if self.package_dir:
             cmd.extend(['--package-path', str(self.package_dir)])
 
-        cmd.extend([str(source), str(output)])
+        cmd.extend(['--root', str(root), str(source), str(output)])
 
         return cmd
