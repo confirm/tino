@@ -3,23 +3,42 @@
 💁🏻‍♂️ Introduction
 ====================
 
+.. _Rationale:
+
+🤷🏻‍♂️ Rationale
+-----------------
+
+Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully automated — but document production still relied on native desktop applications with templates that were hard to control and impossible to version.
+
+We wanted «document authoring as code», meaning:
+
+- Web-based and self-hosted
+- Version-controlled with full history
+- Authentication and authorisation via OpenID Connect
+- Real-time collaboration
+- Reusable templates and corporate design as packages
+
+No existing tool ticked all the boxes. Typst's own editor comes close, but it's a hosted service — our documents had to stay on our own infrastructure.
+
+That left the question of which document format to build on. `Markdown <https://en.wikipedia.org/wiki/Markdown>`_ and `reStructuredText <https://en.wikipedia.org/wiki/ReStructuredText>`_ lack the typographic control needed for polished deliverables. `LaTeX <https://en.wikipedia.org/wiki/LaTeX>`_ offers that control, but the learning curve makes it impractical for non-technical contributors.
+
+`Typst <https://typst.app/>`_ struck the right balance — expressive enough for professional output, approachable enough for the whole team. 
+
+So we built Typr: a collaborative, self-hosted editing platform around `Typst`_.
+
 .. _Purpose:
 
 🎯 Purpose
 ----------
 
-Typr is a self-hosted web editor for `Typst <https://typst.app/>`_ documents, built for teams that want to write, review, and publish together.
+Typr is a self-hosted web editor for `Typst`_ documents, built for teams that want to author, review, and publish together.
 
-- | **Web-based word processing for technical documents**
-  | Write and typeset documents from any browser — no local installation needed.
-- | **Team editing without friction**
-  | Multiple people work on the same document at once, no file locking or manual merging.
-- | **Self-hosted and under your control**
-  | Run Typr on your own infrastructure — your documents never leave your network.
-- | **Nothing to install for end users**
-  | Open a browser, pick a project, start writing. No desktop app, no plugins.
-- | **Built on Typst**
-  | Leverage the speed and expressiveness of `Typst <https://typst.app/>`_ for beautiful, reproducible output.
+- | **Replace desktop word processors**
+  | Move document production to the browser, with version control and collaboration built in.
+- | **Keep documents on your infrastructure**
+  | Privacy-aware. Self-hosted by design. Nothing leaves your network.
+  | **Empower the whole team**
+  | `Typst`_ is expressive enough for professional output, approachable enough that everyone can contribute.
 
 .. _Features:
 
@@ -29,37 +48,20 @@ Typr is a self-hosted web editor for `Typst <https://typst.app/>`_ documents, bu
 The Typr editor ships with the following features out of the box:
 
 - | **Inline SVG preview**
-  | See a live-rendered preview of your document next to the editor, updated on every change.
+  | Live-rendered preview next to the editor, updated on every change.
+- | **PDF export**
+  | Compile and download production-ready PDFs directly from the editor.
 - | **Real-time collaboration**
-  | Concurrent editing via Yjs/CRDT over WebSockets — changes merge automatically, no conflicts.
-- | **Git versioning**
-  | Each project is a full git repository. View file status, commit changes, browse history, and restore earlier versions.
+  | Concurrent editing via CRDT over WebSockets. Changes merge automatically, no conflicts.
 - | **Group-based access control**
-  | Assign viewer, editor, or admin roles per project, backed by OpenID connect and group claims.
-- | **No database required**
-  | All state lives on the filesystem, in git, and in Keycloak — nothing else to operate.
-
-.. _Rationale:
-
-🤷🏻‍♂️ Rationale
------------------
-
-Most of our business processes are fully automated — but our word processing still relied on native desktop applications with templates hard to control.
-
-We wanted «word processing as code»:
-
-- Web-based and self-hosted
-- Version-controlled documents
-- Authentication and authorisation via OpenID Connect
-- Real-time collaboration
-
-Nothing on the market ticked all the boxes, so we decided to build our own.
-That left the question of which document format to use.
-
-Markdown and reStructuredText got us part of the way, but they lack the typographic control needed for polished deliverables. 
-LaTeX offers that control, yet the learning curve and tooling overhead made it impractical for non-technical contributors.
-
-`Typst <https://typst.app/>`_ struck the right balance — expressive enough for professional output, approachable enough for the whole team. 
-The only thing missing was a collaborative, web-based editing platform we could run ourselves.
-
-So we built Typr.
+  | Assign viewer, editor, or committer roles per bucket, backed by OpenID Connect and group claims.
+- | **Git versioning**
+  | Every bucket is a git repository with built-in history, commits, and restore.
+- | **Drag & drop uploads**
+  | Drop files or ZIP archives into a bucket to import them. Archives are extracted automatically.
+- | **Local packages**
+  | Reusable templates and shared components as Typst packages.
+- | **Custom fonts**
+  | Mount your own font library for consistent corporate typography.
+- | **Minimal operations**
+  | No database, no object storage. Just a filesystem and your identity provider.

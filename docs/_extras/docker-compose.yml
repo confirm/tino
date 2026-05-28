@@ -6,9 +6,8 @@ services:
     image: harbor.confirm.ch/typr/typr
 
     environment:
-      OIDC_DISCOVERY_URL: 'https://sso.example.com/.well-known/openid-configuration'
-      OIDC_CLIENT_ID: 'typr'
-      OIDC_CLIENT_SECRET: 'change-me'
+      OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration
+      OIDC_CLIENT_SECRET: change-me
 
     ports:
       - '5000:5000'

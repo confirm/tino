@@ -1,15 +1,41 @@
 Typr
 ====
 
-Welcome to the official documentation of Typr - the web-based Typst editor with real-time collaboration and version control.
+Welcome to the official documentation of Typr - a collaborative, self-hosted editing platform around `Typst`_.
 
 .. toctree::
    :maxdepth: 1
+   :caption: Getting started
 
    introduction
-   usage
    deployment
    configuration
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Usage
+
+   usage/authentication
+   usage/buckets
+   usage/files
+   usage/editor
+   usage/git
+   usage/theming
+   usage/api
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Python API
+
+   api/app
+   api/config
+   api/models
+   api/auth
+   api/collab
+   api/middleware
+   api/services
+   api/routers
+
 
 .. ifconfig:: todo_include_todos
 
