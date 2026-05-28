@@ -82,7 +82,8 @@ _DEFAULT_PACKAGE_DIR = str(BUCKET_DIR / 'packages')
 #:
 #:  - Via a dedicated `volume`_ (at runtime)
 #:  - Via a dedicated `bind mount`_ (at runtime)
-#:  - Via `COPY <https://docs.docker.com/reference/dockerfile/#copy>`_ or `ADD <https://docs.docker.com/reference/dockerfile/#add>`_ during build time
+#:  - Via `COPY <https://docs.docker.com/reference/dockerfile/#copy>`_ or
+#:    `ADD <https://docs.docker.com/reference/dockerfile/#add>`_ during build time
 PACKAGE_DIR = Path(environ.get('PACKAGE_DIR', _DEFAULT_PACKAGE_DIR))
 
 _DEFAULT_FONT_DIR = str(DATA_DIR / 'fonts')

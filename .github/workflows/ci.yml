@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # ──────────────────────────────────────────────
+  # 🧪 Tests
+  # ──────────────────────────────────────────────
+
+  test-isort:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install -e .[develop]
+      - run: make test-isort
+
+  test-pycodestyle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install -e .[develop]
+      - run: make test-pycodestyle
+
+  test-pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install -e .[develop]
+      - run: make test-pylint
+
+  test-eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: make test-eslint
+
+  test-stylelint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: make test-stylelint
+
+  # ──────────────────────────────────────────────
+  # 🔨 Build
+  # ──────────────────────────────────────────────
+
+  vendor-js:
+    needs: [test-eslint, test-stylelint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: make vendor-js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vendor-js
+          path: typarr/static/js/vendor/
+
+  docs:
+    needs: [test-isort, test-pycodestyle, test-pylint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install -e .[develop]
+      - run: make docs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/docs/
+
+  deploy-docs:
+    if: github.ref == 'refs/heads/main'
+    needs: [docs]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  package:
+    needs: [vendor-js]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install build setuptools-scm
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor-js
+          path: typarr/static/js/vendor/
+      - run: make package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: build/*.whl
+
+  docker-image:
+    needs: [package]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+          path: build/
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ghcr.io/confirm/typarr:latest

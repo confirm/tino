@@ -1,12 +1,17 @@
-Typr
-====
+# Typarr
 
-This repository contains Typr – the web-based Typst editor.
-You'll find…
+A collaborative, self-hosted web editor for [Typst](https://typst.app/) documents — built for teams that want to author, review, and publish together.
 
-- the [Typr source code](confirm/typr/),
-- the [documentation source](docs/),
-- the [Dockerfiles](Dockerfiles/) for the `typr`, and the `typr-docs` images,
-- and all the required files to build the package, and Docker images.
+## Documentation
 
-For more information about Typr, check out the deployed [documentation](https://typr.stable.confirm.ch/).
+Full documentation is available at **[confirm.github.io/typarr](https://confirm.github.io/typarr/)**.
+
+## Deployment
+
+For the deployment via Docker, check out the **[deployment docs](https://confirm.github.io/typarr/deployment.html)**.
+
+## License
+
+Typarr is licensed under the [GNU Affero General Public License v3.0](LICENSE).
+
+Individuals and small teams can use Typarr freely under the AGPL. Organizations that need a commercial license without copyleft obligations can [contact us](https://confirm.ch/en/#contact).

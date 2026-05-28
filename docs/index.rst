@@ -1,7 +1,7 @@
 Typarr
 ======
 
-Welcome to the official documentation of Typarr - a collaborative, self-hosted editing platform around `Typst`_.
+Welcome to the official documentation of Typarr - a collaborative, self-hosted editing platform around `Typst <https://typst.app/>`_.
 
 .. toctree::
    :maxdepth: 1

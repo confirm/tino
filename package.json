@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "build": "mkdir -p confirm/typarr/static/js/vendor && npm run build:prism && npm run build:yjs",
-    "build:prism": "cat node_modules/prismjs/prism.js confirm/typarr/static/js/prism-typst.js | esbuild --minify --loader=js --log-level=warning > confirm/typarr/static/js/vendor/prism.js",
-    "build:yjs": "esbuild --bundle --minify --format=esm --log-level=warning --outfile=confirm/typarr/static/js/vendor/yjs.js confirm/typarr/static/js/yjs-entry.js"
+    "build": "mkdir -p typarr/static/js/vendor && npm run build:prism && npm run build:yjs",
+    "build:prism": "cat node_modules/prismjs/prism.js typarr/static/js/prism-typst.js | esbuild --minify --loader=js --log-level=warning > typarr/static/js/vendor/prism.js",
+    "build:yjs": "esbuild --bundle --minify --format=esm --log-level=warning --outfile=typarr/static/js/vendor/yjs.js typarr/static/js/yjs-entry.js"
   },
   "dependencies": {
     "prismjs": "^1.30.0",

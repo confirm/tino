@@ -1,4 +1,0 @@
-ARG MCI_DOCKER_REGISTRY
-FROM ${MCI_DOCKER_REGISTRY}/base/nginx:latest
-
-COPY build/docs /usr/share/nginx/html

@@ -3,7 +3,7 @@ services:
 
   typarr:
 
-    image: harbor.confirm.ch/typarr/typarr
+    image: ghcr.io/confirm/typarr
 
     environment:
       OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration

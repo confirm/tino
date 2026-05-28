@@ -1,5 +1,5 @@
 ``typarr.app``
 ==============
 
-.. automodule:: confirm.typarr.app
+.. automodule:: typarr.app
    :members:

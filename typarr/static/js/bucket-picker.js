@@ -187,24 +187,24 @@ export class BucketPicker {
     return entries
   }
 
+  _validateSlug(slug) {
+    if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(slug)) {
+      this.app.toast.error('Slug must be lowercase alphanumeric with hyphens (e.g. "my-bucket").')
+      return false
+    }
+    return true
+  }
+
   async _saveBucket() {
     const slug = this.app.els.bucketFormSlug.value.trim()
     const description = this.app.els.bucketFormDesc.value.trim()
     const access = BucketPicker._collectAccessEntries()
-    if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-      this.app.toast.error('Slug must be lowercase alphanumeric with hyphens (e.g. "my-bucket").')
+    if (!this._validateSlug(slug))
       return
-    }
-    if (this._editingSlug) {
-      await this.app.api.updateBucket(
-        this._editingSlug, { access, description },
-      )
-    }
-    else {
-      await this.app.api.createBucket(
-        slug, description, access,
-      )
-    }
+    if (this._editingSlug)
+      await this.app.api.updateBucket(this._editingSlug, { access, description })
+    else
+      await this.app.api.createBucket(slug, description, access)
     await this.app.fileTree.loadBuckets()
     this._showListView()
     await this._renderList()
