@@ -77,20 +77,37 @@ export class TemplatePicker {
   static _renderItem(tpl) {
     const li = document.createElement('li')
     li.className = 'template-item'
+    TemplatePicker._setItemData(li, tpl)
+    li.innerHTML = TemplatePicker._itemHtml(tpl)
+    return li
+  }
+
+  static _setItemData(li, tpl) {
+    const [latest] = tpl.versions
     li.dataset.name = tpl.name
-    li.dataset.version = tpl.version
     li.dataset.namespace = tpl.namespace || 'preview'
     li.dataset.entrypoint = tpl.entrypoint || 'main.typ'
+    li.dataset.version = latest
+  }
+
+  static _itemHtml(tpl) {
     const authors = (tpl.authors || [])
       .map(au => escapeHtml(au)).join(', ')
-    li.innerHTML =
-      '<div class="template-header">' +
-      `<span class="template-name">${escapeHtml(tpl.name)}</span>` +
-      `<span class="template-version">${escapeHtml(tpl.version)}</span>` +
-      '</div>' +
-      `<div class="template-desc">${escapeHtml(tpl.description)}</div>` +
-      `<div class="template-authors">${authors}</div>`
-    return li
+    const pills = TemplatePicker._versionPills(tpl.versions)
+    return '<div class="template-header">'
+      + `<span class="template-name">${escapeHtml(tpl.name)}</span>`
+      + '</div>'
+      + `<div class="template-desc">${escapeHtml(tpl.description)}</div>`
+      + `<div class="template-authors">${authors}</div>`
+      + `<div class="template-versions">${pills}</div>`
+  }
+
+  static _versionPills(versions) {
+    return versions.map((ver, idx) => {
+      const cls = idx === 0 ? 'version-pill primary' : 'version-pill'
+      const safe = escapeHtml(ver)
+      return `<button class="${cls}" data-version="${safe}">${safe}</button>`
+    }).join('')
   }
 
   _filterTemplates(query) {
@@ -146,14 +163,16 @@ export class TemplatePicker {
   _bindListClicks() {
     this._list.addEventListener('click', evt => {
       const item = evt.target.closest('.template-item')
-      if (item) {
-        this._selectTemplate(
-          item.dataset.name,
-          item.dataset.version,
-          item.dataset.namespace,
-          item.dataset.entrypoint,
-        )
-      }
+      if (!item)
+        return
+      const pill = evt.target.closest('.version-pill')
+      const version = pill ? pill.dataset.version : item.dataset.version
+      this._selectTemplate(
+        item.dataset.name,
+        version,
+        item.dataset.namespace,
+        item.dataset.entrypoint,
+      )
     })
   }
 
