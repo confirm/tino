@@ -1,0 +1,46 @@
+name: Update Typst
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+
+  check-update:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Get current version
+        id: current
+        run: echo "version=$(grep -oP 'TYPST_VERSION=\K[0-9.]+' Dockerfile)" >> "$GITHUB_OUTPUT"
+
+      - name: Get latest release
+        id: latest
+        run: |
+          latest=$(gh release view --repo typst/typst --json tagName -q '.tagName' | sed 's/^v//')
+          echo "version=$latest" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Dockerfile
+        if: steps.current.outputs.version != steps.latest.outputs.version
+        run: sed -i "s/TYPST_VERSION=${{ steps.current.outputs.version }}/TYPST_VERSION=${{ steps.latest.outputs.version }}/" Dockerfile
+
+      - name: Create PR
+        if: steps.current.outputs.version != steps.latest.outputs.version
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: deps/typst-${{ steps.latest.outputs.version }}
+          title: 'Update Typst to ${{ steps.latest.outputs.version }}'
+          body: |
+            Updates Typst from `${{ steps.current.outputs.version }}` to `${{ steps.latest.outputs.version }}`.
+
+            Release: https://github.com/typst/typst/releases/tag/v${{ steps.latest.outputs.version }}
+          commit-message: 'Update Typst to ${{ steps.latest.outputs.version }}'

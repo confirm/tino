@@ -1,5 +1,5 @@
 ``typarr.middleware``
 =====================
 
-.. automodule:: confirm.typarr.middleware
+.. automodule:: typarr.middleware
    :members:

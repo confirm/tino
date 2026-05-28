@@ -17,7 +17,7 @@ To deploy Typarr, use the following Docker image:
 
 .. code-block:: text
 
-    harbor.confirm.ch/typarr/typarr
+    ghcr.io/confirm/typarr
 
 Docker command
 ~~~~~~~~~~~~~~
@@ -32,7 +32,7 @@ To deploy Typarr via a simple ``docker`` command, use the following CLI argument
         -e OIDC_CLIENT_SECRET=change-me \
         -p 5000:5000 \
         -v data:/data \
-        harbor.confirm.ch/typarr/typarr
+        ghcr.io/confirm/typarr
 
 .. hint:: 
 
@@ -62,7 +62,7 @@ Any provider that supports `OpenID Connect Discovery <https://openid.net/specs/o
 
 Register a new client (application) with your OIDC provider:
 
-1. Set the **client ID** to :attr:`OIDC_CLIENT_ID <confirm.typarr.config.OIDC_CLIENT_ID>`, or vice-versa
+1. Set the **client ID** to :attr:`OIDC_CLIENT_ID <typarr.config.OIDC_CLIENT_ID>`, or vice-versa
 2. Set the **redirect URI** (callback URL) to:
 
    .. code-block:: text
@@ -77,9 +77,9 @@ Register a new client (application) with your OIDC provider:
 
 4. Ensure the following **scopes** are enabled: ``openid``, ``email``, ``profile``.
 5. Make sure the **ID token** includes a claim with the user's group memberships
-   (see :attr:`OIDC_GROUPS_CLAIM <confirm.typarr.config.OIDC_GROUPS_CLAIM>`).
-6. Make sure a user matches an admin group (see :attr:`ADMIN_GROUPS <confirm.typarr.config.ADMIN_GROUPS>`)
-7. Set the :attr:`OIDC_CLIENT_SECRET <confirm.typarr.config.OIDC_CLIENT_SECRET>` to the **client secret**
+   (see :attr:`OIDC_GROUPS_CLAIM <typarr.config.OIDC_GROUPS_CLAIM>`).
+6. Make sure a user matches an admin group (see :attr:`ADMIN_GROUPS <typarr.config.ADMIN_GROUPS>`)
+7. Set the :attr:`OIDC_CLIENT_SECRET <typarr.config.OIDC_CLIENT_SECRET>` to the **client secret**
 
 .. hint::
 

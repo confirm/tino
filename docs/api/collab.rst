@@ -1,5 +1,5 @@
 ``typarr.collab``
 =================
 
-.. automodule:: confirm.typarr.collab
+.. automodule:: typarr.collab
    :members:

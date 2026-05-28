@@ -136,7 +136,8 @@ class BucketService:
             self._apply_shared_gitattributes(repo)
             repo.index.add([META_FILE])
             actor = self._actor(user) if user else None
-            repo.index.commit('Initialize bucket\n\nTyparr-Meta: true', author=actor, committer=actor)
+            repo.index.commit('Initialize bucket\n\nTyparr-Meta: true',
+                              author=actor, committer=actor)
         finally:
             repo.close()
 

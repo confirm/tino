@@ -1,5 +1,5 @@
 ``typarr.models``
 =================
 
-.. automodule:: confirm.typarr.models
+.. automodule:: typarr.models
    :members:

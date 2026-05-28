@@ -9,7 +9,8 @@ __pycache__/
 build/
 .eggs/
 *.egg-info/
-confirm/typarr/static/js/vendor/
+typarr/static/css/vendor/
+typarr/static/js/vendor/
 
 # Javascript package cache
 package-lock.json
@@ -26,3 +27,13 @@ eslint.config.mjs
 
 # Data
 data/
+
+# OS files
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Environment
+.env

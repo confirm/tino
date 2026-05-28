@@ -2,10 +2,9 @@
 # Settings
 #
 
-SOURCE_DIRS = confirm/typarr
+SOURCE_DIRS = typarr
 BUILD_DIR = build
 LINTER_CONFIGS = https://gitlab.confirm.ch/confirm/dev-configs/-/raw/main/linter
-PYPI_INDEX = https://pypi.confirm.ch/
 
 .PHONY: build docs vendor-js
 
@@ -41,7 +40,7 @@ venv:
 	python3 -m venv .venv
 
 develop-python:
-	pip3 install -U -i $(PYPI_INDEX) -e .[develop]
+	pip3 install -U -e .[develop]
 
 develop-node:
 	npm install
@@ -49,7 +48,7 @@ develop-node:
 develop: develop-python develop-node
 
 install:
-	pip3 install -i $(PYPI_INDEX) .
+	pip3 install .
 
 #
 # Development
@@ -60,7 +59,7 @@ isort:
 	isort $(SOURCE_DIRS)
 
 server:
-	uvicorn confirm.typarr:create_app --factory --port 8000 --reload
+	uvicorn typarr:create_app --factory --port 8000 --reload
 
 #
 # Test
@@ -95,16 +94,23 @@ test: test-commits test-isort test-pycodestyle test-pylint test-eslint test-styl
 # Build
 #
 
-package:
-	python3 -mbuild -o $(BUILD_DIR)
-
 docs:
 	sphinx-build docs $(BUILD_DIR)/docs
 
 autodocs:
-	sphinx-autobuild --open-browser --port 8888 --watch confirm docs $(BUILD_DIR)/docs
+	sphinx-autobuild --open-browser --port 8888 --watch typarr docs $(BUILD_DIR)/docs
+
+vendor-css:
+	mkdir -p $(SOURCE_DIRS)/static/css/vendor
+	curl -sSfLo $(SOURCE_DIRS)/static/css/vendor/colours.css https://assets.confirm.ch/colours.css
 
 vendor-js:
 	npm run build
 
-build: vendor-js package docs
+package:
+	python3 -mbuild -o $(BUILD_DIR)
+
+docker-image:
+	docker build -t ghcr.io/confirm/typarr .
+
+build: docs vendor-css vendor-js package

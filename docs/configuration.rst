@@ -3,5 +3,5 @@
 🎚 Configuration
 ================
 
-.. automodule:: confirm.typarr.config
+.. automodule:: typarr.config
    :members:

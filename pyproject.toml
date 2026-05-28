@@ -1,7 +1,7 @@
 [project]
 
-name = 'confirm-typarr'
-description = 'The web-based Typst editor.'
+name = 'typarr'
+description = 'A collaborative, self-hosted editing platform around Typst.'
 readme = 'README.md'
 
 authors = [
@@ -10,7 +10,7 @@ authors = [
 
 classifiers = [
     'Programming Language :: Python :: 3',
-    'License :: OSI Approved :: MIT License',
+    'License :: OSI Approved :: GNU Affero General Public License v3',
     'Operating System :: OS Independent',
 ]
 
@@ -40,8 +40,7 @@ dependencies = [
 
 develop = [
     'build',
-    'confirm-tools',
-    'confirm-sphinx',
+    'furo',
     'isort',
     'pycodestyle',
     'pylint',
@@ -64,7 +63,7 @@ build-backend = 'setuptools.build_meta'
 [tool.setuptools.packages.find]
 
 include = [
-    'confirm.*',
+    'typarr.*',
 ]
 
 exclude = [
@@ -74,7 +73,7 @@ exclude = [
 
 [tool.setuptools.package-data]
 
-'confirm.typarr' = [
+'typarr' = [
     'static/**/*',
     'static/*',
 ]
