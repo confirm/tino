@@ -1,32 +1,32 @@
-``typr.services``
-=================
+``typarr.services``
+===================
 
-``typr.services.bucket``
+``typarr.services.bucket``
+--------------------------
+
+.. automodule:: confirm.typarr.services.bucket
+   :members:
+
+``typarr.services.compiler``
+----------------------------
+
+.. automodule:: confirm.typarr.services.compiler
+   :members:
+
+``typarr.services.file``
 ------------------------
 
-.. automodule:: confirm.typr.services.bucket
+.. automodule:: confirm.typarr.services.file
    :members:
 
-``typr.services.compiler``
---------------------------
+``typarr.services.git``
+-----------------------
 
-.. automodule:: confirm.typr.services.compiler
+.. automodule:: confirm.typarr.services.git
    :members:
 
-``typr.services.file``
-----------------------
+``typarr.services.template``
+----------------------------
 
-.. automodule:: confirm.typr.services.file
-   :members:
-
-``typr.services.git``
----------------------
-
-.. automodule:: confirm.typr.services.git
-   :members:
-
-``typr.services.template``
---------------------------
-
-.. automodule:: confirm.typr.services.template
+.. automodule:: confirm.typarr.services.template
    :members:

@@ -2,7 +2,7 @@
 # Settings
 #
 
-SOURCE_DIRS = confirm/typr
+SOURCE_DIRS = confirm/typarr
 BUILD_DIR = build
 LINTER_CONFIGS = https://gitlab.confirm.ch/confirm/dev-configs/-/raw/main/linter
 PYPI_INDEX = https://pypi.confirm.ch/
@@ -54,7 +54,7 @@ isort:
 	isort $(SOURCE_DIRS)
 
 server:
-	uvicorn confirm.typr:create_app --factory --port 8000 --reload
+	uvicorn confirm.typarr:create_app --factory --port 8000 --reload
 
 #
 # Test

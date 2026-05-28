@@ -1,6 +1,6 @@
-``typr.config``
-===============
+``typarr.config``
+=================
 
-.. automodule:: confirm.typr.config
+.. automodule:: confirm.typarr.config
    :members:
    :exclude-members: sanity_checks

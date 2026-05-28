@@ -1,44 +1,44 @@
-``typr.routers``
-================
+``typarr.routers``
+==================
 
-``typr.routers.buckets``
-------------------------
-
-.. automodule:: confirm.typr.routers.buckets
-   :members:
-
-``typr.routers.collab``
------------------------
-
-.. automodule:: confirm.typr.routers.collab
-   :members:
-
-``typr.routers.compile``
-------------------------
-
-.. automodule:: confirm.typr.routers.compile
-   :members:
-
-``typr.routers.events``
------------------------
-
-.. automodule:: confirm.typr.routers.events
-   :members:
-
-``typr.routers.files``
-----------------------
-
-.. automodule:: confirm.typr.routers.files
-   :members:
-
-``typr.routers.git``
---------------------
-
-.. automodule:: confirm.typr.routers.git
-   :members:
-
-``typr.routers.templates``
+``typarr.routers.buckets``
 --------------------------
 
-.. automodule:: confirm.typr.routers.templates
+.. automodule:: confirm.typarr.routers.buckets
+   :members:
+
+``typarr.routers.collab``
+-------------------------
+
+.. automodule:: confirm.typarr.routers.collab
+   :members:
+
+``typarr.routers.compile``
+--------------------------
+
+.. automodule:: confirm.typarr.routers.compile
+   :members:
+
+``typarr.routers.events``
+-------------------------
+
+.. automodule:: confirm.typarr.routers.events
+   :members:
+
+``typarr.routers.files``
+------------------------
+
+.. automodule:: confirm.typarr.routers.files
+   :members:
+
+``typarr.routers.git``
+----------------------
+
+.. automodule:: confirm.typarr.routers.git
+   :members:
+
+``typarr.routers.templates``
+----------------------------
+
+.. automodule:: confirm.typarr.routers.templates
    :members:

@@ -1,5 +1,5 @@
-``typr.collab``
-===============
+``typarr.collab``
+=================
 
-.. automodule:: confirm.typr.collab
+.. automodule:: confirm.typarr.collab
    :members:

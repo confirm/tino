@@ -1,5 +1,5 @@
-``typr.models``
-===============
+``typarr.models``
+=================
 
-.. automodule:: confirm.typr.models
+.. automodule:: confirm.typarr.models
    :members:

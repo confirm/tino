@@ -24,7 +24,7 @@ Build vendor JS:
   artifacts:
     name: vendor
     paths:
-      - confirm/typr/static/js/vendor
+      - confirm/typarr/static/js/vendor
 
 Build package:
   needs:

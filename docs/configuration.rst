@@ -1,7 +1,7 @@
 .. _Configuration:
 
 🎚 Configuration
-================
+===============
 
-.. automodule:: confirm.typr.config
+.. automodule:: confirm.typarr.config
    :members:
