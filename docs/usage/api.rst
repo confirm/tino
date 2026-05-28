@@ -1,7 +1,7 @@
 .. _REST API:
 
 🔌 REST API
-----------
+-----------
 
 Typarr exposes a REST API that powers the web UI.
 The same endpoints are available for scripting and automation.

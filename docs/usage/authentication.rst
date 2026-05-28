@@ -1,7 +1,7 @@
 .. _Authentication:
 
 🔐 Authentication
-----------------
+-----------------
 
 Typarr uses OpenID Connect (OIDC) for authentication.
 Click **Login with SSO** on the login page to be redirected to your identity provider.

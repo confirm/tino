@@ -1,12 +1,12 @@
 .. _Introduction:
 
 💁🏻‍♂️ Introduction
-==================
+====================
 
 .. _Rationale:
 
 🤷🏻‍♂️ Rationale
----------------
+-----------------
 
 Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully automated — but document production still relied on native desktop applications with templates that were hard to control and impossible to version.
 
@@ -29,7 +29,7 @@ So we built Typarr: a collaborative, self-hosted editing platform around `Typst`
 .. _Purpose:
 
 🎯 Purpose
----------
+----------
 
 Typarr is a self-hosted web editor for `Typst`_ documents, built for teams that want to author, review, and publish together.
 
@@ -43,7 +43,7 @@ Typarr is a self-hosted web editor for `Typst`_ documents, built for teams that 
 .. _Features:
 
 ✨ Features
-----------
+-----------
 
 The Typarr editor ships with the following features out of the box:
 

@@ -77,8 +77,6 @@ Files are **auto-saved** one second after you stop typing.
 You can also save manually with the **Save** button or :kbd:`Ctrl+S`.
 Unsaved files are marked with a dot on their tab.
 
-.. _Preview:
-
 Preview
 ~~~~~~~
 

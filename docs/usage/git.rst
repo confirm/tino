@@ -1,7 +1,7 @@
 .. _Git:
 
 🔀 Git
------
+------
 
 Every bucket is backed by a git repository.
 Modified files are highlighted in the file tree with a status indicator.

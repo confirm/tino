@@ -1,14 +1,14 @@
 .. _Deployment:
 
 🚀 Deployment
-============
+=============
 
 Typarr ships as a single Docker image with no external dependencies — just point it at an OIDC provider and add a data volume, and you're up.
 
 .. _Docker:
 
 🐳 Docker
---------
+---------
 
 Docker image
 ~~~~~~~~~~~~
@@ -55,7 +55,7 @@ Then bring the stack up with:
 .. _OIDC:
 
 🔐 OIDC
-------
+-------
 
 Typarr requires an OpenID Connect (OIDC) provider for authentication.
 Any provider that supports `OpenID Connect Discovery <https://openid.net/specs/openid-connect-discovery-1_0.html>`_ is supported (e.g. Keycloak, Authentik, Azure AD, Okta, Zitadel).
