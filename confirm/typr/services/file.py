@@ -1,7 +1,9 @@
 '''File management service. Reads/writes files within bucket git repos.'''
 
 import shutil
+import zipfile
 from datetime import datetime, timezone
+from io import BytesIO
 from pathlib import Path
 
 from ..models import FileEntry
@@ -167,6 +169,28 @@ class FileService:
         shutil.rmtree(target)
 
         return affected
+
+    def unzip(self, slug: str, data: bytes, prefix: str = '') -> list[str]:
+        '''Extract a ZIP archive into the bucket. Returns list of extracted paths.'''
+        root = self._bucket_path(slug)
+        extracted = []
+
+        with zipfile.ZipFile(BytesIO(data)) as zf:
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+
+                file_path = f'{prefix}/{info.filename}' if prefix else info.filename
+                target = self._safe_path(root, file_path)
+
+                if target is None:
+                    continue
+
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(zf.read(info))
+                extracted.append(file_path)
+
+        return extracted
 
     def delete(self, slug: str, file_path: str) -> bool:
         '''Delete a file. Returns False if not found.'''

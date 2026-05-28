@@ -90,17 +90,22 @@ async def upload_files(
     _user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
 ):
-    '''Upload one or more binary/text files via multipart form data.'''
+    '''Upload one or more binary/text files via multipart form data. ZIP files are extracted.'''
     uploaded = []
 
     for file in files:
-        path = f'{prefix}/{file.filename}' if prefix else file.filename
         data = await file.read()
 
-        if not svc.upload(slug, path, data):
-            raise HTTPException(400, f'Invalid path: {path}')
+        if file.filename and file.filename.lower().endswith('.zip'):
+            extracted = svc.unzip(slug, data, prefix)
+            uploaded.extend(extracted)
+        else:
+            path = f'{prefix}/{file.filename}' if prefix else file.filename
 
-        uploaded.append(path)
+            if not svc.upload(slug, path, data):
+                raise HTTPException(400, f'Invalid path: {path}')
+
+            uploaded.append(path)
 
     await get_notifier().notify(slug)
     return {'uploaded': uploaded}
