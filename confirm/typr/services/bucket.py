@@ -115,7 +115,11 @@ class BucketService:
     ) -> BucketInfo:
         '''Create a new bucket: mkdir, git init, write .meta.yml, initial commit.'''
         path = self._path(slug)
-        path.mkdir(parents=True, exist_ok=False)
+
+        if path.is_dir() and any(path.iterdir()):
+            raise FileExistsError(slug)
+
+        path.mkdir(parents=True, exist_ok=True)
 
         meta = {'description': description}
         if access:
