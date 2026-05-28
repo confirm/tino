@@ -10,9 +10,11 @@ _COMPILE_TIMEOUT = 30
 class CompilerService:
     '''Compiles .typ files to SVG or PDF by invoking the Typst CLI.'''
 
-    def __init__(self, data_dir: Path, package_dir: Path | None = None):
+    def __init__(self, data_dir: Path, package_dir: Path | None = None,
+                 font_dir: Path | None = None):
         self.data_dir = data_dir
         self.package_dir = package_dir
+        self.font_dir = font_dir
 
     @staticmethod
     def version() -> str:
@@ -99,6 +101,9 @@ class CompilerService:
 
         if self.package_dir:
             cmd.extend(['--package-path', str(self.package_dir)])
+
+        if self.font_dir and self.font_dir.is_dir():
+            cmd.extend(['--font-path', str(self.font_dir)])
 
         cmd.extend(['--root', str(root), str(source), str(output)])
 
