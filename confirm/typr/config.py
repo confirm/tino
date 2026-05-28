@@ -1,5 +1,5 @@
 '''
-All settings of Typr.
+Typr allows configuration via environment variables.
 
 .. note::
 
@@ -8,12 +8,12 @@ All settings of Typr.
 '''
 
 __all__ = (
-    'sanity_checks',
     'ACCENT_COLOUR',
     'ADMIN_GROUPS',
     'BUCKET_DIR',
     'DATA_DIR',
     'DEFAULT_ROLE',
+    'FONT_DIR',
     'LOG_LEVEL',
     'OIDC_CLIENT_ID',
     'OIDC_CLIENT_SECRET',
@@ -48,31 +48,61 @@ LOG_LEVEL = environ.get('LOG_LEVEL', 'INFO')
 ACCENT_COLOUR = environ.get('ACCENT_COLOUR', 'orange')
 
 _DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent.parent / 'data')
-#: ⭕ The root directory where bucket git repos are stored.
+#: ⭕ The root directory where all the user data is stored.
+#:
+#: .. important::
+#:
+#:  To persist the Typr data, either use a
+#:  `volume <https://docs.docker.com/engine/storage/volumes/>`_ or a
+#:  `bind mount <https://docs.docker.com/engine/storage/bind-mounts/>`_ mounted on the path.
 DATA_DIR = Path(environ.get('DATA_DIR', _DEFAULT_DATA_DIR))
 
 _DEFAULT_BUCKET_DIR = str(DATA_DIR / 'buckets')
 #: ⭕ The directory where bucket git repos are stored.
+#:
+#: .. hint::
+#:  By default this is a sub directory of the :attr:`DATA_DIR`.
+#:  In case you change it to be outside of the :attr:`DATA_DIR`, make sure you've a
+#:  `volume`_ or a `bind mount`_ mounted on the path.
 BUCKET_DIR = Path(environ.get('BUCKET_DIR', _DEFAULT_BUCKET_DIR))
 
 _DEFAULT_PACKAGE_DIR = str(BUCKET_DIR / 'packages')
-#: ⭕ Optional directory for local Typst packages (``@local/name:version``).
-#: Passed as ``--package-path`` to the Typst CLI.
+#: Optional directory for local Typst packages (``@local/name:version``).
+#:
+#: .. note::
+#:  The package dir is passed as ``--package-path`` to the ``typst`` CLI.
 #:
 #: .. hint::
-#:  When set to a sub-directory of the :attr:`BUCKET_DIR`, the package directory acts like a bucket,
-#:  and it can be edited in Typr directly.
+#:  When this directory is set to a sub-directory of the :attr:`BUCKET_DIR`,
+#:  the package directory can act like a bucket, and it can be edited in the
+#:  Typr web UI directly.
+#:
+#:  If not set the a sub-directory of the :attr:`BUCKET_DIR`, packages must be
+#:  provided to the Docker container via one of the following Docker options:
+#:
+#:  - Via a dedicated `volume`_ (at runtime)
+#:  - Via a dedicated `bind mount`_ (at runtime)
+#:  - Via `COPY <https://docs.docker.com/reference/dockerfile/#copy>`_ or `ADD <https://docs.docker.com/reference/dockerfile/#add>`_ during build time
 PACKAGE_DIR = Path(environ.get('PACKAGE_DIR', _DEFAULT_PACKAGE_DIR))
 
 _DEFAULT_FONT_DIR = str(DATA_DIR / 'fonts')
-#: ⭕ Optional directory for custom fonts.
-#: Passed as ``--font-path`` to the Typst CLI.
+#: Optional directory for custom fonts.
+#:
+#: .. note::
+#:  The font dir is passed as ``--font-path`` to the ``typst`` CLI.
+#:
+#: .. hint::
+#:  By default this is a sub directory of the :attr:`DATA_DIR`.
+#:  In case you change it to be outside of the :attr:`DATA_DIR`, make sure you've a
+#:  `volume`_ or a `bind mount`_ mounted on the path.
 FONT_DIR = Path(environ.get('FONT_DIR', _DEFAULT_FONT_DIR))
 
 #: ⭕ Secret key for signing session cookies.
 #:
 #: .. hint::
-#:  If not set explicitly, a random 32-char token will be generated.
+#:  If not set explicitly, a random token is generated on every startup.
+#:  This is secure, but it will invalidate all existing sessions and forces users to log in again
+#:  after a container restart.
 SECRET_KEY = environ.get('SECRET_KEY', token_hex(32))
 
 _ADMIN_GROUPS_RAW = environ.get('ADMIN_GROUPS', 'admins')
@@ -136,6 +166,7 @@ def sanity_checks():  # pylint: disable=too-complex
     if DEFAULT_ROLE not in _valid_roles:
         errors['DEFAULT_ROLE'] = f'Must be one of: {", ".join(sorted(_valid_roles))}'
 
+    # Must match colours of https://assets.confirm.ch/#colours.
     _valid_accents = {
         'grey', 'cold-grey', 'warm-grey',
         'red', 'orange', 'yellow',

@@ -3,6 +3,8 @@
 🚀 Deployment
 =============
 
+Typr ships as a single Docker image with no external dependencies — just point it at an OIDC provider and add a data volume, and you're up.
+
 .. _Docker:
 
 🐳 Docker
@@ -27,7 +29,6 @@ To deploy Typr via a simple ``docker`` command, use the following CLI arguments:
     docker run -d \
         --name typr \
         -e OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
-        -e OIDC_CLIENT_ID=typr \
         -e OIDC_CLIENT_SECRET=change-me \
         -p 5000:5000 \
         -v data:/data \
@@ -95,3 +96,7 @@ are built with ``https://``. Ensure your proxy sets:
 - ``X-Forwarded-For``
 
 Typr reads and respects these headers automatically.
+
+.. todo::
+
+    Make this configurable in case no reverse-proxy is in front (security issue).
