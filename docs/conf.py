@@ -1,12 +1,13 @@
 from os import environ
+from datetime import date
 
 #
 # ⚙️ Generic options.
 #
 
 project   = 'Typarr'
-copyright = '2025, confirm IT Solutions'
-author    = 'confirm IT Solutions'
+copyright = f'{date.today().strftime('%Y')}, confirm IT'
+author    = 'confirm IT'
 
 #
 # 🎨 Theme options.
