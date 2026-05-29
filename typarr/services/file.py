@@ -1,5 +1,6 @@
 '''File management service. Reads/writes files within bucket git repos.'''
 
+import logging
 import shutil
 import zipfile
 from datetime import datetime, timezone
@@ -7,6 +8,8 @@ from io import BytesIO
 from pathlib import Path
 
 from ..models import FileEntry
+
+logger = logging.getLogger(__name__)
 
 IGNORED = {'.git', '.meta.yml'}
 
@@ -81,6 +84,7 @@ class FileService:
 
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding='utf-8')
+        logger.debug('Saved %s/%s (%d bytes)', slug, file_path, len(content))
 
         return datetime.fromtimestamp(target.stat().st_mtime, tz=timezone.utc).isoformat()
 
@@ -94,6 +98,7 @@ class FileService:
 
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding='utf-8')
+        logger.info('Created %s/%s', slug, file_path)
 
         return True
 
@@ -107,6 +112,7 @@ class FileService:
 
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
+        logger.info('Uploaded %s/%s (%d bytes)', slug, file_path, len(data))
 
         return True
 
@@ -124,6 +130,7 @@ class FileService:
 
         dest.parent.mkdir(parents=True, exist_ok=True)
         source.rename(dest)
+        logger.info('Renamed %s/%s -> %s', slug, old_path, new_path)
 
         return True
 
@@ -153,6 +160,10 @@ class FileService:
         affected = [str(f.relative_to(root)) for f in source.rglob('*') if f.is_file()]
 
         source.rename(dest)
+        logger.info(
+            'Renamed directory %s/%s -> %s (%d files)',
+            slug, old_path, new_path, len(affected),
+        )
 
         return affected
 
@@ -167,6 +178,7 @@ class FileService:
         affected = [str(f.relative_to(root)) for f in target.rglob('*') if f.is_file()]
 
         shutil.rmtree(target)
+        logger.info('Deleted directory %s/%s (%d files)', slug, dir_path, len(affected))
 
         return affected
 
@@ -190,6 +202,7 @@ class FileService:
                 target.write_bytes(zf.read(info))
                 extracted.append(file_path)
 
+        logger.info('Extracted ZIP into %s (%d files)', slug, len(extracted))
         return extracted
 
     def delete(self, slug: str, file_path: str) -> bool:
@@ -201,5 +214,6 @@ class FileService:
             return False
 
         target.unlink()
+        logger.info('Deleted %s/%s', slug, file_path)
 
         return True

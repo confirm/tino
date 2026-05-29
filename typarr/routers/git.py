@@ -1,5 +1,6 @@
 '''REST endpoints for git operations on a bucket's repository.'''
 
+import logging
 import mimetypes
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -11,13 +12,15 @@ from ..dependencies import get_collab_manager, get_git_service, get_notifier, re
 from ..models import CommitInfo, CommitRequest, DiffEntry, FileStatus, RestoreRequest
 from ..services.git import GitService
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix='/api/buckets/{slug}/git', tags=['git'])
 
 
 @router.get('/status', response_model=list[FileStatus])
 async def git_status(
     slug: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: GitService = Depends(get_git_service),
 ):
     '''Return per-file working tree status (modified, untracked, deleted, staged).'''
@@ -25,6 +28,7 @@ async def git_status(
         return svc.status(slug)
 
     except Exception as exc:
+        logger.warning('git status failed for %s (user: %s): %s', slug, user.username, exc)
         raise HTTPException(404, 'Bucket not found or not a git repo') from exc
 
 
@@ -36,11 +40,16 @@ async def git_commit(
 ):
     '''Stage the selected files and create a new commit.'''
     if not body.files:
+        logger.warning(
+            'Commit rejected for %s: no files specified (user: %s)',
+            slug, user.username,
+        )
         raise HTTPException(400, 'No files specified')
 
     try:
         result = svc.commit(slug, body.files, body.message, author=user.username, email=user.email)
     except Exception as exc:
+        logger.warning('Commit failed for %s (user: %s): %s', slug, user.username, exc)
         raise HTTPException(400, str(exc)) from exc
 
     await get_notifier().notify(slug)
@@ -50,7 +59,7 @@ async def git_commit(
 @router.get('/log', response_model=list[CommitInfo])
 async def git_log(
     slug: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: GitService = Depends(get_git_service),
     path: str | None = Query(None),
     max_count: int = Query(50, ge=1, le=500),
@@ -60,13 +69,14 @@ async def git_log(
         return svc.log(slug, path, max_count=max_count)
 
     except Exception as exc:
+        logger.warning('git log failed for %s (user: %s): %s', slug, user.username, exc)
         raise HTTPException(404, 'Bucket not found') from exc
 
 
 @router.get('/diff', response_model=list[DiffEntry])
 async def git_diff(
     slug: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: GitService = Depends(get_git_service),
     path: str | None = Query(None),
 ):
@@ -75,13 +85,14 @@ async def git_diff(
         return svc.diff(slug, path)
 
     except Exception as exc:
+        logger.warning('git diff failed for %s (user: %s): %s', slug, user.username, exc)
         raise HTTPException(404, 'Bucket not found') from exc
 
 
 @router.get('/tree/{ref}')
 async def git_tree(
     slug: str, ref: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: GitService = Depends(get_git_service),
 ):
     '''List all files at a specific commit ref.'''
@@ -89,6 +100,10 @@ async def git_tree(
         return svc.tree(slug, ref)
 
     except Exception as exc:
+        logger.warning(
+            'git tree failed for %s at %s (user: %s): %s',
+            slug, ref, user.username, exc,
+        )
         raise HTTPException(404, 'Commit not found') from exc
 
 
@@ -126,7 +141,7 @@ async def git_show_raw(
 @router.post('/restore')
 async def git_restore(
     slug: str, body: RestoreRequest,
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: GitService = Depends(get_git_service),
     collab: CollabManager = Depends(get_collab_manager),
 ):
@@ -134,6 +149,10 @@ async def git_restore(
     restored = svc.restore(slug, body.ref, body.paths)
 
     if not restored:
+        logger.warning(
+            'Restore failed for %s from %s: no files restored (user: %s)',
+            slug, body.ref, user.username,
+        )
         raise HTTPException(404, 'No files could be restored')
 
     await collab.reload_rooms(slug, restored)

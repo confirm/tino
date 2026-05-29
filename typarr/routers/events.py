@@ -1,10 +1,14 @@
 '''WebSocket endpoint for bucket-level file change notifications.'''
 
+import logging
+
 from fastapi import APIRouter, HTTPException, WebSocket
 
 from ..auth import check_access
 from ..dependencies import get_bucket_service, get_notifier
 from ..models import User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/api/buckets/{slug}', tags=['events'])
 
@@ -32,4 +36,6 @@ async def bucket_events(websocket: WebSocket, slug: str):
         return
 
     notifier = get_notifier()
+    logger.debug('Event subscriber connected for %s by %s', slug, user.username)
     await notifier.serve(websocket, slug)
+    logger.debug('Event subscriber disconnected for %s by %s', slug, user.username)

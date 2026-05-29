@@ -1,11 +1,15 @@
 '''REST endpoints for bucket CRUD operations.'''
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth import get_current_user, resolve_role
 from ..dependencies import get_bucket_service, require_global_admin, require_viewer
 from ..models import BucketCreate, BucketInfo, BucketUpdate
 from ..services.bucket import BucketService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/api/buckets', tags=['buckets'])
 
@@ -52,6 +56,10 @@ async def create_bucket(
     try:
         return svc.create(body.slug, body.description, body.access, user=user)
     except FileExistsError as exc:
+        logger.warning(
+            'Bucket creation rejected: %s already exists (user: %s)',
+            body.slug, user.username,
+        )
         raise HTTPException(409, 'Bucket already exists') from exc
 
 
@@ -65,6 +73,7 @@ async def update_bucket(
     bucket = svc.update(slug, body.description, body.access, user=user)
 
     if not bucket:
+        logger.warning('Bucket update rejected: %s not found (user: %s)', slug, user.username)
         raise HTTPException(404, 'Bucket not found')
 
     return bucket
@@ -73,9 +82,10 @@ async def update_bucket(
 @router.delete('/{slug}', status_code=204)
 async def delete_bucket(
     slug: str,
-    _user=Depends(require_global_admin),
+    user=Depends(require_global_admin),
     svc: BucketService = Depends(get_bucket_service),
 ):
     '''Delete a bucket and its git repo from disk.'''
     if not svc.delete(slug):
+        logger.warning('Bucket deletion rejected: %s not found (user: %s)', slug, user.username)
         raise HTTPException(404, 'Bucket not found')

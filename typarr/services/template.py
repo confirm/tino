@@ -112,6 +112,8 @@ class TemplateService:
                 else:
                     shutil.copy2(item, dest)
 
+            logger.info('Initialized %s from template @%s/%s:%s', slug, namespace, name, version)
+
     def list_local_templates(self) -> list[dict]:
         '''Scan the package directory for local template packages, grouped by name.
 

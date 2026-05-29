@@ -1,5 +1,6 @@
 '''Bucket management service. Each bucket is a git repo on disk with a .meta.yml.'''
 
+import logging
 import shutil
 import threading
 from datetime import datetime, timezone
@@ -9,6 +10,8 @@ import git
 import yaml
 
 from ..models import AccessEntry, BucketInfo, User
+
+logger = logging.getLogger(__name__)
 
 META_FILE = '.meta.yml'
 
@@ -131,6 +134,7 @@ class BucketService:
         finally:
             repo.close()
 
+        logger.info('Created bucket %s', slug)
         return self._to_info(slug, path)
 
     def update(
@@ -167,6 +171,7 @@ class BucketService:
             finally:
                 repo.close()
 
+            logger.info('Updated bucket %s metadata', slug)
             return self._to_info(slug, path)
 
     def delete(self, slug: str) -> bool:
@@ -177,5 +182,6 @@ class BucketService:
             return False
 
         shutil.rmtree(path)
+        logger.info('Deleted bucket %s', slug)
 
         return True

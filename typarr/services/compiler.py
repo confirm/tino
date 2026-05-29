@@ -1,8 +1,11 @@
 '''Typst compiler service. Shells out to the system `typst` binary to produce SVG or PDF output.'''
 
+import logging
 import subprocess
 import tempfile
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 _COMPILE_TIMEOUT = 30
 
@@ -33,6 +36,7 @@ class CompilerService:
         or RuntimeError if compilation fails (with the stderr message).
         '''
         bucket_dir, source = self._resolve_source(slug, path)
+        logger.debug('Compiling SVG for %s/%s', slug, path)
 
         return self._render_svgs(source, bucket_dir)
 
@@ -58,6 +62,7 @@ class CompilerService:
             live_source = Path(live.name)
 
         try:
+            logger.debug('Compiling live SVG for %s/%s', slug, path)
             return self._render_svgs(live_source, bucket_dir)
         finally:
             live_source.unlink(missing_ok=True)
@@ -71,6 +76,7 @@ class CompilerService:
         or RuntimeError if compilation fails (with the stderr message).
         '''
         bucket_dir, source = self._resolve_source(slug, path)
+        logger.info('Compiling PDF for %s/%s', slug, path)
 
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
             output = Path(tmp.name)
@@ -129,6 +135,7 @@ class CompilerService:
         )
 
         if result.returncode != 0:
+            logger.warning('Compilation failed for %s: %s', source, result.stderr.strip())
             raise RuntimeError(result.stderr.strip() or 'Compilation failed')
 
     def _build_cmd(self, source, output, root, fmt=None):

@@ -1,6 +1,9 @@
 '''Font management service. Lists, uploads, and deletes custom font files.'''
 
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 VALID_EXTENSIONS = {'.ttf', '.otf', '.woff', '.woff2'}
 
@@ -29,6 +32,7 @@ class FontService:
         if not self._is_valid(filename):
             return False
         (self.font_dir / filename).write_bytes(data)
+        logger.info('Uploaded font %s (%d bytes)', filename, len(data))
         return True
 
     def delete(self, filename: str) -> bool:
@@ -39,6 +43,7 @@ class FontService:
         if not target.is_file():
             return False
         target.unlink()
+        logger.info('Deleted font %s', filename)
         return True
 
     def _is_valid(self, filename: str) -> bool:

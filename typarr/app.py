@@ -1,5 +1,6 @@
 '''FastAPI application factory. Mounts routers, WebSocket collab, and static frontend.'''
 
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -37,6 +38,16 @@ async def lifespan(_app: FastAPI):
 
 def create_app() -> FastAPI:
     '''Create and return the Typarr FastAPI application.'''
+    logging.basicConfig(
+        level=config.TYPARR_LOG_LEVEL,
+        format='%(asctime)s %(levelname)-8s %(name)s  %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
+    logging.getLogger('git').setLevel(logging.WARNING)
+    logging.getLogger('httpcore').setLevel(logging.WARNING)
+    logging.getLogger('httpx').setLevel(logging.WARNING)
+    logging.getLogger('pycrdt').setLevel(logging.WARNING)
+
     app = FastAPI(title='Typarr', lifespan=lifespan)
 
     @app.get('/health', response_class=PlainTextResponse)

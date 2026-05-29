@@ -1,5 +1,6 @@
 '''Git operations service. Wraps GitPython to expose status, commit, log, diff, and restore.'''
 
+import logging
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -7,6 +8,8 @@ from pathlib import Path
 import git as gitpython
 
 from ..models import CommitInfo, DiffEntry, FileStatus
+
+logger = logging.getLogger(__name__)
 
 
 class GitService:
@@ -70,6 +73,10 @@ class GitService:
 
             actor  = gitpython.Actor(author, email or f'{author}@typarr')
             commit = repo.index.commit(message, author=actor)
+            logger.info(
+                'Committed %s in %s by %s (%d files)',
+                commit.hexsha[:8], slug, author, len(files),
+            )
 
             return self._to_commit_info(commit)
 
@@ -177,4 +184,6 @@ class GitService:
                 except (KeyError, gitpython.GitCommandError):
                     pass
 
+            if restored:
+                logger.info('Restored %d files in %s from %s', len(restored), slug, ref[:8])
             return restored

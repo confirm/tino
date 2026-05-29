@@ -1,5 +1,7 @@
 '''REST endpoints for file CRUD within a bucket's working tree.'''
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.params import File
 from fastapi.responses import FileResponse
@@ -9,6 +11,8 @@ from ..dependencies import get_collab_manager, get_file_service, get_notifier, r
     require_viewer
 from ..models import FileCreate, FileEntry, FileSave
 from ..services.file import FileService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/api/buckets/{slug}/files', tags=['files'])
 
@@ -56,11 +60,15 @@ async def read_file(
 @router.post('', status_code=201)
 async def create_file(
     slug: str, body: FileCreate,
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
 ):
     '''Create a new file in the bucket. Fails if the file already exists.'''
     if not svc.create(slug, body.path, body.content):
+        logger.warning(
+            'File creation rejected for %s/%s (exists or invalid path) (user: %s)',
+            slug, body.path, user.username,
+        )
         raise HTTPException(409, 'File already exists or invalid path')
 
     await get_notifier().notify(slug)
@@ -70,13 +78,17 @@ async def create_file(
 @router.put('/{path:path}')
 async def save_file(
     slug: str, path: str, body: FileSave,
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
 ):
     '''Overwrite a file's content (used by manual save and auto-save).'''
     modified = svc.write(slug, path, body.content)
 
     if not modified:
+        logger.warning(
+            'File save rejected for %s/%s (invalid path) (user: %s)',
+            slug, path, user.username,
+        )
         raise HTTPException(400, 'Invalid path')
 
     return {'path': path, 'modified': modified}
@@ -87,7 +99,7 @@ async def upload_files(
     slug: str,
     files: list[UploadFile] = File(...),
     prefix: str = '',
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
 ):
     '''Upload one or more binary/text files via multipart form data. ZIP files are extracted.'''
@@ -103,6 +115,10 @@ async def upload_files(
             path = f'{prefix}/{file.filename}' if prefix else file.filename
 
             if not svc.upload(slug, path, data):
+                logger.warning(
+                    'Upload rejected for %s/%s (invalid path) (user: %s)',
+                    slug, path, user.username,
+                )
                 raise HTTPException(400, f'Invalid path: {path}')
 
             uploaded.append(path)
@@ -114,13 +130,17 @@ async def upload_files(
 @router.post('/rename')
 async def rename_file(
     slug: str, body: dict,
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
     collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Rename/move a single file.'''
     async with collab.lock_path(slug, body['old_path']):
         if not svc.rename(slug, body['old_path'], body['new_path']):
+            logger.warning(
+                'Rename rejected for %s: %s -> %s (invalid path or target exists) (user: %s)',
+                slug, body['old_path'], body['new_path'], user.username,
+            )
             raise HTTPException(400, 'Invalid path or target exists')
 
     await get_notifier().notify(slug)
@@ -130,7 +150,7 @@ async def rename_file(
 @router.post('/rename-dir')
 async def rename_dir(
     slug: str, body: dict,
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
     collab: CollabManager = Depends(get_collab_manager),
 ):
@@ -139,6 +159,10 @@ async def rename_dir(
     affected = svc.rename_dir(slug, body['old_path'], body['new_path'])
 
     if affected is None:
+        logger.warning(
+            'Directory rename rejected for %s: %s -> %s (user: %s)',
+            slug, body['old_path'], body['new_path'], user.username,
+        )
         raise HTTPException(400, 'Invalid path or target exists')
 
     await get_notifier().notify(slug)
@@ -148,13 +172,17 @@ async def rename_dir(
 @router.delete('/dir/{path:path}', status_code=204)
 async def delete_dir(
     slug: str, path: str,
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
     collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Delete a directory and all its contents.'''
     await collab.evict_under(slug, path)
     if svc.delete_dir(slug, path) is None:
+        logger.warning(
+            'Directory deletion rejected for %s/%s (not found) (user: %s)',
+            slug, path, user.username,
+        )
         raise HTTPException(404, 'Directory not found')
 
     await get_notifier().notify(slug)
@@ -163,13 +191,17 @@ async def delete_dir(
 @router.delete('/{path:path}', status_code=204)
 async def delete_file(
     slug: str, path: str,
-    _user=Depends(require_editor),
+    user=Depends(require_editor),
     svc: FileService = Depends(get_file_service),
     collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Delete a file from the bucket's working tree.'''
     async with collab.lock_path(slug, path):
         if not svc.delete(slug, path):
+            logger.warning(
+                'File deletion rejected for %s/%s (not found) (user: %s)',
+                slug, path, user.username,
+            )
             raise HTTPException(404, 'File not found')
 
     await get_notifier().notify(slug)
