@@ -158,7 +158,7 @@ TYPARR_OIDC_GROUPS_CLAIM = environ.get('TYPARR_OIDC_GROUPS_CLAIM', 'groups')
 TYPARR_ACCENT_COLOUR = environ.get('TYPARR_ACCENT_COLOUR', 'orange')
 
 #: ⭕ Delay in milliseconds before the live preview recompiles after the user stops typing.
-TYPARR_PREVIEW_DEBOUNCE_MS = int(environ.get('TYPARR_PREVIEW_DEBOUNCE_MS', '100'))
+TYPARR_PREVIEW_DEBOUNCE_MS = int(environ.get('TYPARR_PREVIEW_DEBOUNCE_MS', '250'))
 
 #: ⭕ Delay in milliseconds before auto-saving after the user stops typing.
 #:
