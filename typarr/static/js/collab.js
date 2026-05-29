@@ -12,13 +12,19 @@ export class CollabSession {
    * @param {string} slug - Bucket identifier.
    * @param {string} path - File path within the bucket.
    * @param {HTMLTextAreaElement} textarea - Editor textarea element.
+   * @param {Function} onStatusCb - Lifecycle callback ('synced' | 'dropped').
+   * @param {object} [opts] - Options.
+   * @param {boolean} [opts.preserveLocal] - On the first sync, replay the local
+   *   buffer onto the server content instead of overwriting it. Set when
+   *   rebuilding after a drop so edits made while offline survive.
    */
 
-  constructor(slug, path, textarea, onStatusCb) {
+  constructor(slug, path, textarea, onStatusCb, opts = {}) {
     this._slug = slug
     this._path = path
     this._textarea = textarea
     this._onStatusCb = onStatusCb || null
+    this._preserveLocal = opts.preserveLocal || false
     this._lastValue = ''
     this._resetState()
   }
@@ -47,6 +53,7 @@ export class CollabSession {
   /** Tear down the provider, doc, and event listeners. */
 
   disconnect() {
+    this._closing = true
     if (this._inputHandler)
       this._textarea.removeEventListener('input', this._inputHandler)
     if (this._observer && this._ytext)
@@ -70,6 +77,18 @@ export class CollabSession {
     this._synced = synced
     if (!synced)
       return
+    if (this._preserveLocal)
+      this._reconcileLocal()
+    else
+      this._adoptRemote()
+    this._preserveLocal = false
+    if (this._onStatusCb)
+      this._onStatusCb('synced')
+  }
+
+  /** Initial sync: take the room's authoritative content into the textarea. */
+
+  _adoptRemote() {
     this._remoteUpdate = true
     this._textarea.value = this._ytext.toString()
     this._lastValue = this._textarea.value
@@ -77,16 +96,45 @@ export class CollabSession {
     this._textarea.dispatchEvent(new Event('input'))
   }
 
+  /**
+   * Reconnect sync after a drop: the room was rebuilt from disk, so the local
+   * buffer (including edits made while offline) is newer than the server's.
+   * Keep it and replay the difference onto the freshly synced server content
+   * as ordinary incremental edits — this propagates the offline edits upstream
+   * without re-inserting the whole document (which is what duplicated it).
+   */
+
+  _reconcileLocal() {
+    const server = this._ytext.toString()
+    const local = this._textarea.value
+    this._lastValue = server
+    if (local === server)
+      return
+    this._onLocalInput()
+    this._textarea.dispatchEvent(new Event('input'))
+  }
+
   _onProviderStatus(status) {
-    if (status === 'disconnected' && this._synced && !this._offline) {
-      this._offline = true
+    /*
+     * Ignore status changes once we start tearing down. destroy() closes the
+     * socket, which makes the provider emit 'disconnected' synchronously — but
+     * that's an intentional close (file switch, tab close, bucket reset), not
+     * a dropped connection, and must not trigger a rebuild.
+     *
+     * Track the live connection with a dedicated latch rather than `_synced`:
+     * on a real drop the provider clears its sync state (firing _onSync(false),
+     * which resets `_synced`) immediately before emitting 'disconnected', so
+     * `_synced` is already false here — keying off it would miss every drop.
+     */
+
+    if (this._closing)
+      return
+    if (status === 'connected')
+      this._wasConnected = true
+    else if (status === 'disconnected' && this._wasConnected) {
+      this._wasConnected = false
       if (this._onStatusCb)
-        this._onStatusCb('disconnected')
-    }
-    else if (status === 'connected' && this._offline) {
-      this._offline = false
-      if (this._onStatusCb)
-        this._onStatusCb('reconnected')
+        this._onStatusCb('dropped')
     }
   }
 
@@ -146,6 +194,16 @@ export class CollabSession {
   }
 
   _applyRemoteDelta(delta) {
+    /*
+     * Ignore deltas until the initial sync completes. The first sync delivers
+     * the whole document as one insert; applying it before _onSync runs would
+     * corrupt the textarea — duplicating on initial load (concatenated onto
+     * seed), or polluting the local buffer _reconcileLocal trusts on reconnect.
+     * After _onSync, only incremental edits arrive and are safe to apply.
+     */
+
+    if (!this._synced)
+      return
     this._remoteUpdate = true
     const sel = {
       end: this._textarea.selectionEnd,
@@ -234,7 +292,8 @@ export class CollabSession {
     this._remoteUpdate = false
     this._observer = null
     this._inputHandler = null
-    this._offline = false
+    this._wasConnected = false
+    this._closing = false
   }
 
 }
