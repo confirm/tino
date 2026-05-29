@@ -16,6 +16,11 @@ Select the files to include, write a commit message, and submit.
 
    Only users with the **Committer** role can commit changes.
 
+.. hint::
+
+   `Git LFS <https://git-lfs.com/>`_ is used to store binary files in Git.
+
+
 Viewing history
 ~~~~~~~~~~~~~~~
 

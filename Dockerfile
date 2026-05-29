@@ -6,11 +6,12 @@ ARG TYPST_VERSION=0.14.2
 WORKDIR /usr/src
 
 COPY build/*.whl .
-RUN apt-get update && apt-get install -y --no-install-recommends curl git xz-utils \
+RUN apt-get update && apt-get install -y --no-install-recommends curl git git-lfs xz-utils \
     && pip install --no-cache-dir *.whl \
     && rm -f *.whl \
     && curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz \
        | tar -xJ --strip-components=1 -C /usr/local/bin typst-x86_64-unknown-linux-musl/typst \
+    && git lfs install --system \
     && apt-get purge -y --auto-remove xz-utils \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -r -g 1234 typarr \
