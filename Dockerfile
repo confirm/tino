@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl git xz-uti
        | tar -xJ --strip-components=1 -C /usr/local/bin typst-x86_64-unknown-linux-musl/typst \
     && apt-get purge -y --auto-remove xz-utils \
     && rm -rf /var/lib/apt/lists/* \
-    && groupadd -r -g 2378 typarr \
-    && useradd -r -u 2378 -g 2378 -d /typarr -m typarr \
+    && groupadd -r -g 1234 typarr \
+    && useradd -r -u 1234 -g 1234 -d /typarr -m typarr \
     && mkdir -p /data \
     && chown typarr: /data
 
