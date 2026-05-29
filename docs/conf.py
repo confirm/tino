@@ -14,6 +14,7 @@ author    = 'confirm IT Solutions'
 
 html_theme       = 'furo'
 html_static_path = ['_static']
+html_extra_path  = ['_extras']
 
 html_theme_options = {
     'light_logo': 'logo.svg',
