@@ -39,6 +39,10 @@ To deploy Typarr, use the following Docker image:
 
     ghcr.io/confirm/typarr
 
+.. seealso::
+
+    Check the `Git tags <https://github.com/confirm/typarr/tags>`_ for explicit Docker image versions.
+
 Docker command
 ~~~~~~~~~~~~~~
 
