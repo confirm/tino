@@ -78,7 +78,6 @@ jobs:
           path: typarr/static/css/vendor/
 
   vendor-js:
-    needs: [test-eslint, test-stylelint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
