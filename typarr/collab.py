@@ -207,9 +207,17 @@ class CollabManager:
 
     @staticmethod
     def _replace_ytext(ytext, current, new_content):
-        '''Clear existing YText and insert new content.'''
+        '''Clear existing YText and insert new content.
+
+        Uses ``del ytext[:]`` rather than ``del ytext[0:len(current)]``
+        because pycrdt's slice indices are UTF-8 byte offsets while
+        ``len(current)`` counts Python codepoints. With multi-byte
+        characters (e.g. emoji), the two diverge and a trailing fragment
+        of the old content would be left behind — appearing prepended to
+        the new content after the next ``+=``.
+        '''
         if current:
-            del ytext[0:len(current)]
+            del ytext[:]
         if new_content:
             ytext += new_content
 
