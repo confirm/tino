@@ -22,6 +22,7 @@ __all__ = (
     'OIDC_GROUPS_CLAIM',
     'PACKAGE_DIR',
     'SECRET_KEY',
+    'TRUSTED_PROXIES',
 )
 
 import os
@@ -104,6 +105,13 @@ _DEFAULT_FONT_DIR = str(DATA_DIR / 'fonts')
 #:  `volume`_ or a `bind mount`_ mounted on the path.
 FONT_DIR = Path(environ.get('FONT_DIR', _DEFAULT_FONT_DIR))
 
+_TRUSTED_PROXIES_RAW = environ.get('TRUSTED_PROXIES', '')
+#: Comma-separated list of trusted proxy IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``).
+#: When set, ``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers from these
+#: proxies are respected. Use ``*`` to trust all sources.
+#: Leave empty when Typarr is not behind a reverse proxy.
+TRUSTED_PROXIES: list[str] = [h.strip() for h in _TRUSTED_PROXIES_RAW.split(',') if h.strip()]
+
 #: ⭕ Secret key for signing session cookies.
 #:
 #: .. hint::
@@ -148,7 +156,10 @@ OIDC_GROUPS_CLAIM = environ.get('OIDC_GROUPS_CLAIM', 'groups')
 def sanity_checks():  # pylint: disable=too-complex
     '''Validate all required settings on startup. Exits with code 1 if any are missing.'''
     if AUTH_DISABLED:
-        getLogger(__name__).warning('Authentication is disabled — ensure Typarr is protected by a reverse proxy or is not publicly accessible')
+        getLogger(__name__).warning(
+            'Authentication is disabled — ensure Typarr is protected'
+            ' by a reverse proxy or is not publicly accessible',
+        )
 
     errors = {}
 

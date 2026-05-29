@@ -8,6 +8,7 @@ services:
     environment:
       OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration
       OIDC_CLIENT_SECRET: change-me
+      TRUSTED_PROXIES: '*'
 
     ports:
       - '5000:5000'

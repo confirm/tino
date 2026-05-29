@@ -50,6 +50,7 @@ To deploy Typarr via a simple ``docker`` command, use the following CLI argument
         --name typarr \
         -e OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
         -e OIDC_CLIENT_SECRET=change-me \
+        -e TRUSTED_PROXIES='*' \
         -p 5000:5000 \
         -v data:/data \
         ghcr.io/confirm/typarr
@@ -130,15 +131,18 @@ you can disable the built-in OIDC authentication entirely by setting the
 Reverse proxy
 ~~~~~~~~~~~~~
 
-When Typarr runs behind a reverse proxy (e.g. nginx, Traefik, Caddy), the proxy
-must forward the original protocol and client address so that OIDC redirect URIs
-are built with ``https://``. Ensure your proxy sets:
+When Typarr runs behind a reverse proxy (e.g. nginx, Traefik, Caddy), set
+:attr:`TRUSTED_PROXIES <typarr.config.TRUSTED_PROXIES>` so that
+``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers are respected.
+This ensures OIDC redirect URIs are built with ``https://``.
 
-- ``X-Forwarded-Proto``
-- ``X-Forwarded-For``
+.. code-block:: bash
 
-Typarr reads and respects these headers automatically.
+    TRUSTED_PROXIES=*
 
-.. todo::
+Set it to ``*`` to trust all sources, or to a comma-separated list of proxy
+IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``) for stricter control.
 
-    Make this configurable in case no reverse-proxy is in front (security issue).
+.. hint::
+
+    When ``TRUSTED_PROXIES`` is not set, forwarded headers are ignored.
