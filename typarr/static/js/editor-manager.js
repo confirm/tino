@@ -28,9 +28,7 @@ export class EditorManager {
     this.toolbar = new EditorToolbar(app)
     this.binary = new BinaryPreview(app, this.toolbar)
     this.collab = new EditorCollab(app)
-    this.highlight = new EditorHighlight(
-      app.els.editor, app.els.editorHighlight,
-    )
+    this.highlight = new EditorHighlight(app.els.editor, app.els.editorHighlight)
     this._saveTimer = null
     this._previewTimer = null
   }
@@ -102,6 +100,7 @@ export class EditorManager {
     this.app.els.editor.disabled = !canEdit
     this.app.els.editor.classList.remove('hidden')
     this.app.els.lineNumbers.classList.remove('hidden')
+    this.highlight.sync()
     if (canEdit)
       this.toolbar.show()
     else
