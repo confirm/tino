@@ -41,7 +41,7 @@ from sys import exit as sys_exit
 #: When set to ``true``, authentication is completely disabled.
 #: All requests are treated as an admin user without requiring OIDC.
 #: Intended for local development and demo environments only.
-TYPARR_AUTH_DISABLED = environ.get('TYPARR_AUTH_DISABLED', '').lower() in ('1', 'true', 'yes')
+TYPARR_AUTH_DISABLED = environ.get('TYPARR_AUTH_DISABLED', '').lower() in {'1', 'true', 'yes'}
 
 #: ⭕ The log level (must match one of the
 #: `Python logging levels <https://docs.python.org/3/library/logging.html#logging-levels>`_).
@@ -104,12 +104,12 @@ _DEFAULT_FONT_DIR = str(TYPARR_DATA_DIR / 'fonts')
 #:  `volume`_ or a `bind mount`_ mounted on the path.
 TYPARR_FONT_DIR = Path(environ.get('TYPARR_FONT_DIR', _DEFAULT_FONT_DIR))
 
-_TRUSTED_PROXIES_RAW = environ.get('TYPARR_TRUSTED_PROXIES', '')
+_TRUSTED_PROXIES = environ.get('TYPARR_TRUSTED_PROXIES', '')
 #: Comma-separated list of trusted proxy IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``).
 #: When set, ``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers from these
 #: proxies are respected. Use ``*`` to trust all sources.
 #: Leave empty when Typarr is not behind a reverse proxy.
-TYPARR_TRUSTED_PROXIES: list[str] = [h.strip() for h in _TRUSTED_PROXIES_RAW.split(',') if h.strip()]
+TYPARR_TRUSTED_PROXIES: list[str] = [h.strip() for h in _TRUSTED_PROXIES.split(',') if h.strip()]
 
 #: ⭕ Secret key for signing session cookies.
 #:
@@ -152,7 +152,7 @@ TYPARR_OIDC_GROUPS_CLAIM = environ.get('TYPARR_OIDC_GROUPS_CLAIM', 'groups')
 #
 
 
-def sanity_checks():  # pylint: disable=too-complex
+def sanity_checks():  # pylint: disable=too-complex,too-many-branches
     '''Validate all required settings on startup. Exits with code 1 if any are missing.'''
     if TYPARR_AUTH_DISABLED:
         getLogger(__name__).warning(

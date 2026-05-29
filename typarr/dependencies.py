@@ -63,7 +63,8 @@ def get_git_service() -> GitService:
 @lru_cache
 def get_compiler_service() -> CompilerService:
     '''Singleton CompilerService bound to the configured bucket directory.'''
-    return CompilerService(config.TYPARR_BUCKET_DIR, config.TYPARR_PACKAGE_DIR, config.TYPARR_FONT_DIR)
+    return CompilerService(config.TYPARR_BUCKET_DIR, config.TYPARR_PACKAGE_DIR,
+                           config.TYPARR_FONT_DIR)
 
 
 @lru_cache
