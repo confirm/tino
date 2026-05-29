@@ -1,6 +1,10 @@
-# Typarr
+<p align="center">
+  <img src="typarr/static/img/logo.svg" alt="Typarr" height="80">
+</p>
 
-A collaborative, self-hosted web editor for [Typst](https://typst.app/) documents — built for teams that want to author, review, and publish together.
+<p align="center">
+  A collaborative, self-hosted editing platform around <a href="https://typst.app/">Typst</a> — built for teams that want to author, review, and publish together.
+</p>
 
 ## Documentation
 
