@@ -21,6 +21,7 @@ Built for teams that want to author, review, and publish together.
    usage/editor
    usage/git
    usage/packages
+   usage/fonts
    usage/theming
    usage/api
 

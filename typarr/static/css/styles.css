@@ -1099,12 +1099,14 @@ html, body {
   white-space: nowrap;
 }
 
-.bucket-item .icon-btn {
+.bucket-item .icon-btn,
+.font-item .icon-btn {
   opacity: 0;
   transition: opacity var(--transition);
 }
 
-.bucket-item:hover .icon-btn {
+.bucket-item:hover .icon-btn,
+.font-item:hover .icon-btn {
   opacity: 1;
 }
 
@@ -1470,6 +1472,72 @@ html, body {
 }
 
 .template-loading {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Font manager ── */
+
+.font-toolbar {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.font-toolbar .btn .material-symbols-outlined {
+  font-size: 16px;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.font-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.font-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.font-item:last-child { border-bottom: none; }
+.font-item:hover { background: var(--bg-hover); }
+
+.font-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.font-size {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.font-item .icon-btn {
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.font-item:hover .icon-btn { opacity: 1; }
+
+.font-empty {
   padding: 24px;
   text-align: center;
   color: var(--text-muted);

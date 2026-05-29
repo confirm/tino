@@ -12,6 +12,7 @@ from .notifier import BucketNotifier
 from .services.bucket import BucketService
 from .services.compiler import CompilerService
 from .services.file import FileService
+from .services.font import FontService
 from .services.git import GitService
 from .services.template import TemplateService
 
@@ -71,6 +72,12 @@ def get_compiler_service() -> CompilerService:
 def get_template_service() -> TemplateService:
     '''Singleton TemplateService bound to the configured bucket directory.'''
     return TemplateService(config.TYPARR_BUCKET_DIR, config.TYPARR_PACKAGE_DIR)
+
+
+@lru_cache
+def get_font_service() -> FontService:
+    '''Singleton FontService bound to the configured font directory.'''
+    return FontService(config.TYPARR_FONT_DIR)
 
 
 @lru_cache

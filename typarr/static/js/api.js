@@ -272,4 +272,29 @@ export class TyparrAPI {
     return this._json('POST', path, { name, namespace: namespace || 'preview', version })
   }
 
+  // ── Fonts ──
+
+  /** List all installed custom fonts. */
+
+  listFonts() {
+    return this._fetch('/api/fonts')
+  }
+
+  /** Upload font files via multipart form data. */
+
+  uploadFonts(fileList) {
+    const form = new FormData()
+    for (const file of fileList)
+      form.append('files', file)
+    return this._fetch('/api/fonts/upload', { body: form, method: 'POST' })
+  }
+
+  /** Delete a font by filename. */
+
+  deleteFont(filename) {
+    return this._fetch(
+      `/api/fonts/${encodeURIComponent(filename)}`, { method: 'DELETE' },
+    )
+  }
+
 }

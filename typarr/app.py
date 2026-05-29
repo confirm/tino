@@ -14,7 +14,7 @@ from .dependencies import get_collab_manager
 from .middleware import register_middleware
 from .routers import buckets, collab
 from .routers import compile as compile_router
-from .routers import events, files, git, templates
+from .routers import events, files, fonts, git, templates
 
 _STATIC_DIR = str(Path(__file__).parent / 'static')
 
@@ -25,6 +25,7 @@ async def lifespan(_app: FastAPI):
     config.TYPARR_DATA_DIR.mkdir(parents=True, exist_ok=True)
     config.TYPARR_BUCKET_DIR.mkdir(parents=True, exist_ok=True)
     config.TYPARR_PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
+    config.TYPARR_FONT_DIR.mkdir(parents=True, exist_ok=True)
     config.sanity_checks()
     if not config.TYPARR_AUTH_DISABLED:
         await setup_oauth()
@@ -48,6 +49,7 @@ def create_app() -> FastAPI:
     app.include_router(compile_router.router)
     app.include_router(events.router)
     app.include_router(files.router)
+    app.include_router(fonts.router)
     app.include_router(git.router)
     app.include_router(templates.router)
 

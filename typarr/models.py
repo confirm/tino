@@ -111,3 +111,12 @@ class TemplateInit(BaseModel):
     name: str
     namespace: str = 'preview'
     version: str
+
+
+# ── Fonts ──
+
+
+class FontEntry(BaseModel):
+    '''Metadata for an installed font file.'''
+    filename: str
+    size: int

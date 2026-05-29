@@ -23,6 +23,10 @@
     </div>
     <div class="toolbar-center"></div>
     <div class="toolbar-right">
+      <button class="toolbar-btn hidden" id="btn-fonts" title="Manage fonts">
+        <span class="material-symbols-outlined">font_download</span>
+      </button>
+      <span class="toolbar-sep"></span>
       <button class="toolbar-btn" id="btn-theme" title="Toggle theme">
         <span class="material-symbols-outlined icon-sun">light_mode</span>
         <span class="material-symbols-outlined icon-moon">dark_mode</span>
@@ -246,6 +250,24 @@
         <input class="form-input" id="template-search" type="text" placeholder="Search templates...">
       </div>
       <ul class="template-list" id="template-list"></ul>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="font-dialog">
+    <div class="dialog dialog-wide">
+      <div class="dialog-header">
+        <span>Manage Fonts</span>
+        <button class="icon-btn" id="btn-font-close" title="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="font-toolbar">
+        <button class="btn btn-primary btn-small" id="btn-font-upload">
+          <span class="material-symbols-outlined">upload</span> Upload fonts
+        </button>
+        <input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
+      </div>
+      <ul class="font-list" id="font-list"></ul>
     </div>
   </div>
 

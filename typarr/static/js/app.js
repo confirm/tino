@@ -2,17 +2,13 @@ import { readRoute, writeRoute } from './router.js'
 import { BucketEvents } from './bucket-events.js'
 import { EditorManager } from './editor-manager.js'
 import { FileTree } from './file-tree.js'
+import { FontManager } from './font-manager.js'
 import { GitManager } from './git-manager.js'
 import { PanelResize } from './panel-resize.js'
 import { PreviewManager } from './preview-manager.js'
 import { TemplatePicker } from './template-picker.js'
 import { Toast } from './toast.js'
 import { TyparrAPI } from './api.js'
-
-/**
- * Main application controller for the Typarr editor.
- * Coordinates managers for files, editor, git, and preview.
- */
 
 class TyparrApp {
 
@@ -73,6 +69,7 @@ class TyparrApp {
     this.git = new GitManager(this)
     this.panelResize = new PanelResize()
     this.preview = new PreviewManager(this)
+    this.fontManager = new FontManager(this)
     this.templatePicker = new TemplatePicker(this)
   }
 
@@ -93,6 +90,7 @@ class TyparrApp {
     this._bindWindowEvents()
     this.editor.bindEditor()
     this._bindFileTree()
+    this.fontManager.bind()
     this.templatePicker.bind()
     this.preview.bindZoom()
     this._bindPanelResize()
@@ -125,6 +123,8 @@ class TyparrApp {
       const user = await this.api.me()
       this.els.userLabel.textContent = user.username
       this.isAdmin = user.is_admin
+      document.getElementById('btn-fonts')
+        .classList.toggle('hidden', !this.isAdmin)
     }
     catch {
       this.els.userLabel.textContent = 'anonymous'
@@ -222,6 +222,10 @@ class TyparrApp {
     document.getElementById('btn-save')
       .addEventListener('click', () => {
         this.editor.saveCurrentFile()
+      })
+    document.getElementById('btn-fonts')
+      .addEventListener('click', () => {
+        this.fontManager.open()
       })
   }
 
