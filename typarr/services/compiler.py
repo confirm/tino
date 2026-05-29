@@ -34,46 +34,33 @@ class CompilerService:
         '''
         bucket_dir, source = self._resolve_source(slug, path)
 
-        with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp) / 'page-{n}.svg'
-            self._run(source, output, bucket_dir, fmt='svg')
+        return self._render_svgs(source, bucket_dir)
 
-            pages = []
-            for svg_file in sorted(Path(tmp).glob('page-*.svg')):
-                pages.append(svg_file.read_text(encoding='utf-8'))
+    def compile_svg_from_content(
+        self, slug: str, path: str, content: str,
+    ) -> list[str]:
+        '''Compile SVG from in-memory editor content (e.g. a live Yjs buffer).
 
-            return pages
-
-    def compile_svg_from_content(self, slug: str, content: str) -> list[str]:
-        '''Compile SVG from in-memory content via stdin.
-
-        Reads from stdin, writes SVG pages to a temp directory.
-        Raises RuntimeError if compilation fails.
+        Writes the content to a hidden temp file beside the real file so that
+        relative imports (`./` and `../`) resolve from the file's own directory,
+        exactly as they would on disk. Reading from stdin instead anchors the
+        document at the project root, which breaks those imports. The temp file
+        is always removed. Raises RuntimeError if compilation fails.
         '''
-        bucket_dir = (self.data_dir / slug).resolve()
+        bucket_dir, target = self._resolve_target(slug, path)
+        write_dir = target.parent if target.parent.is_dir() else bucket_dir
 
-        cmd = ['typst', 'compile', '--format', 'svg', '--root', str(bucket_dir)]
-        if self.package_dir:
-            cmd.extend(['--package-path', str(self.package_dir)])
-        if self.font_dir and self.font_dir.is_dir():
-            cmd.extend(['--font-path', str(self.font_dir)])
+        with tempfile.NamedTemporaryFile(
+            mode='w', encoding='utf-8', suffix='.typ',
+            prefix='.typarr-live-', dir=str(write_dir), delete=False,
+        ) as live:
+            live.write(content)
+            live_source = Path(live.name)
 
-        with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp) / 'page-{n}.svg'
-            cmd.extend(['-', str(output)])
-
-            result = subprocess.run(
-                cmd, input=content, cwd=str(bucket_dir),
-                capture_output=True, text=True,
-                timeout=_COMPILE_TIMEOUT, check=False,
-            )
-            if result.returncode != 0:
-                raise RuntimeError(result.stderr.strip() or 'Compilation failed')
-
-            pages = []
-            for svg_file in sorted(Path(tmp).glob('page-*.svg')):
-                pages.append(svg_file.read_text(encoding='utf-8'))
-            return pages
+        try:
+            return self._render_svgs(live_source, bucket_dir)
+        finally:
+            live_source.unlink(missing_ok=True)
 
     def compile_pdf(self, slug: str, path: str) -> Path:
         '''Compile a Typst file and return the path to the resulting PDF.
@@ -98,13 +85,34 @@ class CompilerService:
 
     # ── Internal ──
 
+    def _render_svgs(self, source, bucket_dir):
+        '''Compile a source file to SVG and return one string per page.'''
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / 'page-{n}.svg'
+            self._run(source, output, bucket_dir, fmt='svg')
+
+            return [
+                svg_file.read_text(encoding='utf-8')
+                for svg_file in sorted(Path(tmp).glob('page-*.svg'))
+            ]
+
+    def _resolve_target(self, slug, path):
+        '''Resolve a path inside the bucket, validating containment.
+
+        Unlike _resolve_source, does not require the file to exist: live
+        content may differ from disk, or the file may be unsaved.
+        '''
+        bucket_dir = (self.data_dir / slug).resolve()
+        target     = (bucket_dir / path).resolve()
+
+        if not target.is_relative_to(bucket_dir):
+            raise FileNotFoundError(f'{path} is outside the bucket')
+
+        return bucket_dir, target
+
     def _resolve_source(self, slug, path):
         '''Validate that the source file exists and is inside the bucket.'''
-        bucket_dir = (self.data_dir / slug).resolve()
-        source     = (bucket_dir / path).resolve()
-
-        if not source.is_relative_to(bucket_dir):
-            raise FileNotFoundError(f'{path} is outside the bucket')
+        bucket_dir, source = self._resolve_target(slug, path)
 
         if not source.is_file():
             raise FileNotFoundError(f'{path} not found in bucket {slug}')

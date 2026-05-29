@@ -66,7 +66,7 @@ async def compile_svg_live(
         content = collab.get_content(slug, path)
 
         if content is not None:  # pylint: disable=consider-ternary-expression
-            pages = svc.compile_svg_from_content(slug, content)
+            pages = svc.compile_svg_from_content(slug, path, content)
         else:
             pages = svc.compile_svg(slug, path)
 
