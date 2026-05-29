@@ -138,14 +138,18 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  gap: 4px;
   height: 28px;
+  padding: 0 8px;
   border: none;
   border-radius: var(--radius);
   background: transparent;
   color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
   cursor: pointer;
   transition: background var(--transition), color var(--transition);
+  white-space: nowrap;
 }
 
 .toolbar-btn:hover {
@@ -280,9 +284,13 @@ html, body {
 
 
 
-.file-search {
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border);
+.file-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  font-size: 11px;
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 
 .file-tree {
@@ -1158,12 +1166,6 @@ html, body {
   cursor: not-allowed;
 }
 
-.file-search .form-input {
-  width: 100%;
-  box-sizing: border-box;
-  font-size: 11px;
-  padding: 4px 8px;
-}
 
 .access-row {
   display: flex;

@@ -20,6 +20,27 @@
         <span class="material-symbols-outlined">database</span>
         <span id="bucket-label">Select bucket...</span>
       </button>
+      <span class="toolbar-sep"></span>
+      <button class="toolbar-btn" id="btn-new" title="New file">
+        <span class="material-symbols-outlined">note_add</span>
+        New
+      </button>
+      <button class="toolbar-btn" id="btn-template" title="New from template">
+        <span class="material-symbols-outlined">dashboard</span>
+        Template
+      </button>
+      <button class="toolbar-btn" id="btn-save" title="Save (Ctrl+S)">
+        <span class="material-symbols-outlined">save</span>
+        Save
+      </button>
+      <button class="toolbar-btn" id="btn-commit" title="Commit changes">
+        <span class="material-symbols-outlined">commit</span>
+        Commit
+      </button>
+      <button class="toolbar-btn" id="btn-bucket-history" title="Bucket history">
+        <span class="material-symbols-outlined">history</span>
+        History
+      </button>
     </div>
     <div class="toolbar-center"></div>
     <div class="toolbar-right">
@@ -45,27 +66,7 @@
   <main class="workspace">
     <aside class="panel file-explorer" id="file-explorer">
       <div class="panel-header">
-        <span>Files</span>
-        <div class="panel-actions">
-          <button class="icon-btn" id="btn-new" title="New file">
-            <span class="material-symbols-outlined">note_add</span>
-          </button>
-          <button class="icon-btn" id="btn-template" title="New from template">
-            <span class="material-symbols-outlined">dashboard</span>
-          </button>
-          <button class="icon-btn" id="btn-save" title="Save (Ctrl+S)">
-            <span class="material-symbols-outlined">save</span>
-          </button>
-          <button class="icon-btn" id="btn-commit" title="Commit changes">
-            <span class="material-symbols-outlined">commit</span>
-          </button>
-          <button class="icon-btn" id="btn-bucket-history" title="Bucket history">
-            <span class="material-symbols-outlined">history</span>
-          </button>
-        </div>
-      </div>
-      <div class="file-search">
-        <input class="form-input" id="file-search" type="text" placeholder="Filter files…">
+        <input class="form-input file-search-input" id="file-search" type="text" placeholder="Filter files…">
       </div>
       <ul class="file-tree" id="file-tree"></ul>
     </aside>
