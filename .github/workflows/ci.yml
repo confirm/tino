@@ -68,6 +68,7 @@ jobs:
   # ──────────────────────────────────────────────
 
   vendor-css:
+    needs: [test-isort, test-pycodestyle, test-pylint, test-eslint, test-stylelint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -78,6 +79,7 @@ jobs:
           path: typarr/static/css/vendor/
 
   vendor-js:
+    needs: [test-isort, test-pycodestyle, test-pylint, test-eslint, test-stylelint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -92,7 +94,7 @@ jobs:
           path: typarr/static/js/vendor/
 
   docs:
-    needs: [test-isort, test-pycodestyle, test-pylint]
+    needs: [vendor-css, vendor-js]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
