@@ -75,8 +75,8 @@ Then bring the stack up with:
 
 .. _Authentication setup:
 
-🔐 Authentication
------------------
+🔐 Authentication setup
+-----------------------
 
 OIDC
 ~~~~

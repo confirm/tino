@@ -11,4 +11,4 @@ To sign out, click the **Logout** button in the top-right corner of the toolbar.
 
 .. seealso::
 
-    Also have a look at the :ref:`Access control`.
+    Also have a look at the :ref:`Access control`, and :ref:`Authentication setup`.

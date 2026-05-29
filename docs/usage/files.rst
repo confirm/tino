@@ -24,9 +24,12 @@ Uploading files
 Drag and drop files from your desktop onto the file explorer panel.
 If you drop onto a folder, the files are uploaded into that folder.
 
-ZIP archives are extracted automatically on upload.
+.. hint::
+
+    ZIP archives are extracted automatically on upload.
 
 Renaming and deleting
 ~~~~~~~~~~~~~~~~~~~~~
 
 Hover over a file or folder in the tree to reveal the **Rename** and **Delete** action buttons.
+Files can also be moved into directories by drag and drop.
