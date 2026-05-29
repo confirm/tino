@@ -37,8 +37,8 @@ Typarr is a self-hosted web editor for `Typst`_ documents, built for teams that 
   | Move document production to the browser, with version control and collaboration built in.
 - | **Keep documents on your infrastructure**
   | Privacy-aware. Self-hosted by design. Nothing leaves your network.
-  | **Empower the whole team**
-  | `Typst`_ is expressive enough for professional output, approachable enough that everyone can contribute.
+- | **Empower the whole team**
+  | `Typst`_ – powerful typesetting for professional output, approachable for everyone.
 
 .. _Features:
 
@@ -54,7 +54,7 @@ The Typarr editor ships with the following features out of the box:
 - | **Real-time collaboration**
   | Concurrent editing via CRDT over WebSockets. Changes merge automatically, no conflicts.
 - | **Group-based access control**
-  | Assign viewer, editor, or committer roles per bucket, backed by OpenID Connect and group claims.
+  | Assign viewer, editor, or committer roles per bucket, backed by OpenID Connect group claims.
 - | **Git versioning**
   | Every bucket is a git repository with built-in history, commits, and restore.
 - | **Drag & drop uploads**

@@ -6,7 +6,6 @@ Built for teams that want to author, review, and publish together.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Getting started
 
    introduction
    deployment
