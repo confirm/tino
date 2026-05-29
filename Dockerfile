@@ -24,7 +24,7 @@ WORKDIR /typarr
 
 VOLUME /data
 
-ENV DATA_DIR=/data
+ENV TYPARR_DATA_DIR=/data
 ENV XDG_CACHE_HOME=/tmp/.cache
 
 EXPOSE 5000

@@ -16,7 +16,7 @@ To try Typarr without setting up an OIDC provider, disable authentication:
 
     docker run -d \
         --name typarr \
-        -e AUTH_DISABLED=true \
+        -e TYPARR_AUTH_DISABLED=true \
         -p 5000:5000 \
         -v data:/data \
         ghcr.io/confirm/typarr
@@ -48,9 +48,9 @@ To deploy Typarr via a simple ``docker`` command, use the following CLI argument
 
     docker run -d \
         --name typarr \
-        -e OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
-        -e OIDC_CLIENT_SECRET=change-me \
-        -e TRUSTED_PROXIES='*' \
+        -e TYPARR_OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
+        -e TYPARR_OIDC_CLIENT_SECRET=change-me \
+        -e TYPARR_TRUSTED_PROXIES='*' \
         -p 5000:5000 \
         -v data:/data \
         ghcr.io/confirm/typarr
@@ -86,7 +86,7 @@ Any provider that supports `OpenID Connect Discovery <https://openid.net/specs/o
 
 Register a new client (application) with your OIDC provider:
 
-1. Set the **client ID** to :attr:`OIDC_CLIENT_ID <typarr.config.OIDC_CLIENT_ID>`, or vice-versa
+1. Set the **client ID** to :attr:`TYPARR_OIDC_CLIENT_ID <typarr.config.TYPARR_OIDC_CLIENT_ID>`, or vice-versa
 2. Set the **redirect URI** (callback URL) to:
 
    .. code-block:: text
@@ -101,9 +101,9 @@ Register a new client (application) with your OIDC provider:
 
 4. Ensure the following **scopes** are enabled: ``openid``, ``email``, ``profile``.
 5. Make sure the **ID token** includes a claim with the user's group memberships
-   (see :attr:`OIDC_GROUPS_CLAIM <typarr.config.OIDC_GROUPS_CLAIM>`).
-6. Make sure a user matches an admin group (see :attr:`ADMIN_GROUPS <typarr.config.ADMIN_GROUPS>`)
-7. Set the :attr:`OIDC_CLIENT_SECRET <typarr.config.OIDC_CLIENT_SECRET>` to the **client secret**
+   (see :attr:`TYPARR_OIDC_GROUPS_CLAIM <typarr.config.TYPARR_OIDC_GROUPS_CLAIM>`).
+6. Make sure a user matches an admin group (see :attr:`TYPARR_ADMIN_GROUPS <typarr.config.TYPARR_ADMIN_GROUPS>`)
+7. Set the :attr:`TYPARR_OIDC_CLIENT_SECRET <typarr.config.TYPARR_OIDC_CLIENT_SECRET>` to the **client secret**
 
 .. hint::
 
@@ -114,11 +114,11 @@ Disabling authentication
 
 For local development, demo environments or external authentication, 
 you can disable the built-in OIDC authentication entirely by setting the 
-:attr:`AUTH_DISABLED <typarr.config.AUTH_DISABLED>` environment variable:
+:attr:`TYPARR_AUTH_DISABLED <typarr.config.TYPARR_AUTH_DISABLED>` environment variable:
 
 .. code-block:: bash
 
-    AUTH_DISABLED=true
+    TYPARR_AUTH_DISABLED=true
 
 .. warning::
 
@@ -132,17 +132,17 @@ Reverse proxy
 ~~~~~~~~~~~~~
 
 When Typarr runs behind a reverse proxy (e.g. nginx, Traefik, Caddy), set
-:attr:`TRUSTED_PROXIES <typarr.config.TRUSTED_PROXIES>` so that
+:attr:`TYPARR_TRUSTED_PROXIES <typarr.config.TYPARR_TRUSTED_PROXIES>` so that
 ``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers are respected.
 This ensures OIDC redirect URIs are built with ``https://``.
 
 .. code-block:: bash
 
-    TRUSTED_PROXIES=*
+    TYPARR_TRUSTED_PROXIES=*
 
 Set it to ``*`` to trust all sources, or to a comma-separated list of proxy
 IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``) for stricter control.
 
 .. hint::
 
-    When ``TRUSTED_PROXIES`` is not set, forwarded headers are ignored.
+    When ``TYPARR_TRUSTED_PROXIES`` is not set, forwarded headers are ignored.

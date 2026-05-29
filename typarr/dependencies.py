@@ -45,31 +45,31 @@ def require_global_admin(user: User = Depends(get_current_user)) -> User:
 @lru_cache
 def get_file_service() -> FileService:
     '''Singleton FileService bound to the configured bucket directory.'''
-    return FileService(config.BUCKET_DIR)
+    return FileService(config.TYPARR_BUCKET_DIR)
 
 
 @lru_cache
 def get_bucket_service() -> BucketService:
     '''Singleton BucketService bound to the configured bucket directory.'''
-    return BucketService(config.BUCKET_DIR)
+    return BucketService(config.TYPARR_BUCKET_DIR)
 
 
 @lru_cache
 def get_git_service() -> GitService:
     '''Singleton GitService bound to the configured bucket directory.'''
-    return GitService(config.BUCKET_DIR)
+    return GitService(config.TYPARR_BUCKET_DIR)
 
 
 @lru_cache
 def get_compiler_service() -> CompilerService:
     '''Singleton CompilerService bound to the configured bucket directory.'''
-    return CompilerService(config.BUCKET_DIR, config.PACKAGE_DIR, config.FONT_DIR)
+    return CompilerService(config.TYPARR_BUCKET_DIR, config.TYPARR_PACKAGE_DIR, config.TYPARR_FONT_DIR)
 
 
 @lru_cache
 def get_template_service() -> TemplateService:
     '''Singleton TemplateService bound to the configured bucket directory.'''
-    return TemplateService(config.BUCKET_DIR, config.PACKAGE_DIR)
+    return TemplateService(config.TYPARR_BUCKET_DIR, config.TYPARR_PACKAGE_DIR)
 
 
 @lru_cache
@@ -82,7 +82,7 @@ def get_notifier() -> BucketNotifier:
 def get_collab_manager() -> CollabManager:
     '''Singleton CollabManager wired to the FileService for disk flushing.'''
     return CollabManager(
-        data_dir=config.BUCKET_DIR,
+        data_dir=config.TYPARR_BUCKET_DIR,
         file_service=get_file_service(),
     )
 

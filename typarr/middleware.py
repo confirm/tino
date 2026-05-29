@@ -32,7 +32,7 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
 
     async def dispatch(self, request, call_next):
         '''Check session for authentication before forwarding the request.'''
-        if config.AUTH_DISABLED:
+        if config.TYPARR_AUTH_DISABLED:
             return await call_next(request)
 
         path = request.url.path
@@ -56,8 +56,8 @@ def register_middleware(app: FastAPI) -> None:
     (registered last) and the session is available when it checks the cookie.
     '''
     app.add_middleware(AuthMiddleware)
-    secret_key = config.SECRET_KEY or secrets.token_hex(32)
+    secret_key = config.TYPARR_SECRET_KEY or secrets.token_hex(32)
     app.add_middleware(SessionMiddleware, secret_key=secret_key)
-    if config.TRUSTED_PROXIES:
-        trusted = '*' if config.TRUSTED_PROXIES == ['*'] else config.TRUSTED_PROXIES
+    if config.TYPARR_TRUSTED_PROXIES:
+        trusted = '*' if config.TYPARR_TRUSTED_PROXIES == ['*'] else config.TYPARR_TRUSTED_PROXIES
         app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=trusted)

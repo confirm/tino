@@ -6,9 +6,9 @@
 Typarr supports local `Typst packages <https://github.com/typst/packages>`_ for
 sharing reusable libraries and templates across buckets.
 
-Local packages are stored in the :attr:`PACKAGE_DIR <typarr.config.PACKAGE_DIR>`
+Local packages are stored in the :attr:`TYPARR_PACKAGE_DIR <typarr.config.TYPARR_PACKAGE_DIR>`
 directory, which defaults to a ``packages`` sub-directory inside the
-:attr:`BUCKET_DIR <typarr.config.BUCKET_DIR>`.
+:attr:`TYPARR_BUCKET_DIR <typarr.config.TYPARR_BUCKET_DIR>`.
 
 .. hint::
 

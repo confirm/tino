@@ -6,9 +6,9 @@ services:
     image: ghcr.io/confirm/typarr
 
     environment:
-      OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration
-      OIDC_CLIENT_SECRET: change-me
-      TRUSTED_PROXIES: '*'
+      TYPARR_OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration
+      TYPARR_OIDC_CLIENT_SECRET: change-me
+      TYPARR_TRUSTED_PROXIES: '*'
 
     ports:
       - '5000:5000'

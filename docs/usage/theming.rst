@@ -12,4 +12,4 @@ Your preference is saved in the browser and restored on the next visit.
 Accent colour
 ~~~~~~~~~~~~~
 
-The instance-wide accent colour is configured by the administrator via the :attr:`ACCENT_COLOUR <typarr.config.ACCENT_COLOUR>` environment variable.
+The instance-wide accent colour is configured by the administrator via the :attr:`TYPARR_ACCENT_COLOUR <typarr.config.TYPARR_ACCENT_COLOUR>` environment variable.

@@ -22,11 +22,11 @@ _STATIC_DIR = str(Path(__file__).parent / 'static')
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     '''Ensure the data directory exists on startup and flush collab rooms on shutdown.'''
-    config.DATA_DIR.mkdir(parents=True, exist_ok=True)
-    config.BUCKET_DIR.mkdir(parents=True, exist_ok=True)
-    config.PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
+    config.TYPARR_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    config.TYPARR_BUCKET_DIR.mkdir(parents=True, exist_ok=True)
+    config.TYPARR_PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
     config.sanity_checks()
-    if not config.AUTH_DISABLED:
+    if not config.TYPARR_AUTH_DISABLED:
         await setup_oauth()
     collab_mgr = get_collab_manager()
     collab_mgr.start()

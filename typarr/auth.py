@@ -28,9 +28,9 @@ async def setup_oauth():
     '''Register the OIDC provider with authlib and pre-fetch discovery metadata.'''
     oauth.register(
         name='oidc',
-        client_id=config.OIDC_CLIENT_ID,
-        client_secret=config.OIDC_CLIENT_SECRET,
-        server_metadata_url=config.OIDC_DISCOVERY_URL,
+        client_id=config.TYPARR_OIDC_CLIENT_ID,
+        client_secret=config.TYPARR_OIDC_CLIENT_SECRET,
+        server_metadata_url=config.TYPARR_OIDC_DISCOVERY_URL,
         client_kwargs={'scope': 'openid email profile'},
     )
     await oauth.oidc.load_server_metadata()
@@ -39,13 +39,13 @@ async def setup_oauth():
 _NOAUTH_USER = User(
     username='typarr',
     email='typarr@localhost',
-    groups=list(config.ADMIN_GROUPS),
+    groups=list(config.TYPARR_ADMIN_GROUPS),
 )
 
 
 def get_current_user(request: Request) -> User:
     '''Extract the authenticated user from the session (or return a demo user).'''
-    if config.AUTH_DISABLED:
+    if config.TYPARR_AUTH_DISABLED:
         return _NOAUTH_USER
     user_data = request.session.get('user')
     if not user_data:
@@ -58,7 +58,7 @@ def get_current_user(request: Request) -> User:
 
 def is_global_admin(user: User) -> bool:
     '''Check if the user belongs to any of the configured admin groups.'''
-    return bool(config.ADMIN_GROUPS & set(user.groups))
+    return bool(config.TYPARR_ADMIN_GROUPS & set(user.groups))
 
 
 def resolve_role(user: User, access: list[AccessEntry]) -> str | None:
@@ -66,7 +66,7 @@ def resolve_role(user: User, access: list[AccessEntry]) -> str | None:
     if is_global_admin(user):
         return 'committer'
     if not access:
-        default = config.DEFAULT_ROLE
+        default = config.TYPARR_DEFAULT_ROLE
         return default if default != 'none' else None
     best = None
     for entry in access:
@@ -114,7 +114,7 @@ async def callback(request: Request):
     if not userinfo:
         raise HTTPException(400, 'No user info in token response')
 
-    groups_claim = config.OIDC_GROUPS_CLAIM
+    groups_claim = config.TYPARR_OIDC_GROUPS_CLAIM
 
     request.session['user'] = {
         'username': userinfo.get('preferred_username', userinfo.get('sub', '')),
@@ -163,7 +163,7 @@ async def me(user: User = Depends(get_current_user)):
 @router.get('/api/theme.css')
 async def theme_css():
     '''Return CSS custom properties for the configured accent colour family.'''
-    colour = config.ACCENT_COLOUR
+    colour = config.TYPARR_ACCENT_COLOUR
     css = (
         ':root{'
         f'--accent-50:var(--cd-{colour}-50);'

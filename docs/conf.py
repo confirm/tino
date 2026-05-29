@@ -38,7 +38,7 @@ extensions = [
 # 📝 To Do.
 #
 
-todo_include_todos = not environ.get('HIDE_TODOS', 'false') in {'true', 'yes', 'on', '1'}
+todo_include_todos = not environ.get('TYPARR_HIDE_TODOS', 'false') in {'true', 'yes', 'on', '1'}
 todo_link_only     = True
 
 #
