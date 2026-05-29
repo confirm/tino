@@ -5,6 +5,26 @@
 
 Typarr ships as a single Docker image with no external dependencies — just point it at an OIDC provider and add a data volume, and you're up.
 
+.. _Quick start:
+
+⚡ Quick start (demo)
+---------------------
+
+To try Typarr without setting up an OIDC provider, disable authentication:
+
+.. code-block:: bash
+
+    docker run -d \
+        --name typarr \
+        -e AUTH_DISABLED=true \
+        -p 5000:5000 \
+        -v data:/data \
+        ghcr.io/confirm/typarr
+
+.. seealso::
+
+    See `Disabling authentication`_ for more information.
+
 .. _Docker:
 
 🐳 Docker
@@ -34,7 +54,7 @@ To deploy Typarr via a simple ``docker`` command, use the following CLI argument
         -v data:/data \
         ghcr.io/confirm/typarr
 
-.. hint:: 
+.. hint::
 
     It's recommended to deploy Typarr via `Docker Compose`_.
 
@@ -52,10 +72,13 @@ Then bring the stack up with:
 
     docker compose up -d
 
-.. _OIDC:
+.. _Authentication setup:
 
-🔐 OIDC
--------
+🔐 Authentication
+-----------------
+
+OIDC
+~~~~
 
 Typarr requires an OpenID Connect (OIDC) provider for authentication.
 Any provider that supports `OpenID Connect Discovery <https://openid.net/specs/openid-connect-discovery-1_0.html>`_ is supported (e.g. Keycloak, Authentik, Azure AD, Okta, Zitadel).
@@ -84,6 +107,25 @@ Register a new client (application) with your OIDC provider:
 .. hint::
 
     See :ref:`Configuration` for the full list of environment variables.
+
+Disabling authentication
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+For local development, demo environments or external authentication, 
+you can disable the built-in OIDC authentication entirely by setting the 
+:attr:`AUTH_DISABLED <typarr.config.AUTH_DISABLED>` environment variable:
+
+.. code-block:: bash
+
+    AUTH_DISABLED=true
+
+.. warning::
+
+    When authentication is disabled, all requests are treated as a built-in **no-auth** user
+    with full administrator privileges. OIDC configuration is not required in this mode.
+
+    In production this is only safe when Typarr sits behind a reverse proxy or gateway
+    that already handles authentication (e.g. OAuth2 Proxy, Authelia, or a cloud IAP).
 
 Reverse proxy
 ~~~~~~~~~~~~~

@@ -10,6 +10,7 @@ Typarr allows configuration via environment variables.
 __all__ = (
     'ACCENT_COLOUR',
     'ADMIN_GROUPS',
+    'AUTH_DISABLED',
     'BUCKET_DIR',
     'DATA_DIR',
     'DEFAULT_ROLE',
@@ -36,6 +37,11 @@ from sys import exit as sys_exit
 # Application level settings.
 #
 
+
+#: ⭕ When set to ``true``, authentication is completely disabled.
+#: All requests are treated as an admin user without requiring OIDC.
+#: Intended for local development and demo environments only.
+AUTH_DISABLED = environ.get('AUTH_DISABLED', '').lower() in ('1', 'true', 'yes')
 
 #: ⭕ The log level (must match one of the
 #: `Python logging levels <https://docs.python.org/3/library/logging.html#logging-levels>`_).
@@ -141,6 +147,9 @@ OIDC_GROUPS_CLAIM = environ.get('OIDC_GROUPS_CLAIM', 'groups')
 
 def sanity_checks():  # pylint: disable=too-complex
     '''Validate all required settings on startup. Exits with code 1 if any are missing.'''
+    if AUTH_DISABLED:
+        getLogger(__name__).warning('Authentication is disabled — ensure Typarr is protected by a reverse proxy or is not publicly accessible')
+
     errors = {}
 
     if not DATA_DIR.is_dir():
@@ -151,17 +160,18 @@ def sanity_checks():  # pylint: disable=too-complex
     if not ADMIN_GROUPS:
         errors['ADMIN_GROUPS'] = 'Set to a comma-separated list of admin groups'
 
-    if not OIDC_DISCOVERY_URL:
-        errors['OIDC_DISCOVERY_URL'] = 'Set to the OIDC discovery URL'
+    if not AUTH_DISABLED:
+        if not OIDC_DISCOVERY_URL:
+            errors['OIDC_DISCOVERY_URL'] = 'Set to the OIDC discovery URL'
 
-    if not OIDC_CLIENT_ID:
-        errors['OIDC_CLIENT_ID'] = 'Set to the OIDC client ID'
+        if not OIDC_CLIENT_ID:
+            errors['OIDC_CLIENT_ID'] = 'Set to the OIDC client ID'
 
-    if not OIDC_CLIENT_SECRET:
-        errors['OIDC_CLIENT_SECRET'] = 'Set to the OIDC client secret'
+        if not OIDC_CLIENT_SECRET:
+            errors['OIDC_CLIENT_SECRET'] = 'Set to the OIDC client secret'
 
-    if not OIDC_GROUPS_CLAIM:
-        errors['OIDC_GROUPS_CLAIM'] = 'Set to the OIDC group claim'
+        if not OIDC_GROUPS_CLAIM:
+            errors['OIDC_GROUPS_CLAIM'] = 'Set to the OIDC group claim'
 
     _valid_roles = {'viewer', 'editor', 'committer', 'none'}
     if DEFAULT_ROLE not in _valid_roles:

@@ -36,8 +36,17 @@ async def setup_oauth():
     await oauth.oidc.load_server_metadata()
 
 
+_NOAUTH_USER = User(
+    username='typarr',
+    email='typarr@localhost',
+    groups=list(config.ADMIN_GROUPS),
+)
+
+
 def get_current_user(request: Request) -> User:
-    '''Extract the authenticated user from the session.'''
+    '''Extract the authenticated user from the session (or return a demo user).'''
+    if config.AUTH_DISABLED:
+        return _NOAUTH_USER
     user_data = request.session.get('user')
     if not user_data:
         raise HTTPException(401, 'Not authenticated')

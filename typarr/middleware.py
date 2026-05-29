@@ -32,6 +32,9 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
 
     async def dispatch(self, request, call_next):
         '''Check session for authentication before forwarding the request.'''
+        if config.AUTH_DISABLED:
+            return await call_next(request)
+
         path = request.url.path
 
         if path in _PUBLIC_PATHS or path.startswith(_STATIC_PREFIXES):

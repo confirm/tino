@@ -26,7 +26,8 @@ async def lifespan(_app: FastAPI):
     config.BUCKET_DIR.mkdir(parents=True, exist_ok=True)
     config.PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
     config.sanity_checks()
-    await setup_oauth()
+    if not config.AUTH_DISABLED:
+        await setup_oauth()
     collab_mgr = get_collab_manager()
     collab_mgr.start()
     yield
