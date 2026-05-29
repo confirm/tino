@@ -91,7 +91,7 @@ jobs:
           python-version: '3.14'
       - run: pip install -e .[develop]
       - run: make docs
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: build/docs/
 
