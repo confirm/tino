@@ -1530,12 +1530,6 @@ html, body {
   white-space: nowrap;
 }
 
-.font-item .icon-btn {
-  opacity: 0;
-  transition: opacity var(--transition);
-}
-
-.font-item:hover .icon-btn { opacity: 1; }
 
 .font-empty {
   padding: 24px;
