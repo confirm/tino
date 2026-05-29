@@ -48,6 +48,8 @@ To deploy Typarr via a simple ``docker`` command, use the following CLI argument
 
     docker run -d \
         --name typarr \
+        --read-only \
+        --tmpfs /tmp \
         -e TYPARR_OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
         -e TYPARR_OIDC_CLIENT_SECRET=change-me \
         -e TYPARR_TRUSTED_PROXIES='*' \
