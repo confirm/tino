@@ -21,6 +21,9 @@ __all__ = (
     'TYPARR_OIDC_DISCOVERY_URL',
     'TYPARR_OIDC_GROUPS_CLAIM',
     'TYPARR_PACKAGE_DIR',
+    'TYPARR_PREVIEW_DEBOUNCE_MS',
+    'TYPARR_ROOM_TTL',
+    'TYPARR_SAVE_DEBOUNCE_MS',
     'TYPARR_SECRET_KEY',
     'TYPARR_TRUSTED_PROXIES',
 )
@@ -33,25 +36,10 @@ from secrets import token_hex
 from sys import exit as sys_exit
 
 #
-# Application settings.
+# 📂 Directories
 #
-# Application level settings.
+# Paths to different data directories.
 #
-
-#: When set to ``true``, authentication is completely disabled.
-#: All requests are treated as an admin user without requiring OIDC.
-#: Intended for local development and demo environments only.
-TYPARR_AUTH_DISABLED = environ.get('TYPARR_AUTH_DISABLED', '').lower() in {'1', 'true', 'yes'}
-
-#: ⭕ The log level (must match one of the
-#: `Python logging levels <https://docs.python.org/3/library/logging.html#logging-levels>`_).
-TYPARR_LOG_LEVEL = environ.get('TYPARR_LOG_LEVEL', 'INFO')
-
-#: ⭕ The CI accent colour family used across the UI.
-#:
-#: .. hint::
-#:  Must match a family from the `confirm design colours <https://assets.confirm.ch/#colours>`_.
-TYPARR_ACCENT_COLOUR = environ.get('TYPARR_ACCENT_COLOUR', 'orange')
 
 _DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent / 'data')
 #: ⭕ The root directory where all the user data is stored.
@@ -104,12 +92,16 @@ _DEFAULT_FONT_DIR = str(TYPARR_DATA_DIR / 'fonts')
 #:  `volume`_ or a `bind mount`_ mounted on the path.
 TYPARR_FONT_DIR = Path(environ.get('TYPARR_FONT_DIR', _DEFAULT_FONT_DIR))
 
-_TRUSTED_PROXIES = environ.get('TYPARR_TRUSTED_PROXIES', '')
-#: Comma-separated list of trusted proxy IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``).
-#: When set, ``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers from these
-#: proxies are respected. Use ``*`` to trust all sources.
-#: Leave empty when Typarr is not behind a reverse proxy.
-TYPARR_TRUSTED_PROXIES: list[str] = [h.strip() for h in _TRUSTED_PROXIES.split(',') if h.strip()]
+#
+# 🔐 Security
+#
+# Security-related settings.
+#
+
+#: When set to ``true``, authentication is completely disabled.
+#: All requests are treated as an admin user without requiring OIDC.
+#: Intended for local development and demo environments only.
+TYPARR_AUTH_DISABLED = environ.get('TYPARR_AUTH_DISABLED', '').lower() in {'1', 'true', 'yes'}
 
 #: ⭕ Secret key for signing session cookies.
 #:
@@ -119,17 +111,24 @@ TYPARR_TRUSTED_PROXIES: list[str] = [h.strip() for h in _TRUSTED_PROXIES.split('
 #:  after a container restart.
 TYPARR_SECRET_KEY = environ.get('TYPARR_SECRET_KEY', token_hex(32))
 
-_ADMIN_GROUPS_RAW = environ.get('TYPARR_ADMIN_GROUPS', 'admins')
-#: ⭕ Comma-separated list of OIDC groups whose members are Typarr administrators.
-TYPARR_ADMIN_GROUPS: set[str] = {g.strip() for g in _ADMIN_GROUPS_RAW.split(',') if g.strip()}
-
 #: ⭕ The default role for authenticated users on buckets without an access list.
 #: Must be one of ``viewer``, ``editor``, ``committer``, or ``none``.
 #: When set to ``none``, only global admins can access buckets without an ACL.
 TYPARR_DEFAULT_ROLE = environ.get('TYPARR_DEFAULT_ROLE', 'none')
 
+_ADMIN_GROUPS_RAW = environ.get('TYPARR_ADMIN_GROUPS', 'admins')
+#: ⭕ Comma-separated list of OIDC groups whose members are Typarr administrators.
+TYPARR_ADMIN_GROUPS: set[str] = {g.strip() for g in _ADMIN_GROUPS_RAW.split(',') if g.strip()}
+
+_TRUSTED_PROXIES = environ.get('TYPARR_TRUSTED_PROXIES', '')
+#: Comma-separated list of trusted proxy IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``).
+#: When set, ``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers from these
+#: proxies are respected. Use ``*`` to trust all sources.
+#: Leave empty when Typarr is not behind a reverse proxy.
+TYPARR_TRUSTED_PROXIES: list[str] = [h.strip() for h in _TRUSTED_PROXIES.split(',') if h.strip()]
+
 #
-# OIDC.
+# 🔑 OIDC
 #
 # Typarr requires users to login via OIDC logins.
 #
@@ -145,6 +144,38 @@ TYPARR_OIDC_CLIENT_SECRET = environ.get('TYPARR_OIDC_CLIENT_SECRET')
 
 #: ⭕ The OIDC token claim that contains the user's group memberships.
 TYPARR_OIDC_GROUPS_CLAIM = environ.get('TYPARR_OIDC_GROUPS_CLAIM', 'groups')
+
+#
+# ⚙️ Application settings
+#
+# Other application settings not matching the groups above :)
+#
+
+#: ⭕ The CI accent colour family used across the UI.
+#:
+#: .. hint::
+#:  Must match a family from the `confirm design colours <https://assets.confirm.ch/#colours>`_.
+TYPARR_ACCENT_COLOUR = environ.get('TYPARR_ACCENT_COLOUR', 'orange')
+
+#: ⭕ Delay in milliseconds before the live preview recompiles after the user stops typing.
+TYPARR_PREVIEW_DEBOUNCE_MS = int(environ.get('TYPARR_PREVIEW_DEBOUNCE_MS', '100'))
+
+#: ⭕ Delay in milliseconds before auto-saving after the user stops typing.
+#:
+#: .. hint::
+#:  Set to ``0`` to disable auto-save.
+#:
+#: .. important::
+#:  The PDF is rendered from the (saved) file on disk, thus auto saving is recommended.
+TYPARR_SAVE_DEBOUNCE_MS = int(environ.get('TYPARR_SAVE_DEBOUNCE_MS', '1000'))
+
+#: ⭕ Seconds to keep a collaboration room alive after the last client disconnects.
+#: Allows reconnecting clients (e.g. page refresh) to reuse the room.
+TYPARR_ROOM_TTL = int(environ.get('TYPARR_ROOM_TTL', '300'))
+
+#: ⭕ The log level (must match one of the
+#: `Python logging levels <https://docs.python.org/3/library/logging.html#logging-levels>`_).
+TYPARR_LOG_LEVEL = environ.get('TYPARR_LOG_LEVEL', 'INFO')
 
 
 #

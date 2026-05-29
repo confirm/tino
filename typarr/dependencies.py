@@ -92,6 +92,8 @@ def get_collab_manager() -> CollabManager:
     return CollabManager(
         data_dir=config.TYPARR_BUCKET_DIR,
         file_service=get_file_service(),
+        auto_save=config.TYPARR_SAVE_DEBOUNCE_MS > 0,
+        room_ttl=config.TYPARR_ROOM_TTL,
     )
 
 

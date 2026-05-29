@@ -1,0 +1,104 @@
+/**
+ * Toolbar, tab bar, theme toggle, and panel resize event bindings.
+ * Extracted from TyparrApp to keep app.js within the line limit.
+ */
+
+const bindBucketSelect = app => {
+  app.els.bucketBtn.addEventListener(
+    'click',
+    () => app.fileTree.openBucketPicker(),
+  )
+}
+
+const bindFileButtons = app => {
+  document.getElementById('btn-new')
+    .addEventListener('click', () => {
+      app.editor.createNewFile()
+    })
+  document.getElementById('btn-template')
+    .addEventListener('click', () => {
+      app.templatePicker.open()
+    })
+  document.getElementById('btn-save')
+    .addEventListener('click', () => {
+      app.editor.saveCurrentFile()
+    })
+  document.getElementById('btn-fonts')
+    .addEventListener('click', () => {
+      app.fontManager.open()
+    })
+}
+
+const bindGitButtons = app => {
+  document.getElementById('btn-commit')
+    .addEventListener('click', () => {
+      app.git.openDialog()
+    })
+  document.getElementById('btn-commit-submit')
+    .addEventListener('click', () => {
+      app.git.submit()
+    })
+  document.getElementById('btn-commit-cancel')
+    .addEventListener('click', () => {
+      app.git.closeDialog()
+    })
+  app.els.commitDialog.addEventListener('click', evt => {
+    if (evt.target === app.els.commitDialog)
+      app.git.closeDialog()
+  })
+  app.git.history.bind()
+}
+
+const bindThemeToggle = () => {
+  const target = document.documentElement
+  const saved = localStorage.getItem('typarr:theme')
+  if (saved)
+    target.setAttribute('data-theme', saved)
+  document.getElementById('btn-theme')
+    .addEventListener('click', () => {
+      const current = target.getAttribute('data-theme')
+      const next = current === 'dark' ? 'light' : 'dark'
+      target.setAttribute('data-theme', next)
+      localStorage.setItem('typarr:theme', next)
+    })
+}
+
+const bindTabBar = app => {
+  app.els.tabBar.addEventListener('click', evt => {
+    const closeBtn = evt.target.closest('.tab-close')
+    if (closeBtn) {
+      const tab = closeBtn.closest('.tab')
+      app.editor.closeTab(tab.dataset.file)
+      return
+    }
+    const tab = evt.target.closest('.tab')
+    if (tab)
+      app.editor.openFile(tab.dataset.file)
+  })
+}
+
+const bindLogout = () => {
+  document.getElementById('btn-logout')
+    .addEventListener('click', () => {
+      window.location.href = '/logout'
+    })
+}
+
+const bindPanelResize = app => {
+  const fileExplorer = document.getElementById('file-explorer')
+  const previewPanel = document.getElementById('preview-panel')
+  app.panelResize.init('resize-left', () => fileExplorer, 'left')
+  app.panelResize.init('resize-right', () => previewPanel, 'right')
+}
+
+/** Bind all toolbar buttons, tab bar, theme toggle, and panel resize. */
+
+export const bindToolbar = app => {
+  bindBucketSelect(app)
+  bindFileButtons(app)
+  bindGitButtons(app)
+  bindThemeToggle()
+  bindTabBar(app)
+  bindLogout()
+  bindPanelResize(app)
+}

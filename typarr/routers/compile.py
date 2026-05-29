@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
-from ..dependencies import get_compiler_service, require_viewer
+from ..collab import CollabManager
+from ..dependencies import get_collab_manager, get_compiler_service, require_viewer
 from ..services.compiler import CompilerService
 
 router = APIRouter(prefix='/api/buckets/{slug}/compile', tags=['compile'])
@@ -44,6 +45,31 @@ async def compile_svg(
     '''Compile a .typ file and return a list of SVG strings (one per page).'''
     try:
         pages = svc.compile_svg(slug, path)
+        return {'pages': pages}
+
+    except FileNotFoundError as exc:
+        raise HTTPException(404, 'File not found') from exc
+
+    except RuntimeError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@router.get('/svg-live/{path:path}')
+async def compile_svg_live(
+    slug: str, path: str,
+    _user=Depends(require_viewer),
+    svc: CompilerService = Depends(get_compiler_service),
+    collab: CollabManager = Depends(get_collab_manager),
+):
+    '''Compile live editor content from the Yjs room, falling back to disk.'''
+    try:
+        content = collab.get_content(slug, path)
+
+        if content is not None:  # pylint: disable=consider-ternary-expression
+            pages = svc.compile_svg_from_content(slug, content)
+        else:
+            pages = svc.compile_svg(slug, path)
+
         return {'pages': pages}
 
     except FileNotFoundError as exc:

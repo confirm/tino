@@ -1,60 +1,20 @@
-import { HTTP_NO_CONTENT, HTTP_UNAUTHORIZED } from './constants.js'
+import { HttpClient } from './http-client.js'
 
 /**
  * HTTP client for the Typarr REST API.
  * Wraps all backend endpoints (buckets, files, git, compile).
  */
 
-export class TyparrAPI {
-
-  /** @param {string} [baseUrl] - Base URL of the backend. */
-
-  constructor(baseUrl) {
-    this.baseUrl = baseUrl || ''
-  }
-
-  /**
-   * Internal fetch wrapper. Throws on non-OK responses,
-   * returns parsed JSON or null for 204 No Content.
-   */
-
-  async _fetch(path, options) {
-    const res = await fetch(this.baseUrl + path, options)
-    if (res.status === HTTP_UNAUTHORIZED) {
-      window.location.href = '/login'
-      throw new Error('Session expired')
-    }
-    if (!res.ok)
-      throw new Error(await TyparrAPI._parseError(res))
-    if (res.status === HTTP_NO_CONTENT)
-      return null
-    return res.json()
-  }
-
-  static async _parseError(res) {
-    const body = await res.text()
-    try {
-      return JSON.parse(body).detail || body
-    }
-    catch {
-      return body
-    }
-  }
-
-  /** Send a JSON-body request (POST/PUT). */
-
-  _json(method, path, data) {
-    return this._fetch(path, {
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' },
-      method,
-    })
-  }
+export class TyparrAPI extends HttpClient {
 
   /** @returns {string} Encoded bucket API base path. */
 
   static _bucketPath(slug) {
     return `/api/buckets/${encodeURIComponent(slug)}`
+  }
+
+  config() {
+    return this._fetch('/api/config')
   }
 
   // ── Auth ──
@@ -245,15 +205,15 @@ export class TyparrAPI {
 
   // ── Compile ──
 
-  /** Compile a .typ file to SVG. */
-
   compile(slug, path) {
     return this._fetch(`${TyparrAPI._bucketPath(slug)}/compile/svg/${path}`)
   }
 
-  // ── Templates ──
+  compileLive(slug, path) {
+    return this._fetch(`${TyparrAPI._bucketPath(slug)}/compile/svg-live/${path}`)
+  }
 
-  /** Fetch available Typst templates from the public index. */
+  // ── Templates ──
 
   listTemplates() {
     return this._fetch('/api/templates')

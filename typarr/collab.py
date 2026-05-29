@@ -55,11 +55,15 @@ class CollabManager:
     torn down (with a disk flush) when the last client disconnects.
     '''
 
-    def __init__(self, data_dir: Path, file_service: FileService):
+    def __init__(self, data_dir: Path, file_service: FileService, *,
+                 auto_save: bool = True, room_ttl: int = 300):
         self.data_dir = data_dir
         self.file_service = file_service
+        self._auto_save = auto_save
+        self._room_ttl = room_ttl
         self._rooms: dict[tuple[str, str], YRoom] = {}
         self._room_locks: dict[tuple[str, str], asyncio.Lock] = {}
+        self._ttl_tasks: dict[tuple[str, str], asyncio.Task] = {}
 
     def _get_lock(self, key: tuple[str, str]) -> asyncio.Lock:
         '''Return a per-room asyncio lock, creating it if needed.'''
@@ -78,6 +82,11 @@ class CollabManager:
         key = (slug, file_path)
         lock = self._get_lock(key)
         async with lock:
+            ttl_task = self._ttl_tasks.pop(key, None)
+            if ttl_task:
+                ttl_task.cancel()
+                logger.info('Cancelled TTL for %s/%s (client reconnected)', slug, file_path)
+
             if key in self._rooms:
                 return self._rooms[key]
 
@@ -110,6 +119,9 @@ class CollabManager:
         key = (slug, file_path)
         lock = self._get_lock(key)
         async with lock:
+            ttl_task = self._ttl_tasks.pop(key, None)
+            if ttl_task:
+                ttl_task.cancel()
             room = self._rooms.pop(key, None)
             if room:
                 try:
@@ -138,21 +150,34 @@ class CollabManager:
         logger.info('Flushed %s/%s to disk', slug, file_path)
 
     async def _cleanup_room(self, slug: str, file_path: str) -> None:
-        '''Flush and stop a room if no clients remain connected.'''
+        '''Schedule room teardown after the TTL expires.'''
         key = (slug, file_path)
         lock = self._get_lock(key)
         async with lock:
             room = self._rooms.get(key)
-            if room and len(room.clients) == 0:
-                await self._flush_room(slug, file_path, room)
-                await room.stop()
-                del self._rooms[key]
-                logger.info('Cleaned up room for %s/%s', slug, file_path)
+            if not room or len(room.clients) > 0:
+                return
+            self._ttl_tasks[key] = asyncio.create_task(
+                self._deferred_cleanup(slug, file_path),
+            )
+            logger.info('Started %ds TTL for %s/%s', self._room_ttl, slug, file_path)
 
-        # Pop the lock AFTER releasing it (outside the `async with`).
-        # If a new request raced in and created another room for this key
-        # while we were inside the lock, the room exists again and we
-        # leave the lock alone.
+    async def _deferred_cleanup(self, slug: str, file_path: str) -> None:
+        '''Wait for the TTL, then flush and stop the room.'''
+        await asyncio.sleep(self._room_ttl)
+        key = (slug, file_path)
+        lock = self._get_lock(key)
+        async with lock:
+            self._ttl_tasks.pop(key, None)
+            room = self._rooms.get(key)
+            if not room or len(room.clients) > 0:
+                return
+            if self._auto_save:
+                await self._flush_room(slug, file_path, room)
+            await room.stop()
+            del self._rooms[key]
+            logger.info('Cleaned up room for %s/%s after TTL', slug, file_path)
+
         if key not in self._rooms:
             self._room_locks.pop(key, None)
 
@@ -188,11 +213,24 @@ class CollabManager:
         if new_content:
             ytext += new_content
 
+    def get_content(self, slug: str, file_path: str) -> str | None:
+        '''Return the live YText content if a room exists, else None.'''
+        room = self._rooms.get((slug, file_path))
+        if room is None:
+            return None
+        ytext = room.ydoc.get('content', type=Text)
+        return str(ytext)
+
     def start(self) -> None:
         '''Called on application startup (reserved for future use).'''
 
     async def shutdown(self) -> None:
-        '''Flush all active rooms to disk. Called on application shutdown.'''
+        '''Cancel pending TTL tasks and flush all active rooms to disk.'''
+        for task in self._ttl_tasks.values():
+            task.cancel()
+        self._ttl_tasks.clear()
+        if not self._auto_save:
+            return
         for (slug, file_path), room in list(self._rooms.items()):
             try:
                 await self._flush_room(slug, file_path, room)

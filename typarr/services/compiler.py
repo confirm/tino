@@ -44,6 +44,37 @@ class CompilerService:
 
             return pages
 
+    def compile_svg_from_content(self, slug: str, content: str) -> list[str]:
+        '''Compile SVG from in-memory content via stdin.
+
+        Reads from stdin, writes SVG pages to a temp directory.
+        Raises RuntimeError if compilation fails.
+        '''
+        bucket_dir = (self.data_dir / slug).resolve()
+
+        cmd = ['typst', 'compile', '--format', 'svg', '--root', str(bucket_dir)]
+        if self.package_dir:
+            cmd.extend(['--package-path', str(self.package_dir)])
+        if self.font_dir and self.font_dir.is_dir():
+            cmd.extend(['--font-path', str(self.font_dir)])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / 'page-{n}.svg'
+            cmd.extend(['-', str(output)])
+
+            result = subprocess.run(
+                cmd, input=content, cwd=str(bucket_dir),
+                capture_output=True, text=True,
+                timeout=_COMPILE_TIMEOUT, check=False,
+            )
+            if result.returncode != 0:
+                raise RuntimeError(result.stderr.strip() or 'Compilation failed')
+
+            pages = []
+            for svg_file in sorted(Path(tmp).glob('page-*.svg')):
+                pages.append(svg_file.read_text(encoding='utf-8'))
+            return pages
+
     def compile_pdf(self, slug: str, path: str) -> Path:
         '''Compile a Typst file and return the path to the resulting PDF.
 

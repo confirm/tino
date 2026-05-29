@@ -238,6 +238,7 @@ export class EditorInput {
     this.app.dirty.add(cur)
     if (wasClean)
       this.renderTabs()
+    this.app.editor.debouncePreview()
     this.app.editor.debounceSave()
   }
 

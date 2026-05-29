@@ -11,6 +11,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from . import config
 
 _PUBLIC_PATHS = {
+    '/api/config',
     '/api/theme.css',
     '/health',
     '/login',

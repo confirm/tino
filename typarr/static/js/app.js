@@ -9,6 +9,7 @@ import { PreviewManager } from './preview-manager.js'
 import { TemplatePicker } from './template-picker.js'
 import { Toast } from './toast.js'
 import { TyparrAPI } from './api.js'
+import { bindToolbar } from './app-bindings.js'
 
 class TyparrApp {
 
@@ -79,6 +80,7 @@ class TyparrApp {
     const route = readRoute()
     this._bindAll()
     this._applyRoleVisibility()
+    this.config = await this.api.config()
     await this._loadUser()
     await this.fileTree.loadBuckets()
     await this._applyRoute(route, true)
@@ -86,14 +88,13 @@ class TyparrApp {
 
   _bindAll() {
     this.toast.bind()
-    this._bindToolbar()
+    bindToolbar(this)
     this._bindWindowEvents()
     this.editor.bindEditor()
     this._bindFileTree()
     this.fontManager.bind()
     this.templatePicker.bind()
     this.preview.bindZoom()
-    this._bindPanelResize()
   }
 
   _bindFileTree() {
@@ -190,105 +191,6 @@ class TyparrApp {
     document.getElementById('btn-commit').classList.toggle('hidden', !canCommit)
     document.getElementById('btn-bucket-history').classList.toggle('hidden', !canView)
     document.getElementById('btn-history').classList.toggle('hidden', !canView)
-  }
-
-  // ── Event binding ──
-
-  _bindToolbar() {
-    this._bindBucketSelect()
-    this._bindFileButtons()
-    this._bindGitButtons()
-    TyparrApp._bindThemeToggle()
-    this._bindTabBar()
-    TyparrApp._bindLogout()
-  }
-
-  _bindBucketSelect() {
-    this.els.bucketBtn.addEventListener(
-      'click',
-      () => this.fileTree.openBucketPicker(),
-    )
-  }
-
-  _bindFileButtons() {
-    document.getElementById('btn-new')
-      .addEventListener('click', () => {
-        this.editor.createNewFile()
-      })
-    document.getElementById('btn-template')
-      .addEventListener('click', () => {
-        this.templatePicker.open()
-      })
-    document.getElementById('btn-save')
-      .addEventListener('click', () => {
-        this.editor.saveCurrentFile()
-      })
-    document.getElementById('btn-fonts')
-      .addEventListener('click', () => {
-        this.fontManager.open()
-      })
-  }
-
-  _bindGitButtons() {
-    document.getElementById('btn-commit')
-      .addEventListener('click', () => {
-        this.git.openDialog()
-      })
-    document.getElementById('btn-commit-submit')
-      .addEventListener('click', () => {
-        this.git.submit()
-      })
-    document.getElementById('btn-commit-cancel')
-      .addEventListener('click', () => {
-        this.git.closeDialog()
-      })
-    this.els.commitDialog.addEventListener('click', evt => {
-      if (evt.target === this.els.commitDialog)
-        this.git.closeDialog()
-    })
-    this.git.history.bind()
-  }
-
-  static _bindThemeToggle() {
-    const target = document.documentElement
-    const saved = localStorage.getItem('typarr:theme')
-    if (saved)
-      target.setAttribute('data-theme', saved)
-    document.getElementById('btn-theme')
-      .addEventListener('click', () => {
-        const current = target.getAttribute('data-theme')
-        const next = current === 'dark' ? 'light' : 'dark'
-        target.setAttribute('data-theme', next)
-        localStorage.setItem('typarr:theme', next)
-      })
-  }
-
-  _bindTabBar() {
-    this.els.tabBar.addEventListener('click', evt => {
-      const closeBtn = evt.target.closest('.tab-close')
-      if (closeBtn) {
-        const tab = closeBtn.closest('.tab')
-        this.editor.closeTab(tab.dataset.file)
-        return
-      }
-      const tab = evt.target.closest('.tab')
-      if (tab)
-        this.editor.openFile(tab.dataset.file)
-    })
-  }
-
-  static _bindLogout() {
-    document.getElementById('btn-logout')
-      .addEventListener('click', () => {
-        window.location.href = '/logout'
-      })
-  }
-
-  _bindPanelResize() {
-    const fileExplorer = document.getElementById('file-explorer')
-    const previewPanel = document.getElementById('preview-panel')
-    this.panelResize.init('resize-left', () => fileExplorer, 'left')
-    this.panelResize.init('resize-right', () => previewPanel, 'right')
   }
 
 }

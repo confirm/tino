@@ -43,6 +43,13 @@ def create_app() -> FastAPI:
     async def health():
         return 'ok'
 
+    @app.get('/api/config')
+    async def frontend_config():
+        return {
+            'previewDebounceMs': config.TYPARR_PREVIEW_DEBOUNCE_MS,
+            'saveDebounceMs': config.TYPARR_SAVE_DEBOUNCE_MS,
+        }
+
     app.include_router(auth_router)
     app.include_router(buckets.router)
     app.include_router(collab.router)

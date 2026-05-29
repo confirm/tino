@@ -32,6 +32,7 @@ export class EditorManager {
       app.els.editor, app.els.editorHighlight,
     )
     this._saveTimer = null
+    this._previewTimer = null
   }
 
   /** Open a file in the editor, loading from cache or API. */
@@ -139,7 +140,6 @@ export class EditorManager {
     this.input.updateStatusBar()
     await this.app.git.loadStatus()
     await this.app.fileTree.loadFiles()
-    await this.app.preview.update()
   }
 
   /** Prompt for a filename and create a new file. */
@@ -248,13 +248,24 @@ export class EditorManager {
     this.saveTabs()
   }
 
-  /** Schedule an auto-save after typing stops. */
+  debouncePreview() {
+    const cfg = this.app.config
+    clearTimeout(this._previewTimer)
+    this._previewTimer = setTimeout(
+      () => this.app.preview.update(),
+      cfg ? cfg.previewDebounceMs : DEBOUNCE_MS,
+    )
+  }
 
   debounceSave() {
+    const cfg = this.app.config
+    const delay = cfg ? cfg.saveDebounceMs : DEBOUNCE_MS
+    if (!delay)
+      return
     clearTimeout(this._saveTimer)
     this._saveTimer = setTimeout(
       () => this.saveCurrentFile(),
-      DEBOUNCE_MS,
+      delay,
     )
   }
 
