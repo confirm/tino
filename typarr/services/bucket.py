@@ -11,7 +11,6 @@ import yaml
 from ..models import AccessEntry, BucketInfo, User
 
 META_FILE = '.meta.yml'
-GITATTRIBUTES = Path(__file__).resolve().parent.parent / 'gitattributes'
 
 
 class BucketService:
@@ -82,14 +81,6 @@ class BucketService:
             access=[AccessEntry(**a) for a in meta.get('access', [])],
         )
 
-    @staticmethod
-    def _apply_shared_gitattributes(repo: git.Repo) -> None:
-        '''Point the repo at the app-level shared .gitattributes.'''
-        if GITATTRIBUTES.is_file():
-            repo.config_writer().set_value(
-                'core', 'attributesFile', str(GITATTRIBUTES),
-            ).release()
-
     def list(self) -> list[BucketInfo]:
         '''List all buckets (directories with a .git folder) in the data dir.'''
         buckets = []
@@ -133,7 +124,6 @@ class BucketService:
 
         repo = git.Repo.init(path)
         try:
-            self._apply_shared_gitattributes(repo)
             repo.index.add([META_FILE])
             actor = self._actor(user) if user else None
             repo.index.commit('Initialize bucket\n\nTyparr-Meta: true',
