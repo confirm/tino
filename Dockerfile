@@ -33,4 +33,4 @@ HEALTHCHECK --start-period=10s --start-interval=2s --interval=10s --timeout=10s 
     CMD curl -sfL http://127.0.0.1:5000/health
 
 ENTRYPOINT ["gunicorn"]
-CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:5000", "--worker-tmp-dir", "/tmp", "typarr:create_app()"]
+CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:5000", "--worker-tmp-dir", "/tmp", "--chdir", "/tmp", "typarr:create_app()"]
