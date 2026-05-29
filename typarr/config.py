@@ -53,7 +53,7 @@ TYPARR_LOG_LEVEL = environ.get('TYPARR_LOG_LEVEL', 'INFO')
 #:  Must match a family from the `confirm design colours <https://assets.confirm.ch/#colours>`_.
 TYPARR_ACCENT_COLOUR = environ.get('TYPARR_ACCENT_COLOUR', 'orange')
 
-_DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent.parent / 'data')
+_DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent / 'data')
 #: ⭕ The root directory where all the user data is stored.
 #:
 #: .. important::
