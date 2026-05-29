@@ -10,6 +10,7 @@ Built for teams that want to author, review, and publish together.
    introduction
    deployment
    configuration
+   contributing
 
 .. toctree::
    :maxdepth: 1
