@@ -58,6 +58,7 @@ export class EditorToolbar {
       case 'code': this._wrap('`'); break
       case 'codeblock': this._wrapBlock(); break
       case 'math': this._wrap('$'); break
+      case 'table': this._insertTable(); break
       default: break
     }
   }
@@ -160,6 +161,19 @@ export class EditorToolbar {
     ed.setRangeText(snippet, pos, ed.selectionEnd)
     ed.selectionStart = pos + IMAGE_PREFIX.length
     ed.selectionEnd = ed.selectionStart
+    EditorToolbar._afterEdit(ed)
+  }
+
+  /** Insert a Typst 2x2 table snippet with the cursor in the first cell. */
+
+  _insertTable() {
+    const ed = this.app.els.editor
+    const pos = ed.selectionStart
+    const snippet = '#table(\n  columns: 2,\n  [], [],\n  [], [],\n)'
+    ed.setRangeText(snippet, pos, ed.selectionEnd)
+    const cursor = pos + '#table(\n  columns: 2,\n  ['.length
+    ed.selectionStart = cursor
+    ed.selectionEnd = cursor
     EditorToolbar._afterEdit(ed)
   }
 
