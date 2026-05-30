@@ -11,6 +11,9 @@ from ..models import CommitInfo, DiffEntry, FileStatus
 
 logger = logging.getLogger(__name__)
 
+# Stand-in "parent" for diffing a root commit: git's well-known empty-tree SHA.
+_EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
+
 
 class GitService:
     '''Git operations on bucket repositories (status, commit, log, diff, restore).'''
@@ -100,11 +103,29 @@ class GitService:
         output = repo.git.log('--format=%H', '--diff-filter=D', '--', path)
         return set(output.split('\n')) if output else set()
 
-    def diff(self, slug: str, path: str | None = None) -> list[DiffEntry]:
-        '''Return unified diffs for modified files in the working tree.'''
+    def diff(self, slug: str, path: str | None = None,
+             ref: str | None = None) -> list[DiffEntry]:
+        '''Return unified diffs.
+
+        With ``ref=None`` (default) returns working-tree changes vs HEAD.
+        With ``ref`` set returns the changes introduced by that commit
+        (commit-vs-parent, or commit-vs-empty-tree for the root commit).
+        '''
         with self._open(slug) as repo:
-            diff_text = repo.git.diff(path) if path else repo.git.diff()
+            diff_text = self._diff_text(repo, path, ref)
             return self._parse_diff(diff_text)
+
+    @staticmethod
+    def _diff_text(repo, path: str | None, ref: str | None) -> str:
+        '''Compute the unified-diff text for either the working tree or a commit.'''
+        if ref is None:
+            return repo.git.diff(path) if path else repo.git.diff()
+        commit = repo.commit(ref)
+        base = f'{ref}^' if commit.parents else _EMPTY_TREE_SHA
+        args = [base, ref]
+        if path:
+            args.extend(['--', path])
+        return repo.git.diff(*args)
 
     @staticmethod
     def _parse_diff(diff_text: str) -> list[DiffEntry]:

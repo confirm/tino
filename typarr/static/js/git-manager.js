@@ -4,6 +4,7 @@ import {
   escapeHtml,
 } from './constants.js'
 import { GitHistory } from './git-history.js'
+import { renderDiffEntries } from './diff-render.js'
 
 /**
  * Manages git operations: status, commit dialog, and history.
@@ -47,6 +48,7 @@ export class GitManager {
   _showFileDialog(paths) {
     this.app.els.commitFiles.innerHTML = ''
     this._renderFileList(this.app.els.commitFiles, paths)
+    GitManager._resetDiffPane()
     this.app.els.commitMessage.value = ''
     this.app.els.commitDialog.classList.add('visible')
     this.app.els.commitMessage.focus()
@@ -55,23 +57,52 @@ export class GitManager {
   _showEmptyDialog() {
     this.app.els.commitFiles.innerHTML =
       '<li class="commit-empty">No changes to commit</li>'
+    GitManager._resetDiffPane()
     this.app.els.commitMessage.value = ''
     this.app.els.commitDialog.classList.add('visible')
+  }
+
+  static _resetDiffPane() {
+    const pane = document.getElementById('commit-diff')
+    if (pane)
+      pane.innerHTML = '<p class="preview-empty">Select a file to view its diff.</p>'
   }
 
   _renderFileList(list, paths) {
     paths.forEach(filePath => {
       const li = document.createElement('li')
       li.className = 'commit-file-item'
+      li.dataset.file = filePath
       const status = this.app.gitStatuses[filePath]
       const safe = escapeHtml(filePath)
       li.innerHTML =
-        '<label>' +
-        `<input type="checkbox" value="${safe}" checked> ` +
-        `<span class="material-symbols-outlined git-badge ${STATUS_CLASSES[status]}">` +
-        `${STATUS_ICONS[status]}</span> ${safe}</label>`
+        `<label><input type='checkbox' value='${safe}' checked></label>`
+        + '<span class="commit-file-name">'
+        + `<span class="material-symbols-outlined git-badge ${STATUS_CLASSES[status]}">`
+        + `${STATUS_ICONS[status]}</span>${safe}</span>`
       list.appendChild(li)
     })
+  }
+
+  /** Load and render the diff for a single file in the preview pane. */
+
+  async showDiffFor(filePath) {
+    this._highlightFileRow(filePath)
+    const pane = document.getElementById('commit-diff')
+    pane.innerHTML = '<p class="preview-empty">Loading diff…</p>'
+    try {
+      const entries = await this.app.api.gitDiff(this.app.bucket, filePath)
+      pane.innerHTML = renderDiffEntries(entries)
+    }
+    catch (err) {
+      pane.innerHTML =
+        `<p class="preview-empty">Could not load diff: ${escapeHtml(err.message)}</p>`
+    }
+  }
+
+  _highlightFileRow(filePath) {
+    this.app.els.commitFiles.querySelectorAll('.commit-file-item')
+      .forEach(li => li.classList.toggle('active', li.dataset.file === filePath))
   }
 
   /** Hide the commit dialog overlay. */

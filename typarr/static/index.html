@@ -200,9 +200,14 @@
   </div>
 
   <div class="dialog-overlay" id="commit-dialog">
-    <div class="dialog">
+    <div class="dialog dialog-commit">
       <div class="dialog-header">Commit Changes</div>
-      <ul class="commit-file-list" id="commit-files"></ul>
+      <div class="commit-layout">
+        <ul class="commit-file-list commit-side" id="commit-files"></ul>
+        <div class="commit-diff-pane" id="commit-diff">
+          <p class="preview-empty">Select a file to view its diff.</p>
+        </div>
+      </div>
       <textarea class="commit-message" id="commit-message" placeholder="Commit message..." rows="3"></textarea>
       <div class="dialog-actions">
         <button class="btn btn-secondary" id="btn-commit-cancel">Cancel</button>
@@ -226,6 +231,10 @@
         <ul class="history-list" id="history-list"></ul>
         <div class="history-right">
           <ul class="history-files" id="history-files"></ul>
+          <div class="preview-toolbar hidden" id="history-preview-toolbar">
+            <button class="preview-toggle" data-mode="content" id="btn-history-mode-content">Content</button>
+            <button class="preview-toggle" data-mode="diff" id="btn-history-mode-diff">Diff</button>
+          </div>
           <div class="history-preview" id="history-preview">
             <p class="preview-empty">Select a commit to browse files.</p>
           </div>

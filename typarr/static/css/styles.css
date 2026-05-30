@@ -961,6 +961,9 @@ html, body {
 }
 
 .commit-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px 16px;
   font-size: 12px;
   color: var(--text-secondary);
@@ -969,7 +972,6 @@ html, body {
 .commit-file-item label {
   display: flex;
   align-items: center;
-  gap: 6px;
   cursor: pointer;
 }
 
@@ -984,7 +986,8 @@ html, body {
 }
 
 .commit-message {
-  margin: 0 16px 12px;
+  flex-shrink: 0;
+  margin: 12px 16px;
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1002,6 +1005,7 @@ html, body {
 
 .dialog-actions {
   display: flex;
+  flex-shrink: 0;
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 16px;
@@ -1355,6 +1359,138 @@ html, body {
   font-size: 12px;
   color: var(--text-muted);
   list-style: none;
+}
+
+/* ── Preview toolbar (history Content/Diff toggle) ── */
+
+.preview-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.preview-toolbar.hidden {
+  display: none;
+}
+
+.preview-toggle {
+  padding: 3px 10px;
+  font-size: 11px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.preview-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.preview-toggle.active {
+  color: var(--accent);
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+}
+
+/* ── Diff rendering ── */
+
+.diff-file-path {
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+
+.diff-block {
+  margin: 0 0 8px;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+  background: var(--editor-bg);
+}
+
+.diff-line {
+  display: block;
+  padding: 0 12px;
+}
+
+.diff-line.diff-add {
+  background: rgb(0 200 0 / 12%);
+  color: var(--cd-green-50, #4ade80);
+}
+
+.diff-line.diff-del {
+  background: rgb(200 0 0 / 12%);
+  color: var(--cd-red-50, #f87171);
+}
+
+.diff-line.diff-hunk {
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  font-style: italic;
+}
+
+.diff-line.diff-file-header {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.diff-line.diff-context {
+  color: var(--text-secondary);
+}
+
+/* ── Commit dialog with diff preview ── */
+
+.dialog-commit {
+  width: 800px;
+}
+
+.commit-layout {
+  display: flex;
+  flex: 1;
+  min-height: 200px;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.commit-file-list.commit-side {
+  width: 280px;
+  max-height: none;
+  padding: 4px 0;
+  margin: 0;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.commit-file-item.active {
+  background: var(--bg-tertiary);
+}
+
+.commit-file-item .commit-file-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.commit-diff-pane {
+  flex: 1;
+  overflow: auto;
+  background: var(--editor-bg);
 }
 
 /* ── Template Picker ── */

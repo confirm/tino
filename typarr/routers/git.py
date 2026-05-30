@@ -79,10 +79,15 @@ async def git_diff(
     user=Depends(require_viewer),
     svc: GitService = Depends(get_git_service),
     path: str | None = Query(None),
+    ref: str | None = Query(None),
 ):
-    '''Return unified diffs for modified files in the working tree.'''
+    '''Return unified diffs.
+
+    Without ``ref`` the diff covers working-tree changes vs HEAD. With
+    ``ref`` it covers the changes introduced by that commit (vs its parent).
+    '''
     try:
-        return svc.diff(slug, path)
+        return svc.diff(slug, path, ref)
 
     except Exception as exc:
         logger.warning('git diff failed for %s (user: %s): %s', slug, user.username, exc)

@@ -169,13 +169,20 @@ export class TyparrAPI extends HttpClient {
     return this._fetch(url)
   }
 
-  /** Get unified diffs for modified files. */
+  /**
+   * Get unified diffs.
+   * Without ``ref`` returns working-tree diffs vs HEAD.
+   * With ``ref`` returns the changes introduced by that commit.
+   */
 
-  gitDiff(slug, path) {
-    let url = `${TyparrAPI._bucketPath(slug)}/git/diff`
+  gitDiff(slug, path, ref) {
+    const params = []
     if (path)
-      url += `?path=${encodeURIComponent(path)}`
-    return this._fetch(url)
+      params.push(`path=${encodeURIComponent(path)}`)
+    if (ref)
+      params.push(`ref=${encodeURIComponent(ref)}`)
+    const qs = params.length ? `?${params.join('&')}` : ''
+    return this._fetch(`${TyparrAPI._bucketPath(slug)}/git/diff${qs}`)
   }
 
   /** List all file paths at a specific commit. */

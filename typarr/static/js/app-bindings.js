@@ -46,6 +46,14 @@ const bindGitButtons = app => {
     if (evt.target === app.els.commitDialog)
       app.git.closeDialog()
   })
+  app.els.commitFiles.addEventListener('click', evt => {
+    const name = evt.target.closest('.commit-file-name')
+    if (!name)
+      return
+    const li = name.closest('.commit-file-item')
+    if (li && li.dataset.file)
+      app.git.showDiffFor(li.dataset.file)
+  })
   app.git.history.bind()
 }
 
