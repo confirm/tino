@@ -215,8 +215,10 @@ export class TyparrAPI extends HttpClient {
 
   // ── Templates ──
 
-  listTemplates() {
-    return this._fetch('/api/templates')
+  /** Fetch templates from the Typst Universe package index. */
+
+  listTypstUniverseTemplates() {
+    return this._fetch('/api/templates/typst-universe')
   }
 
   /** Fetch templates from the local package directory. */

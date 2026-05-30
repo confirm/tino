@@ -25,8 +25,8 @@ class TemplateService:
         self._cache: list[dict] | None = None
         self._cache_time: float        = 0
 
-    def list_templates(self) -> list[dict]:
-        '''Return all Typst template packages, grouped by name with a versions list.
+    def list_typst_universe_templates(self) -> list[dict]:
+        '''Return all Typst Universe template packages, grouped by name with a versions list.
 
         Each entry has the metadata of the latest version as canonical and a
         ``versions`` list sorted from newest to oldest. This collapses the raw
@@ -119,7 +119,7 @@ class TemplateService:
 
         Looks for ``typst.toml`` files with a ``[template]`` section under
         ``{package_dir}/{namespace}/{name}/{version}/``. Same grouping shape as
-        :meth:`list_templates`: one row per (namespace, name) with all versions.
+        :meth:`list_typst_universe_templates`: one row per (namespace, name) with all versions.
         '''
         if not self.package_dir or not self.package_dir.is_dir():
             return []

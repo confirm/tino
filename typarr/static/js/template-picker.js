@@ -56,7 +56,7 @@ export class TemplatePicker {
     this._list.innerHTML = '<li class="template-loading">Loading…</li>'
     const [local, universe] = await Promise.all([
       this.app.api.listLocalTemplates(),
-      this.app.api.listTemplates(),
+      this.app.api.listTypstUniverseTemplates(),
     ])
     this._localTemplates = local
     this._universeTemplates = universe

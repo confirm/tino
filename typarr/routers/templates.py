@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=['templates'])
 
 
-@router.get('/api/templates')
-async def list_templates(
+@router.get('/api/templates/typst-universe')
+async def list_typst_universe_templates(
     _user=Depends(get_current_user),
     svc: TemplateService = Depends(get_template_service),
 ):
-    '''Return all available Typst templates from the package index.'''
-    return svc.list_templates()
+    '''Return all available Typst templates from the Typst Universe package index.'''
+    return svc.list_typst_universe_templates()
 
 
 @router.get('/api/templates/local')
