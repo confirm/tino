@@ -75,6 +75,8 @@ const bindTabBar = app => {
     if (tab)
       app.editor.openFile(tab.dataset.file)
   })
+  document.getElementById('btn-close-all-tabs')
+    .addEventListener('click', () => app.editor.closeAllTabs())
 }
 
 const bindLogout = () => {

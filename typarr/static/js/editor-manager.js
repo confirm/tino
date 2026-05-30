@@ -29,8 +29,6 @@ export class EditorManager {
     this.binary = new BinaryPreview(app, this.toolbar)
     this.collab = new EditorCollab(app)
     this.highlight = new EditorHighlight(app.els.editor, app.els.editorHighlight)
-    this._saveTimer = null
-    this._previewTimer = null
   }
 
   /** Open a file in the editor, loading from cache or API. */
@@ -178,6 +176,17 @@ export class EditorManager {
     this.saveTabs()
   }
 
+  /** Close every open tab and clear the editor. */
+
+  closeAllTabs() {
+    if (!this.app.openTabs.length)
+      return
+    this._flushPendingSave()
+    this.resetState()
+    this.saveTabs()
+    writeRoute(this.app.bucket, null)
+  }
+
   _switchAfterClose(idx) {
     if (this.app.openTabs.length > 0) {
       const next =
@@ -211,9 +220,7 @@ export class EditorManager {
   restoreTabs() {
     if (!this.app.bucket)
       return
-    const valid = loadSavedTabs(
-      this.app.bucket, this.app.fileTree.filePaths,
-    )
+    const valid = loadSavedTabs(this.app.bucket, this.app.fileTree.filePaths)
     if (valid.length > 0) {
       this.app.openTabs = valid
       this.input.renderTabs()
@@ -228,9 +235,7 @@ export class EditorManager {
   /** Close tabs for files that no longer exist on disk. */
 
   reconcileTabs(existingPaths) {
-    const stale = this.app.openTabs.filter(
-      tp => !existingPaths.has(tp),
-    )
+    const stale = this.app.openTabs.filter(tp => !existingPaths.has(tp))
     if (!stale.length)
       return
     stale.forEach(tp => {
@@ -249,11 +254,9 @@ export class EditorManager {
 
   debouncePreview() {
     const cfg = this.app.config
+    const delay = cfg ? cfg.previewDebounceMs : DEBOUNCE_MS
     clearTimeout(this._previewTimer)
-    this._previewTimer = setTimeout(
-      () => this.app.preview.update(),
-      cfg ? cfg.previewDebounceMs : DEBOUNCE_MS,
-    )
+    this._previewTimer = setTimeout(() => this.app.preview.update(), delay)
   }
 
   debounceSave() {
@@ -262,10 +265,7 @@ export class EditorManager {
     if (!delay)
       return
     clearTimeout(this._saveTimer)
-    this._saveTimer = setTimeout(
-      () => this.saveCurrentFile(),
-      delay,
-    )
+    this._saveTimer = setTimeout(() => this.saveCurrentFile(), delay)
   }
 
   /** Reset editor state when switching buckets. */

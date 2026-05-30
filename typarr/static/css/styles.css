@@ -477,6 +477,10 @@ html, body {
   scrollbar-width: none;
 }
 
+.tab-bar:empty + #btn-close-all-tabs {
+  display: none;
+}
+
 .tab {
   display: flex;
   align-items: center;
