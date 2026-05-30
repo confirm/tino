@@ -158,10 +158,13 @@ html, body {
 }
 
 .toolbar-sep {
-  width: 1px;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0;
   height: 16px;
   margin: 0 4px;
-  background: var(--border);
+  border-left: 1px solid var(--border-light);
+  transform: translateZ(0);
 }
 
 .toolbar-user {
@@ -178,6 +181,7 @@ html, body {
   align-items: center;
   gap: 6px;
   height: 28px;
+  margin: 0 8px;
   padding: 0 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -200,10 +204,10 @@ html, body {
 }
 
 /* Theme toggle icon visibility */
-[data-theme="dark"] .icon-sun { display: block; }
+[data-theme="dark"] .icon-sun { display: inline-block; }
 [data-theme="dark"] .icon-moon { display: none; }
 [data-theme="light"] .icon-sun { display: none; }
-[data-theme="light"] .icon-moon { display: block; }
+[data-theme="light"] .icon-moon { display: inline-block; }
 
 /* ── Workspace ── */
 
