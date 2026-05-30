@@ -921,9 +921,10 @@ html, body {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgb(0 0 0 / 50%);
+  background: rgb(0 0 0 / 40%);
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
 }
 
 .dialog-overlay.visible {
@@ -1127,11 +1128,13 @@ html, body {
 }
 
 .dialog-wide {
-  width: 520px;
+  width: min(90vw, 640px);
 }
 
 .dialog-history {
-  width: 800px;
+  width: min(95vw, 1200px);
+  height: min(85vh, 800px);
+  max-height: 85vh;
 }
 
 .hidden {
@@ -1228,15 +1231,17 @@ html, body {
 
 .history-layout {
   display: flex;
-  height: 400px;
+  flex: 1;
+  min-height: 0;
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
 }
 
 .history-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  width: 240px;
+  width: 280px;
   overflow-y: auto;
   border-right: 1px solid var(--border);
   flex-shrink: 0;
@@ -1253,7 +1258,7 @@ html, body {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 140px;
+  max-height: 200px;
   overflow-y: auto;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -1455,19 +1460,21 @@ html, body {
 /* ── Commit dialog with diff preview ── */
 
 .dialog-commit {
-  width: 800px;
+  width: min(95vw, 1200px);
+  height: min(85vh, 800px);
+  max-height: 85vh;
 }
 
 .commit-layout {
   display: flex;
   flex: 1;
-  min-height: 200px;
+  min-height: 0;
   border-bottom: 1px solid var(--border);
   overflow: hidden;
 }
 
 .commit-file-list.commit-side {
-  width: 280px;
+  width: 320px;
   max-height: none;
   padding: 4px 0;
   margin: 0;
