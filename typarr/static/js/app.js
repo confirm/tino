@@ -52,6 +52,7 @@ class TyparrApp {
       fileSearch: document.getElementById('file-search'),
       fileTree: document.getElementById('file-tree'),
       lineNumbers: document.getElementById('line-numbers'),
+      logo: document.getElementById('logo'),
       previewPage: document.getElementById('preview-page'),
       statusBarModified: document.getElementById('status-bar-modified'),
       tabBar: document.getElementById('tab-bar'),
@@ -81,6 +82,8 @@ class TyparrApp {
     this._bindAll()
     this._applyRoleVisibility()
     this.config = await this.api.config()
+    if (this.config.version)
+      this.els.logo.title = `Typarr v${this.config.version}`
     await this._loadUser()
     await this.fileTree.loadBuckets()
     await this._applyRoute(route, true)

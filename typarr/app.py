@@ -97,6 +97,7 @@ def create_app() -> FastAPI:
     async def frontend_config():
         return {
             'saveDebounceMs': config.TYPARR_SAVE_DEBOUNCE_MS,
+            'version': _APP_VERSION,
         }
 
     app.include_router(auth_router)
