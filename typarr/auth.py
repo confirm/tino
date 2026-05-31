@@ -92,20 +92,20 @@ def check_access(user: User, access: list[AccessEntry], min_role: str) -> None:
 # ── Routes ──
 
 
-@router.get('/login')
+@router.get('/login', include_in_schema=False)
 async def login_page():
     '''Serve the login page.'''
     return FileResponse(_LOGIN_HTML)
 
 
-@router.get('/oidc/login')
+@router.get('/oidc/login', include_in_schema=False)
 async def login(request: Request):
     '''Redirect the user to the OIDC provider for authentication.'''
     redirect_uri = str(request.url_for('callback'))
     return await oauth.oidc.authorize_redirect(request, redirect_uri)
 
 
-@router.get('/oidc/callback')
+@router.get('/oidc/callback', include_in_schema=False)
 async def callback(request: Request):
     '''Handle the OIDC callback, exchange code for tokens, and create a session.'''
     token    = await oauth.oidc.authorize_access_token(request)
@@ -129,7 +129,7 @@ async def callback(request: Request):
     return RedirectResponse(url='/')
 
 
-@router.get('/logout')
+@router.get('/logout', include_in_schema=False)
 async def logout(request: Request):
     '''Clear the session and redirect to the OIDC provider's logout endpoint.'''
     id_token = request.session.get('id_token')
