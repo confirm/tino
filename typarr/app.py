@@ -57,7 +57,6 @@ def create_app() -> FastAPI:
     @app.get('/api/config')
     async def frontend_config():
         return {
-            'previewDebounceMs': config.TYPARR_PREVIEW_DEBOUNCE_MS,
             'saveDebounceMs': config.TYPARR_SAVE_DEBOUNCE_MS,
         }
 

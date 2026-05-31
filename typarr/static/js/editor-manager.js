@@ -135,6 +135,7 @@ export class EditorManager {
   async _refreshAfterSave() {
     this.input.renderTabs()
     this.input.updateStatusBar()
+    await this.app.preview.update()
     await this.app.git.loadStatus()
     await this.app.fileTree.loadFiles()
   }
@@ -250,13 +251,6 @@ export class EditorManager {
     else
       this._switchAfterClose(0)
     this.saveTabs()
-  }
-
-  debouncePreview() {
-    const cfg = this.app.config
-    const delay = cfg ? cfg.previewDebounceMs : DEBOUNCE_MS
-    clearTimeout(this._previewTimer)
-    this._previewTimer = setTimeout(() => this.app.preview.update(), delay)
   }
 
   debounceSave() {

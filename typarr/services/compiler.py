@@ -40,33 +40,6 @@ class CompilerService:
 
         return self._render_svgs(source, bucket_dir)
 
-    def compile_svg_from_content(
-        self, slug: str, path: str, content: str,
-    ) -> list[str]:
-        '''Compile SVG from in-memory editor content (e.g. a live Yjs buffer).
-
-        Writes the content to a hidden temp file beside the real file so that
-        relative imports (`./` and `../`) resolve from the file's own directory,
-        exactly as they would on disk. Reading from stdin instead anchors the
-        document at the project root, which breaks those imports. The temp file
-        is always removed. Raises RuntimeError if compilation fails.
-        '''
-        bucket_dir, target = self._resolve_target(slug, path)
-        write_dir = target.parent if target.parent.is_dir() else bucket_dir
-
-        with tempfile.NamedTemporaryFile(
-            mode='w', encoding='utf-8', suffix='.typ',
-            prefix='.typarr-live-', dir=str(write_dir), delete=False,
-        ) as live:
-            live.write(content)
-            live_source = Path(live.name)
-
-        try:
-            logger.debug('Compiling live SVG for %s/%s', slug, path)
-            return self._render_svgs(live_source, bucket_dir)
-        finally:
-            live_source.unlink(missing_ok=True)
-
     def compile_pdf(self, slug: str, path: str) -> Path:
         '''Compile a Typst file and return the path to the resulting PDF.
 
@@ -102,23 +75,13 @@ class CompilerService:
                 for svg_file in sorted(Path(tmp).glob('page-*.svg'))
             ]
 
-    def _resolve_target(self, slug, path):
-        '''Resolve a path inside the bucket, validating containment.
-
-        Unlike _resolve_source, does not require the file to exist: live
-        content may differ from disk, or the file may be unsaved.
-        '''
-        bucket_dir = (self.data_dir / slug).resolve()
-        target     = (bucket_dir / path).resolve()
-
-        if not target.is_relative_to(bucket_dir):
-            raise FileNotFoundError(f'{path} is outside the bucket')
-
-        return bucket_dir, target
-
     def _resolve_source(self, slug, path):
         '''Validate that the source file exists and is inside the bucket.'''
-        bucket_dir, source = self._resolve_target(slug, path)
+        bucket_dir = (self.data_dir / slug).resolve()
+        source     = (bucket_dir / path).resolve()
+
+        if not source.is_relative_to(bucket_dir):
+            raise FileNotFoundError(f'{path} is outside the bucket')
 
         if not source.is_file():
             raise FileNotFoundError(f'{path} not found in bucket {slug}')

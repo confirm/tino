@@ -42,7 +42,7 @@ export class PreviewManager {
       return
     const preview = this.app.els.previewPage
     try {
-      const result = await this.app.api.compileLive(
+      const result = await this.app.api.compile(
         this.app.bucket,
         this.app.currentFile,
       )

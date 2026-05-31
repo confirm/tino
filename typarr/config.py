@@ -21,7 +21,6 @@ __all__ = (
     'TYPARR_OIDC_DISCOVERY_URL',
     'TYPARR_OIDC_GROUPS_CLAIM',
     'TYPARR_PACKAGE_DIR',
-    'TYPARR_PREVIEW_DEBOUNCE_MS',
     'TYPARR_ROOM_TTL',
     'TYPARR_SAVE_DEBOUNCE_MS',
     'TYPARR_SECRET_KEY',
@@ -157,17 +156,14 @@ TYPARR_OIDC_GROUPS_CLAIM = environ.get('TYPARR_OIDC_GROUPS_CLAIM', 'groups')
 #:  Must match a family from the `confirm design colours <https://assets.confirm.ch/#colours>`_.
 TYPARR_ACCENT_COLOUR = environ.get('TYPARR_ACCENT_COLOUR', 'orange')
 
-#: ⭕ Delay in milliseconds before the live preview recompiles after the user stops typing.
-TYPARR_PREVIEW_DEBOUNCE_MS = int(environ.get('TYPARR_PREVIEW_DEBOUNCE_MS', '250'))
-
 #: ⭕ Delay in milliseconds before auto-saving after the user stops typing.
 #:
 #: .. hint::
 #:  Set to ``0`` to disable auto-save.
 #:
 #: .. important::
-#:  The PDF is rendered from the (saved) file on disk, thus auto saving is recommended.
-TYPARR_SAVE_DEBOUNCE_MS = int(environ.get('TYPARR_SAVE_DEBOUNCE_MS', '1000'))
+#:  The document is rendered from the (saved) file on disk, thus auto saving is recommended.
+TYPARR_SAVE_DEBOUNCE_MS = int(environ.get('TYPARR_SAVE_DEBOUNCE_MS', '250'))
 
 #: ⭕ Seconds to keep a collaboration room alive after the last client disconnects.
 #: Allows reconnecting clients (e.g. page refresh) to reuse the room.

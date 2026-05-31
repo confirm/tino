@@ -216,10 +216,6 @@ export class TyparrAPI extends HttpClient {
     return this._fetch(`${TyparrAPI._bucketPath(slug)}/compile/svg/${path}`)
   }
 
-  compileLive(slug, path) {
-    return this._fetch(`${TyparrAPI._bucketPath(slug)}/compile/svg-live/${path}`)
-  }
-
   // ── Templates ──
 
   /** Fetch templates from the Typst Universe package index. */
