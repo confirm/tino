@@ -2,10 +2,10 @@
 
 import logging
 from contextlib import asynccontextmanager
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import config
@@ -16,8 +16,42 @@ from .middleware import register_middleware
 from .routers import buckets, collab
 from .routers import compile as compile_router
 from .routers import events, files, fonts, git, templates
+from .services.compiler import CompilerService
+
+logger = logging.getLogger(__name__)
 
 _STATIC_DIR = str(Path(__file__).parent / 'static')
+
+
+def _resolve_app_version() -> str:
+    '''Look up the installed Typarr package version, or "unknown" if unavailable.'''
+    try:
+        return version('typarr')
+    except PackageNotFoundError:
+        return 'unknown'
+
+
+def _resolve_typst_version() -> str | None:
+    '''Probe the Typst CLI once; returns None if the binary is missing or fails.'''
+    try:
+        return CompilerService.version()
+    except Exception:  # pylint: disable=broad-exception-caught
+        logger.warning('Typst CLI not available; /health will report typst=null')
+        return None
+
+
+def _count_buckets() -> int:
+    '''Cheap bucket count: directories under TYPARR_BUCKET_DIR with a .git folder.'''
+    if not config.TYPARR_BUCKET_DIR.is_dir():
+        return 0
+    return sum(
+        1 for entry in config.TYPARR_BUCKET_DIR.iterdir()
+        if entry.is_dir() and (entry / '.git').is_dir()
+    )
+
+
+_APP_VERSION = _resolve_app_version()
+_TYPST_VERSION = _resolve_typst_version()
 
 
 @asynccontextmanager
@@ -50,9 +84,14 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title='Typarr', lifespan=lifespan)
 
-    @app.get('/health', response_class=PlainTextResponse)
+    @app.get('/health')
     async def health():
-        return 'ok'
+        return {
+            'status': 'ok',
+            'version': _APP_VERSION,
+            'typst': _TYPST_VERSION,
+            'buckets': _count_buckets(),
+        }
 
     @app.get('/api/config')
     async def frontend_config():
