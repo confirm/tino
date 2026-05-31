@@ -1,10 +1,4 @@
-import {
-  Doc,
-  WebsocketProvider,
-  keymap,
-  yCollab,
-  yUndoManagerKeymap,
-} from './vendor/codemirror.js'
+import { Doc, WebsocketProvider, yCollab } from './vendor/codemirror.js'
 import { SINGLE_ITEM } from './constants.js'
 
 /**
@@ -109,10 +103,9 @@ export class CollabSession {
 
   _bindCollab() {
     this._bound = true
-    this._editor.setCollab([
-      yCollab(this._ytext, this._provider.awareness),
-      keymap.of(yUndoManagerKeymap),
-    ])
+    this._editor.setCollab(
+      yCollab(this._ytext, this._provider.awareness, { undoManager: false }),
+    )
   }
 
   /**

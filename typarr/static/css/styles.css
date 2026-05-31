@@ -183,6 +183,11 @@ html, body {
   color: var(--text-primary);
 }
 
+.toolbar-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
 .toolbar-sep {
   display: inline-block;
   flex-shrink: 0;
@@ -664,6 +669,17 @@ html, body {
 
 .editor .cm-cursor {
   border-left-color: var(--text-primary);
+}
+
+/* Vim block cursor: brand accent instead of the package's hardcoded pink. */
+.editor .cm-fat-cursor {
+  background: var(--accent) !important;
+}
+
+/* Vim status bar (mode / : command line). */
+.editor .cm-vim-panel {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
 }
 
 /*

@@ -71,6 +71,19 @@ const bindThemeToggle = () => {
     })
 }
 
+const bindVimToggle = app => {
+  const btn = document.getElementById('btn-vim')
+  const enabled = localStorage.getItem('typarr:vim') === 'on'
+  app.els.editor.setVim(enabled)
+  btn.classList.toggle('active', enabled)
+  btn.addEventListener('click', () => {
+    const next = !btn.classList.contains('active')
+    app.els.editor.setVim(next)
+    btn.classList.toggle('active', next)
+    localStorage.setItem('typarr:vim', next ? 'on' : 'off')
+  })
+}
+
 const bindTabBar = app => {
   app.els.tabBar.addEventListener('click', evt => {
     const closeBtn = evt.target.closest('.tab-close')
@@ -108,6 +121,7 @@ export const bindToolbar = app => {
   bindFileButtons(app)
   bindGitButtons(app)
   bindThemeToggle()
+  bindVimToggle(app)
   bindTabBar(app)
   bindLogout()
   bindPanelResize(app)

@@ -20,6 +20,7 @@ import {
   lineNumbers,
   placeholder,
   searchKeymap,
+  vim,
 } from './vendor/codemirror.js'
 import { typst, typstKeymap } from './codemirror-typst.js'
 import { SINGLE_ITEM } from './constants.js'
@@ -62,32 +63,40 @@ export class CodeMirrorEditor {
     this._editable = new Compartment()
     this._placeholder = new Compartment()
     this._collab = new Compartment()
-    this._history = new Compartment()
+    this._vim = new Compartment()
     this._view = new EditorView({
       parent,
       state: this._buildState(''),
     })
   }
 
-  /** Local-undo history extension, active only when collab is not bound. */
+  /** Undo/redo history — always active, so Vim's `u`, Ctrl-r and Ctrl-Z agree. */
 
   static _historyExt() {
     return [history(), keymap.of(historyKeymap)]
   }
 
   /**
-   * Bind or unbind a collaborative-editing extension (yCollab). Collab brings
-   * its own author-scoped undo, so the local history is swapped out while it
-   * is active and restored when `ext` is null.
+   * Bind or unbind a collaborative-editing extension (yCollab). Undo stays with
+   * the always-on CM history (yCollab is configured without its own undo
+   * manager), so Vim and Ctrl-Z share one consistent history.
    * @param {object|Array|null} ext - The collab extension(s), or null to clear.
    */
 
   setCollab(ext) {
     this._view.dispatch({
-      effects: [
-        this._collab.reconfigure(ext || []),
-        this._history.reconfigure(ext ? [] : CodeMirrorEditor._historyExt()),
-      ],
+      effects: this._collab.reconfigure(ext || []),
+    })
+  }
+
+  /**
+   * Enable or disable Vim keybindings (with the mode/command status bar).
+   * @param {boolean} enabled - True to turn Vim mode on.
+   */
+
+  setVim(enabled) {
+    this._view.dispatch({
+      effects: this._vim.reconfigure(enabled ? vim({ status: true }) : []),
     })
   }
 
@@ -101,6 +110,7 @@ export class CodeMirrorEditor {
     return EditorState.create({
       doc,
       extensions: [
+        this._vim.of([]),
         lineNumbers(),
         drawSelection(),
         foldGutter(),
@@ -109,7 +119,7 @@ export class CodeMirrorEditor {
         highlightSelectionMatches(),
         indentUnit.of('  '),
         indentOnInput(),
-        this._history.of(CodeMirrorEditor._historyExt()),
+        CodeMirrorEditor._historyExt(),
         this._collab.of([]),
         typst(),
         keymap.of([

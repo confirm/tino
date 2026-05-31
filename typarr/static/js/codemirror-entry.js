@@ -18,7 +18,7 @@ export {
 } from '@codemirror/view'
 export { Doc } from 'yjs'
 export { WebsocketProvider } from 'y-websocket'
-export { yCollab, yUndoManagerKeymap } from 'y-codemirror.next'
+export { yCollab } from 'y-codemirror.next'
 export {
   defaultKeymap,
   history,
@@ -41,3 +41,4 @@ export {
 } from '@codemirror/language'
 export { gotoLine, highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 export { tags } from '@lezer/highlight'
+export { vim } from '@replit/codemirror-vim'
