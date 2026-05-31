@@ -1,5 +1,6 @@
 import { readRoute, writeRoute } from './router.js'
 import { BucketEvents } from './bucket-events.js'
+import { CodeMirrorEditor } from './codemirror-editor.js'
 import { EditorManager } from './editor-manager.js'
 import { FileTree } from './file-tree.js'
 import { FontManager } from './font-manager.js'
@@ -47,11 +48,12 @@ class TyparrApp {
       commitFiles: document.getElementById('commit-files'),
       commitMessage: document.getElementById('commit-message'),
       cursorPos: document.getElementById('cursor-pos'),
-      editor: document.getElementById('editor'),
-      editorHighlight: document.getElementById('editor-highlight'),
+      editor: new CodeMirrorEditor(document.getElementById('editor'), {
+        onCursor: () => this.editor.input.updateCursorPos(),
+        onSave: () => this.editor.saveCurrentFile(),
+      }),
       fileSearch: document.getElementById('file-search'),
       fileTree: document.getElementById('file-tree'),
-      lineNumbers: document.getElementById('line-numbers'),
       logo: document.getElementById('logo'),
       previewPage: document.getElementById('preview-page'),
       statusBarModified: document.getElementById('status-bar-modified'),
@@ -125,12 +127,14 @@ class TyparrApp {
   async _loadUser() {
     try {
       const user = await this.api.me()
+      this.username = user.username
       this.els.userLabel.textContent = user.username
       this.isAdmin = user.is_admin
       document.getElementById('btn-fonts')
         .classList.toggle('hidden', !this.isAdmin)
     }
     catch {
+      this.username = 'anonymous'
       this.els.userLabel.textContent = 'anonymous'
       this.isAdmin = false
     }

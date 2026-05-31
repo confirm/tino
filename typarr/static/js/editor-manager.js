@@ -1,12 +1,7 @@
-import {
-  DEBOUNCE_MS,
-  INDEX_NOT_FOUND,
-  SINGLE_ITEM,
-} from './constants.js'
+import { INDEX_NOT_FOUND, SINGLE_ITEM } from './constants.js'
 import { loadSavedTabs, persistTabs } from './tab-store.js'
 import { BinaryPreview } from './editor-binary.js'
 import { EditorCollab } from './editor-collab.js'
-import { EditorHighlight } from './editor-highlight.js'
 import { EditorInput } from './editor-input.js'
 import { EditorToolbar } from './editor-toolbar.js'
 import { writeRoute } from './router.js'
@@ -28,7 +23,6 @@ export class EditorManager {
     this.toolbar = new EditorToolbar(app)
     this.binary = new BinaryPreview(app, this.toolbar)
     this.collab = new EditorCollab(app)
-    this.highlight = new EditorHighlight(app.els.editor, app.els.editorHighlight)
   }
 
   /** Open a file in the editor, loading from cache or API. */
@@ -38,18 +32,18 @@ export class EditorManager {
       return
     this._flushPendingSave()
 
-    /*
-     * Generation counter: a slow _loadContent must not overwrite a newer
-     * tab switch. If the user clicks B while A is still loading, A's
-     * post-load UI updates are dropped when gen no longer matches.
-     */
+    /* Fetch before mutating the editor, then bail if a newer open superseded us. */
 
-    this._openGeneration =
-      (this._openGeneration || 0) + SINGLE_ITEM
+    this._openGeneration = (this._openGeneration || 0) + SINGLE_ITEM
     const gen = this._openGeneration
-    await this._loadContent(path)
+    const loaded = await this._fetchContent(path)
     if (gen !== this._openGeneration)
       return
+
+    /* Unbind old collab before setContent, else yCollab bleeds new text into the old room. */
+
+    this.collab.disconnect()
+    this._applyLoaded(path, loaded)
     this._activateTab(path)
     await this.app.preview.update()
   }
@@ -64,7 +58,7 @@ export class EditorManager {
 
   _activateTab(path) {
     this.app.currentFile = path
-    this.app.els.editor.placeholder = ''
+    this.app.els.editor.setPlaceholder('')
     if (this.app.openTabs.indexOf(path) === INDEX_NOT_FOUND)
       this.app.openTabs.push(path)
     this._refreshEditorUi()
@@ -72,21 +66,35 @@ export class EditorManager {
     this._persistOpenState(path)
   }
 
-  async _loadContent(path) {
-    if (path in this.app.fileBuffers) {
-      this._showTextEditor(this.app.fileBuffers[path])
-      return
-    }
-    const data = await this.app.api.readFile(
-      this.app.bucket, path,
-    )
-    if (data.binary || BinaryPreview.isImage(path)) {
+  /**
+   * Fetch a file's content WITHOUT mutating the editor, returning a descriptor
+   * the caller applies only after confirming the open is still current. A slow
+   * fetch for an abandoned tab can therefore never overwrite the active file.
+   * @param {string} path - File to load.
+   * @returns {Promise<object>} `{ kind: 'text'|'binary', content?, modified? }`.
+   */
+
+  async _fetchContent(path) {
+    if (path in this.app.fileBuffers)
+      return { content: this.app.fileBuffers[path], kind: 'text' }
+    const data = await this.app.api.readFile(this.app.bucket, path)
+    if (data.binary || BinaryPreview.isImage(path))
+      return { kind: 'binary' }
+    return { content: data.content, kind: 'text', modified: data.modified }
+  }
+
+  /** Apply a fetched descriptor to the editor (called only when current). */
+
+  _applyLoaded(path, loaded) {
+    if (loaded.kind === 'binary') {
       this.binary.show(path)
       return
     }
-    this.app.fileBuffers[path] = data.content
-    this.app.fileMtimes[path] = data.modified
-    this._showTextEditor(data.content)
+    if (!(path in this.app.fileBuffers)) {
+      this.app.fileBuffers[path] = loaded.content
+      this.app.fileMtimes[path] = loaded.modified
+    }
+    this._showTextEditor(loaded.content)
   }
 
   _showTextEditor(content) {
@@ -94,11 +102,9 @@ export class EditorManager {
     this.app.els.binaryPreview.innerHTML = ''
     const role = this.app.bucketRole
     const canEdit = role === 'editor' || role === 'committer'
-    this.app.els.editor.value = content
-    this.app.els.editor.disabled = !canEdit
-    this.app.els.editor.classList.remove('hidden')
-    this.app.els.lineNumbers.classList.remove('hidden')
-    this.highlight.sync()
+    this.app.els.editor.setContent(content)
+    this.app.els.editor.setEditable(canEdit)
+    this.app.els.editor.setHidden(false)
     if (canEdit)
       this.toolbar.show()
     else
@@ -108,10 +114,8 @@ export class EditorManager {
   _refreshEditorUi() {
     this.input.renderTabs()
     this.input.highlightFileItem(this.app.currentFile)
-    this.input.updateLineNumbers()
     this.input.updateCursorPos()
     this.input.updateStatusBar()
-    this.highlight.sync()
     this.app.els.editor.focus()
   }
 
@@ -202,9 +206,8 @@ export class EditorManager {
     this.collab.disconnect()
     this.app.currentFile = null
     this._showTextEditor('')
-    this.app.els.editor.disabled = true
-    this.app.els.editor.placeholder = PLACEHOLDER
-    this.input.updateLineNumbers()
+    this.app.els.editor.setEditable(false)
+    this.app.els.editor.setPlaceholder(PLACEHOLDER)
     this.input.updateStatusBar()
     writeRoute(this.app.bucket, null)
   }
@@ -255,7 +258,7 @@ export class EditorManager {
 
   debounceSave() {
     const cfg = this.app.config
-    const delay = cfg ? cfg.saveDebounceMs : DEBOUNCE_MS
+    const delay = cfg && cfg.saveDebounceMs
     if (!delay)
       return
     clearTimeout(this._saveTimer)
@@ -269,10 +272,9 @@ export class EditorManager {
     this.toolbar.hide()
     this._clearOpenState()
     this._showTextEditor('')
-    this.app.els.editor.disabled = true
-    this.app.els.editor.placeholder = PLACEHOLDER
+    this.app.els.editor.setEditable(false)
+    this.app.els.editor.setPlaceholder(PLACEHOLDER)
     this.app.els.tabBar.innerHTML = ''
-    this.input.updateLineNumbers()
   }
 
   _clearOpenState() {

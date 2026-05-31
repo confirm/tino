@@ -1,8 +1,12 @@
-import { INDEX_NOT_FOUND, SINGLE_ITEM } from './constants.js'
+import { SINGLE_ITEM } from './constants.js'
 
 /**
  * Editor formatting toolbar for Typst markup shortcuts.
- * Provides wrap, line-prefix, and snippet insertion actions.
+ *
+ * Each action is applied as a CodeMirror transaction on the active editor
+ * view: a `changes` spec plus the resulting `selection`. Because these are
+ * ordinary (non-programmatic) transactions, the editor emits a change
+ * notification and — under collaboration — propagates them automatically.
  */
 
 const MAX_HEADING = 4
@@ -12,6 +16,12 @@ const HEADING_RE = /^(?<marks>={1,4}) /u
 const LINK_PREFIX = '#link("'
 
 const IMAGE_PREFIX = '#image("'
+
+const CODE_FENCE = '```\n'
+
+const TABLE_SNIPPET = '#table(\n  columns: 2,\n  [], [],\n  [], [],\n)'
+
+const TABLE_CARET = '#table(\n  columns: 2,\n  ['
 
 export class EditorToolbar {
 
@@ -64,19 +74,21 @@ export class EditorToolbar {
   }
 
   /**
-   * Wrap the selection (or insert an empty pair) with a
-   * symmetric delimiter character.
+   * Wrap the selection (or insert an empty pair) with a symmetric delimiter,
+   * placing the cursor between the delimiters when nothing is selected.
    */
 
   _wrap(char) {
     const ed = this.app.els.editor
-    const start = ed.selectionStart
-    const end = ed.selectionEnd
-    const wrapped = char + ed.value.slice(start, end) + char
-    ed.setRangeText(wrapped, start, end)
-    ed.selectionStart = start + char.length
-    ed.selectionEnd = end + char.length
-    EditorToolbar._afterEdit(ed)
+    const { from, to } = ed.selection
+    ed.view.dispatch({
+      changes: [
+        { from, insert: char },
+        { from: to, insert: char },
+      ],
+      selection: { anchor: from + char.length, head: to + char.length },
+    })
+    ed.focus()
   }
 
   /**
@@ -86,15 +98,14 @@ export class EditorToolbar {
 
   _cycleHeading() {
     const ed = this.app.els.editor
-    const pos = ed.selectionStart
-    const { lineStart, lineEnd } =
-      EditorToolbar._lineRange(ed.value, pos)
-    const line = ed.value.slice(lineStart, lineEnd)
-    const result = EditorToolbar._nextHeading(line)
-    ed.setRangeText(result.text, lineStart, lineEnd)
-    ed.selectionStart = pos + result.offset
-    ed.selectionEnd = ed.selectionStart
-    EditorToolbar._afterEdit(ed)
+    const pos = ed.selection.from
+    const line = ed.view.state.doc.lineAt(pos)
+    const result = EditorToolbar._nextHeading(line.text)
+    ed.view.dispatch({
+      changes: { from: line.from, insert: result.text, to: line.to },
+      selection: { anchor: Math.max(0, pos + result.offset) },
+    })
+    ed.focus()
   }
 
   static _nextHeading(line) {
@@ -115,87 +126,70 @@ export class EditorToolbar {
     }
   }
 
-  static _lineRange(text, pos) {
-    const lineStart =
-      text.lastIndexOf('\n', pos + INDEX_NOT_FOUND) + SINGLE_ITEM
-    const idx = text.indexOf('\n', pos)
-    const lineEnd = idx === INDEX_NOT_FOUND ? text.length : idx
-    return { lineEnd, lineStart }
-  }
-
   /** Insert a prefix at the start of the current line. */
 
   _prependLine(prefix) {
     const ed = this.app.els.editor
-    const pos = ed.selectionStart
-    const lineStart =
-      ed.value.lastIndexOf('\n', pos + INDEX_NOT_FOUND) + SINGLE_ITEM
-    ed.setRangeText(prefix, lineStart, lineStart)
-    ed.selectionStart = pos + prefix.length
-    ed.selectionEnd = pos + prefix.length
-    EditorToolbar._afterEdit(ed)
+    const pos = ed.selection.from
+    const line = ed.view.state.doc.lineAt(pos)
+    ed.view.dispatch({
+      changes: { from: line.from, insert: prefix },
+      selection: { anchor: pos + prefix.length },
+    })
+    ed.focus()
   }
 
-  /**
-   * Insert a Typst link, using the selection as the display
-   * text if present.
-   */
+  /** Insert a Typst link, using the selection as the display text if present. */
 
   _insertLink() {
     const ed = this.app.els.editor
-    const start = ed.selectionStart
-    const selected = ed.value.slice(start, ed.selectionEnd)
-    const snippet = `${LINK_PREFIX}")[${selected}]`
-    ed.setRangeText(snippet, start, ed.selectionEnd)
-    ed.selectionStart = start + LINK_PREFIX.length
-    ed.selectionEnd = ed.selectionStart
-    EditorToolbar._afterEdit(ed)
+    const { from, to } = ed.selection
+    const snippet = `${LINK_PREFIX}")[${ed.content.slice(from, to)}]`
+    ed.view.dispatch({
+      changes: { from, insert: snippet, to },
+      selection: { anchor: from + LINK_PREFIX.length },
+    })
+    ed.focus()
   }
 
   /** Insert a Typst image call with the cursor inside the path. */
 
   _insertImage() {
     const ed = this.app.els.editor
-    const pos = ed.selectionStart
-    const snippet = `${IMAGE_PREFIX}")`
-    ed.setRangeText(snippet, pos, ed.selectionEnd)
-    ed.selectionStart = pos + IMAGE_PREFIX.length
-    ed.selectionEnd = ed.selectionStart
-    EditorToolbar._afterEdit(ed)
+    const { from, to } = ed.selection
+    ed.view.dispatch({
+      changes: { from, insert: `${IMAGE_PREFIX}")`, to },
+      selection: { anchor: from + IMAGE_PREFIX.length },
+    })
+    ed.focus()
   }
 
   /** Insert a Typst 2x2 table snippet with the cursor in the first cell. */
 
   _insertTable() {
     const ed = this.app.els.editor
-    const pos = ed.selectionStart
-    const snippet = '#table(\n  columns: 2,\n  [], [],\n  [], [],\n)'
-    ed.setRangeText(snippet, pos, ed.selectionEnd)
-    const cursor = pos + '#table(\n  columns: 2,\n  ['.length
-    ed.selectionStart = cursor
-    ed.selectionEnd = cursor
-    EditorToolbar._afterEdit(ed)
+    const { from, to } = ed.selection
+    ed.view.dispatch({
+      changes: { from, insert: TABLE_SNIPPET, to },
+      selection: { anchor: from + TABLE_CARET.length },
+    })
+    ed.focus()
   }
 
   /** Wrap the selection in a fenced code block (``` … ```). */
 
   _wrapBlock() {
     const ed = this.app.els.editor
-    const start = ed.selectionStart
-    const end = ed.selectionEnd
-    const selected = ed.value.slice(start, end)
-    const snippet = `\`\`\`\n${selected}\n\`\`\``
-    ed.setRangeText(snippet, start, end)
-    ed.selectionStart = start + '```\n'.length
-    ed.selectionEnd = start + '```\n'.length + selected.length
-    EditorToolbar._afterEdit(ed)
-  }
-
-  /** Restore focus and fire an input event after editing. */
-
-  static _afterEdit(ed) {
+    const { from, to } = ed.selection
+    const selected = ed.content.slice(from, to)
+    ed.view.dispatch({
+      changes: { from, insert: `${CODE_FENCE}${selected}\n\`\`\``, to },
+      selection: {
+        anchor: from + CODE_FENCE.length,
+        head: from + CODE_FENCE.length + selected.length,
+      },
+    })
     ed.focus()
-    ed.dispatchEvent(new Event('input'))
   }
 
 }

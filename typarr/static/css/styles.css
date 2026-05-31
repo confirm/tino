@@ -37,11 +37,24 @@
   --accent-dim: color-mix(in srgb, var(--accent-60) 12%, transparent);
   --editor-bg: var(--cd-cold-grey-10);
   --line-number: var(--cd-cold-grey-40);
+  --selection: color-mix(in srgb, var(--accent) 12%, transparent);
   --preview-bg: var(--cd-white);
   --preview-text: var(--cd-cold-grey-10);
   --scrollbar-thumb: var(--cd-cold-grey-40);
   --scrollbar-track: transparent;
   --shadow: 0 2px 8px rgb(0 0 0 / 30%);
+
+  /* Syntax tokens: brighter brand steps for the dark editor background. */
+  --syntax-comment: var(--cd-cold-grey-50);
+  --syntax-string: var(--cd-sea-green-60);
+  --syntax-keyword: var(--cd-violet-60);
+  --syntax-function: var(--cd-azure-60);
+  --syntax-variable: var(--cd-blue-60);
+  --syntax-number: var(--cd-orange-70);
+  --syntax-heading: var(--cd-yellow-70);
+  --syntax-symbol: var(--cd-fuchsia-60);
+  --syntax-url: var(--cd-azure-60);
+  --syntax-punctuation: var(--cd-cold-grey-60);
 }
 
 /* Light theme */
@@ -61,11 +74,24 @@
   --accent-dim: color-mix(in srgb, var(--accent-60) 10%, transparent);
   --editor-bg: var(--cd-white);
   --line-number: var(--cd-cold-grey-70);
+  --selection: color-mix(in srgb, var(--accent) 20%, transparent);
   --preview-bg: var(--cd-white);
   --preview-text: var(--cd-cold-grey-10);
   --scrollbar-thumb: var(--cd-cold-grey-70);
   --scrollbar-track: transparent;
   --shadow: 0 2px 8px rgb(0 0 0 / 8%);
+
+  /* Syntax tokens: darker brand steps for contrast on the light background. */
+  --syntax-comment: var(--cd-cold-grey-50);
+  --syntax-string: var(--cd-sea-green-40);
+  --syntax-keyword: var(--cd-violet-40);
+  --syntax-function: var(--cd-azure-40);
+  --syntax-variable: var(--cd-blue-40);
+  --syntax-number: var(--cd-orange-40);
+  --syntax-heading: var(--cd-yellow-50);
+  --syntax-symbol: var(--cd-fuchsia-40);
+  --syntax-url: var(--cd-azure-40);
+  --syntax-punctuation: var(--cd-cold-grey-40);
 }
 
 html, body {
@@ -374,7 +400,7 @@ html, body {
 }
 
 .status-modified { color: var(--cd-yellow-60); }
-.status-untracked { color: var(--cd-green-60); }
+.status-untracked { color: var(--cd-sea-green-60); }
 .status-deleted { color: var(--cd-red-50); }
 
 /* ── Folder Tree ── */
@@ -591,157 +617,229 @@ html, body {
   position: relative;
 }
 
-.line-numbers {
-  width: 48px;
-  padding: 0 8px 0 0;
-  text-align: right;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--line-number);
-  user-select: none;
-  overflow: hidden auto;
-  scrollbar-width: none;
-  flex-shrink: 0;
-  background: var(--editor-bg);
-  border-right: 1px solid var(--border);
-}
-
-.line-number {
-  display: block;
-  line-height: 1.6;
-}
-
-.editor-stack {
+.editor {
   flex: 1;
-  position: relative;
+  height: 100%;
   overflow: hidden;
   background: var(--editor-bg);
 }
 
-.editor-stack:has(.editor.hidden) {
+.editor.hidden {
   display: none;
 }
 
-.editor,
-.editor-highlight {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  padding: 12px 16px;
+.editor .cm-editor {
+  height: 100%;
   font-family: var(--font-mono);
   font-size: 13px;
+}
+
+.editor .cm-editor.cm-focused {
+  outline: none;
+}
+
+.editor .cm-scroller {
+  font-family: inherit;
   line-height: 1.6;
-  tab-size: 2;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
+}
+
+.editor .cm-content {
+  padding: 12px 0;
+  color: var(--text-primary);
+  caret-color: var(--text-primary);
+}
+
+.editor .cm-gutters {
+  background: var(--editor-bg);
+  color: var(--line-number);
+  border-right: 1px solid var(--border);
+}
+
+/* stylelint-disable selector-class-pattern, no-descending-specificity -- upstream CodeMirror class names */
+
+.editor .cm-activeLine,
+.editor .cm-activeLineGutter {
+  background: transparent;
+}
+
+.editor .cm-cursor {
+  border-left-color: var(--text-primary);
+}
+
+/*
+ * !important overrides drawSelection's focused baseTheme rule
+ * (&light.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground):
+ * it is higher-specificity and otherwise paints a bright light-mode default
+ * over our themed selection on the dark editor. One rule covers both states.
+ */
+.editor .cm-selectionBackground {
+  background: var(--selection) !important;
+}
+
+.editor .cm-selectionMatch {
+  background: var(--bg-hover);
+  outline: 1px solid var(--border-light);
+}
+
+.editor .cm-matchingBracket,
+.editor .cm-focused .cm-matchingBracket {
+  background: transparent;
+  outline: 1px solid var(--accent);
+  color: inherit;
+}
+
+.editor .cm-foldGutter span {
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.editor .cm-foldGutter span:hover {
+  color: var(--text-primary);
+}
+
+.editor .cm-foldPlaceholder {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 4px;
+  margin: 0 2px;
+}
+
+.editor .cm-panels {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-top: 1px solid var(--border);
+}
+
+.editor .cm-panel.cm-search {
+  padding: 6px 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.editor .cm-panel.cm-search > input,
+.editor .cm-panel.cm-search > button,
+.editor .cm-panel.cm-search > label {
+  font-family: inherit;
+  font-size: inherit;
+  margin: 5px 6px 5px 0;
+}
+
+.editor .cm-panel.cm-search .cm-textfield {
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+}
+
+.editor .cm-panel.cm-search .cm-textfield:focus {
+  border-color: var(--accent);
+}
+
+.editor .cm-panel.cm-search button {
+  padding: 3px 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.editor .cm-panel.cm-search button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.editor .cm-panel.cm-search .cm-button[name="close"] {
+  background: transparent;
   border: none;
 }
 
-.editor-highlight {
-  pointer-events: none;
-  overflow: auto;
-  z-index: 0;
+.editor .cm-panel.cm-gotoLine {
+  padding: 6px 8px;
+}
+
+.editor .cm-panel.cm-gotoLine input {
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
   color: var(--text-primary);
-  background: transparent;
-  scrollbar-width: none;
-}
-
-.editor-highlight::-webkit-scrollbar {
-  display: none;
-}
-
-.editor-highlight code {
-  font: inherit;
-  white-space: inherit;
-  word-break: inherit;
-  background: transparent;
-  display: block;
-}
-
-.editor {
-  z-index: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   outline: none;
-  resize: none;
-  background: transparent;
-  color: transparent;
-  caret-color: var(--text-primary);
-  overflow: auto;
+  font-family: var(--font-sans);
+  font-size: 12px;
 }
 
-.editor::selection {
-  background: var(--selection, rgb(100 150 255 / 30%));
-  color: transparent;
+/* Remote-collaborator cursor labels: app font, always visible. */
+.editor .cm-ySelectionInfo {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 1;
+  border-radius: var(--radius) var(--radius) var(--radius) 0;
 }
 
-.editor::placeholder {
-  color: var(--text-muted);
-}
+/* stylelint-enable selector-class-pattern, no-descending-specificity */
 
-/* Prism token colors — match against current theme. */
+/* ── Typst syntax tokens ── */
 
-.editor-highlight .token.comment {
-  color: var(--syntax-comment, #6a9955);
+.cm-typst-comment {
+  color: var(--syntax-comment);
   font-style: italic;
 }
 
-.editor-highlight .token.string,
-.editor-highlight .token.raw-block,
-.editor-highlight .token.raw-inline {
-  color: var(--syntax-string, #ce9178);
+.cm-typst-string {
+  color: var(--syntax-string);
 }
 
-.editor-highlight .token.keyword {
-  color: var(--syntax-keyword, #c586c0);
+.cm-typst-keyword {
+  color: var(--syntax-keyword);
   font-weight: 500;
 }
 
-.editor-highlight .token.function,
-.editor-highlight .token.function-name {
-  color: var(--syntax-function, #dcdcaa);
+.cm-typst-function {
+  color: var(--syntax-function);
 }
 
-.editor-highlight .token.number {
-  color: var(--syntax-number, #b5cea8);
+.cm-typst-variable {
+  color: var(--syntax-variable);
 }
 
-.editor-highlight .token.heading,
-.editor-highlight .token.important {
-  color: var(--syntax-heading, #4ec9b0);
+.cm-typst-number {
+  color: var(--syntax-number);
+}
+
+.cm-typst-heading {
+  color: var(--syntax-heading);
   font-weight: 700;
 }
 
-.editor-highlight .token.strong {
+.cm-typst-strong {
   font-weight: 700;
 }
 
-.editor-highlight .token.emphasis {
+.cm-typst-emphasis {
   font-style: italic;
 }
 
-.editor-highlight .token.symbol {
-  color: var(--syntax-symbol, #569cd6);
+.cm-typst-meta {
+  color: var(--syntax-symbol);
 }
 
-.editor-highlight .token.variable,
-.editor-highlight .token.hash-expression {
-  color: var(--syntax-variable, #9cdcfe);
+.cm-typst-label {
+  color: var(--syntax-variable);
 }
 
-.editor-highlight .token.math {
-  color: var(--syntax-math, #d7ba7d);
-}
-
-.editor-highlight .token.punctuation {
-  color: var(--syntax-punctuation, #808080);
-}
-
-.editor-highlight .token.escape {
-  color: var(--syntax-escape, #d7ba7d);
-}
-
-.editor-highlight .token.url {
-  color: var(--syntax-url, #569cd6);
+.cm-typst-link {
+  color: var(--syntax-url);
   text-decoration: underline;
+}
+
+.cm-typst-punct {
+  color: var(--syntax-punctuation);
 }
 
 .binary-preview {
@@ -974,6 +1072,7 @@ html, body {
   color: var(--text-secondary);
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .commit-file-item label {
   display: flex;
   align-items: center;
@@ -1438,12 +1537,12 @@ html, body {
 
 .diff-line.diff-add {
   background: rgb(0 200 0 / 12%);
-  color: var(--cd-green-50, #4ade80);
+  color: var(--cd-sea-green-50);
 }
 
 .diff-line.diff-del {
   background: rgb(200 0 0 / 12%);
-  color: var(--cd-red-50, #f87171);
+  color: var(--cd-red-50);
 }
 
 .diff-line.diff-hunk {
@@ -1733,7 +1832,7 @@ html, body {
 }
 
 .toast-error .toast-icon { color: var(--cd-red-50); }
-.toast-success .toast-icon { color: var(--cd-green-60); }
+.toast-success .toast-icon { color: var(--cd-sea-green-60); }
 .toast-info .toast-icon { color: var(--cd-blue-60); }
 
 .toast-message {
@@ -1767,4 +1866,14 @@ html, body {
 ::selection {
   background: var(--accent);
   color: #ffffff;
+}
+
+/*
+ * Inside the editor, drawSelection paints the selection background, so keep
+ * each token's own color (syntax highlighting stays visible in a selection)
+ * instead of the global forced white.
+ */
+.editor .cm-content ::selection {
+  background: transparent;
+  color: inherit;
 }

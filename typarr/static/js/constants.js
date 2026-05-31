@@ -10,14 +10,6 @@ export const HTTP_NO_CONTENT = 204
 
 export const HTTP_UNAUTHORIZED = 401
 
-/** Delay in ms before auto-saving after the user stops typing. */
-
-export const DEBOUNCE_MS = 1000
-
-/** Number of spaces inserted when pressing Tab in the editor. */
-
-export const TAB_SPACES = 2
-
 /** Percentage increment for preview zoom in/out. */
 
 export const ZOOM_STEP = 10

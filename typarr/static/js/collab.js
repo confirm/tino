@@ -1,9 +1,20 @@
-import { Doc, WebsocketProvider } from './vendor/yjs.js'
+import {
+  Doc,
+  WebsocketProvider,
+  keymap,
+  yCollab,
+  yUndoManagerKeymap,
+} from './vendor/codemirror.js'
 import { SINGLE_ITEM } from './constants.js'
 
 /**
  * Manages a single Yjs collaboration session for one file.
- * Binds a YText CRDT to a textarea with bidirectional sync.
+ *
+ * The CodeMirror view is bound to the room's YText through y-codemirror.next
+ * (yCollab), which handles bidirectional sync, remote cursors, and undo. This
+ * class owns the surrounding lifecycle that yCollab does not: the WebSocket
+ * provider, the drop/reconnect latch, and replaying offline edits after a
+ * server restart rebuilds the room.
  */
 
 export class CollabSession {
@@ -11,21 +22,23 @@ export class CollabSession {
   /**
    * @param {string} slug - Bucket identifier.
    * @param {string} path - File path within the bucket.
-   * @param {HTMLTextAreaElement} textarea - Editor textarea element.
+   * @param {CodeMirrorEditor} editor - Editor shim wrapping the CM view.
    * @param {Function} onStatusCb - Lifecycle callback ('synced' | 'dropped').
    * @param {object} [opts] - Options.
    * @param {boolean} [opts.preserveLocal] - On the first sync, replay the local
-   *   buffer onto the server content instead of overwriting it. Set when
-   *   rebuilding after a drop so edits made while offline survive.
+   *   buffer onto the server content instead of adopting it. Set when rebuilding
+   *   after a drop so edits made while offline survive.
+   * @param {object} [opts.user] - Awareness user ({ name, color }) for the
+   *   remote-cursor label shown to other collaborators.
    */
 
-  constructor(slug, path, textarea, onStatusCb, opts = {}) {
+  constructor(slug, path, editor, onStatusCb, opts = {}) {
     this._slug = slug
     this._path = path
-    this._textarea = textarea
+    this._editor = editor
     this._onStatusCb = onStatusCb || null
     this._preserveLocal = opts.preserveLocal || false
-    this._lastValue = ''
+    this._user = opts.user || null
     this._resetState()
   }
 
@@ -35,13 +48,11 @@ export class CollabSession {
     this._doc = new Doc()
     this._ytext = this._doc.getText('content')
     const wsUrl = CollabSession._buildWsUrl(this._slug)
-    this._provider = new WebsocketProvider(
-      wsUrl, this._path, this._doc,
-    )
+    this._provider = new WebsocketProvider(wsUrl, this._path, this._doc)
+    if (this._user)
+      this._provider.awareness.setLocalStateField('user', this._user)
     this._provider.on('sync', synced => this._onSync(synced))
     this._provider.on('status', evt => this._onProviderStatus(evt.status))
-    this._bindTextarea()
-    this._observeYtext()
   }
 
   /** @returns {boolean} True if connected and initial sync is done. */
@@ -50,14 +61,11 @@ export class CollabSession {
     return this._synced && this._provider !== null
   }
 
-  /** Tear down the provider, doc, and event listeners. */
+  /** Tear down the provider, doc, and editor binding. */
 
   disconnect() {
     this._closing = true
-    if (this._inputHandler)
-      this._textarea.removeEventListener('input', this._inputHandler)
-    if (this._observer && this._ytext)
-      this._ytext.unobserve(this._observer)
+    this._editor.setCollab(null)
     if (this._provider)
       this._provider.destroy()
     if (this._doc)
@@ -73,45 +81,62 @@ export class CollabSession {
     return `${proto}//${location.host}/api/buckets/${encoded}/collab`
   }
 
+  /**
+   * Adopt the room content and bind yCollab on the FIRST sync, not at connect
+   * time. yCollab's sync plugin assumes the editor and the YText already match
+   * and only forwards incremental edits — it never seeds one from the other. So
+   * the buffer is explicitly set to the synced YText before binding; doing this
+   * any earlier (while the YText is still empty) would blank the editor, or
+   * leave it stuck empty if the server were still down. Capturing the buffer
+   * first lets offline edits be reconciled on top once real content has arrived.
+   */
+
   _onSync(synced) {
     this._synced = synced
-    if (!synced)
+    if (!synced || this._bound || !this._ytext)
       return
+    const local = this._editor.content
+    this._editor.setContent(this._ytext.toString())
+    this._bindCollab()
     if (this._preserveLocal)
-      this._reconcileLocal()
-    else
-      this._adoptRemote()
+      this._reconcile(local)
     this._preserveLocal = false
+    if (this._editor.content !== local)
+      this._editor.signalChange()
     if (this._onStatusCb)
       this._onStatusCb('synced')
   }
 
-  /** Initial sync: take the room's authoritative content into the textarea. */
-
-  _adoptRemote() {
-    this._remoteUpdate = true
-    this._textarea.value = this._ytext.toString()
-    this._lastValue = this._textarea.value
-    this._remoteUpdate = false
-    this._textarea.dispatchEvent(new Event('input'))
+  _bindCollab() {
+    this._bound = true
+    this._editor.setCollab([
+      yCollab(this._ytext, this._provider.awareness),
+      keymap.of(yUndoManagerKeymap),
+    ])
   }
 
   /**
-   * Reconnect sync after a drop: the room was rebuilt from disk, so the local
-   * buffer (including edits made while offline) is newer than the server's.
-   * Keep it and replay the difference onto the freshly synced server content
-   * as ordinary incremental edits — this propagates the offline edits upstream
-   * without re-inserting the whole document (which is what duplicated it).
+   * Reconnect reconciliation: the buffer was just replaced with the room's
+   * freshly synced content, so the local snapshot (captured before the adopt,
+   * including offline edits) is newer. Replay the difference as a single editor
+   * transaction — yCollab's sync plugin propagates it upstream as an incremental
+   * edit, which avoids re-inserting the whole document (the cause of past
+   * duplication).
+   * @param {string} local - The buffer captured immediately before the adopt.
    */
 
-  _reconcileLocal() {
-    const server = this._ytext.toString()
-    const local = this._textarea.value
-    this._lastValue = server
+  _reconcile(local) {
+    const server = this._editor.content
     if (local === server)
       return
-    this._onLocalInput()
-    this._textarea.dispatchEvent(new Event('input'))
+    const delta = CollabSession._diffValues(server, local)
+    this._editor.view.dispatch({
+      changes: {
+        from: delta.start,
+        insert: delta.inserted,
+        to: delta.start + delta.deleteCount,
+      },
+    })
   }
 
   _onProviderStatus(status) {
@@ -138,29 +163,6 @@ export class CollabSession {
     }
   }
 
-  _bindTextarea() {
-    this._lastValue = this._textarea.value
-    this._inputHandler = () => this._onLocalInput()
-    this._textarea.addEventListener('input', this._inputHandler)
-  }
-
-  _onLocalInput() {
-    if (this._remoteUpdate)
-      return
-    const oldVal = this._lastValue
-    const newVal = this._textarea.value
-    this._lastValue = newVal
-    if (!this._synced || oldVal === newVal)
-      return
-    const delta = CollabSession._diffValues(oldVal, newVal)
-    this._doc.transact(() => {
-      if (delta.deleteCount > 0)
-        this._ytext.delete(delta.start, delta.deleteCount)
-      if (delta.inserted.length > 0)
-        this._ytext.insert(delta.start, delta.inserted)
-    })
-  }
-
   static _diffValues(oldVal, newVal) {
     let start = 0
     const minLen = Math.min(oldVal.length, newVal.length)
@@ -184,114 +186,12 @@ export class CollabSession {
     }
   }
 
-  _observeYtext() {
-    this._observer = event => {
-      if (event.transaction.local)
-        return
-      this._applyRemoteDelta(event.delta)
-    }
-    this._ytext.observe(this._observer)
-  }
-
-  _applyRemoteDelta(delta) {
-    /*
-     * Ignore deltas until the initial sync completes. The first sync delivers
-     * the whole document as one insert; applying it before _onSync runs would
-     * corrupt the textarea — duplicating on initial load (concatenated onto
-     * seed), or polluting the local buffer _reconcileLocal trusts on reconnect.
-     * After _onSync, only incremental edits arrive and are safe to apply.
-     */
-
-    if (!this._synced)
-      return
-    this._remoteUpdate = true
-    const sel = {
-      end: this._textarea.selectionEnd,
-      start: this._textarea.selectionStart,
-    }
-    const result = CollabSession._applyDelta(
-      this._textarea.value, delta, sel,
-    )
-    this._textarea.value = result.value
-    this._textarea.selectionStart = result.cursor.start
-    this._textarea.selectionEnd = result.cursor.end
-    this._lastValue = this._textarea.value
-    this._remoteUpdate = false
-    this._textarea.dispatchEvent(new Event('input'))
-  }
-
-  static _applyDelta(value, delta, cursor) {
-    let pos = 0
-    let newVal = ''
-    for (const op of delta) {
-      if (op.retain) {
-        newVal += value.slice(pos, pos + op.retain)
-        pos += op.retain
-      }
-      else if (op.insert)
-        newVal += op.insert
-      else if (op.delete)
-        pos += op.delete
-    }
-    newVal += value.slice(pos)
-    return {
-      cursor: {
-        end: CollabSession._mapCursor(delta, cursor.end),
-        start: CollabSession._mapCursor(delta, cursor.start),
-      },
-      value: newVal,
-    }
-  }
-
-  static _mapCursor(delta, cursor) {
-    let oldPos = 0
-    let newPos = 0
-    for (const op of delta) {
-      const resolved = CollabSession._resolveOp(
-        op, cursor, oldPos, newPos,
-      )
-      if (resolved !== null)
-        return resolved
-      oldPos = CollabSession._nextOldPos(op, oldPos)
-      newPos = CollabSession._nextNewPos(op, newPos)
-    }
-    return newPos + cursor - oldPos
-  }
-
-  static _resolveOp(op, cursor, oldPos, newPos) {
-    if (op.retain && cursor <= oldPos + op.retain)
-      return newPos + cursor - oldPos
-    if (op.insert && cursor <= oldPos)
-      return newPos
-    if (op.delete && cursor <= oldPos + op.delete)
-      return newPos
-    return null
-  }
-
-  static _nextOldPos(op, pos) {
-    if (op.retain)
-      return pos + op.retain
-    if (op.delete)
-      return pos + op.delete
-    return pos
-  }
-
-  static _nextNewPos(op, pos) {
-    if (op.retain)
-      return pos + op.retain
-    if (op.insert)
-      return pos + op.insert.length
-    return pos
-  }
-
   _resetState() {
     this._doc = null
     this._ytext = null
     this._provider = null
     this._synced = false
-    this._remoteUpdate = false
-    this._observer = null
-    this._inputHandler = null
+    this._bound = false
     this._wasConnected = false
     this._closing = false
   }

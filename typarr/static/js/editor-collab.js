@@ -1,5 +1,18 @@
 import { CollabSession } from './collab.js'
 
+/** Palette for remote-cursor colors, picked deterministically per username. */
+
+const USER_COLORS = [
+  '#e6194b',
+  '#3cb44b',
+  '#4363d8',
+  '#f58231',
+  '#911eb4',
+  '#008080',
+  '#f032e6',
+  '#9a6324',
+]
+
 /**
  * Manages the collaborative editing session lifecycle.
  * Wraps CollabSession with connect/disconnect and reconnect handling.
@@ -29,8 +42,7 @@ export class EditorCollab {
     this._reconnecting = reconnect
     const role = this.app.bucketRole
     const canEdit = role === 'editor' || role === 'committer'
-    const isText =
-      !this.app.els.editor.classList.contains('hidden')
+    const isText = !this.app.els.editor.hidden
     if (!path || !canEdit || !isText)
       return
     this._session = new CollabSession(
@@ -38,9 +50,23 @@ export class EditorCollab {
       path,
       this.app.els.editor,
       ev => this._onEvent(ev),
-      { preserveLocal: reconnect },
+      { preserveLocal: reconnect, user: this._awarenessUser() },
     )
     this._session.connect()
+  }
+
+  /** Build the awareness user (name + stable color) for remote cursors. */
+
+  _awarenessUser() {
+    const name = this.app.username || 'anonymous'
+    return { color: EditorCollab._colorFor(name), name }
+  }
+
+  static _colorFor(name) {
+    let sum = 0
+    for (const ch of name)
+      sum += ch.codePointAt(0)
+    return USER_COLORS[sum % USER_COLORS.length]
   }
 
   /** Tear down the current collab session. */

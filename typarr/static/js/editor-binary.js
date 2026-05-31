@@ -23,8 +23,7 @@ export class BinaryPreview {
 
   show(path) {
     this.toolbar.hide()
-    this.app.els.editor.classList.add('hidden')
-    this.app.els.lineNumbers.classList.add('hidden')
+    this.app.els.editor.setHidden(true)
     const bp = this.app.els.binaryPreview
     const rawUrl = this._rawUrl(path)
     const name = path.split('/').pop()
