@@ -194,6 +194,7 @@ class TyparrApp {
     document.getElementById('btn-commit').classList.toggle('hidden', !canCommit)
     document.getElementById('btn-bucket-history').classList.toggle('hidden', !canView)
     document.getElementById('btn-history').classList.toggle('hidden', !canView)
+    document.getElementById('btn-history-restore').classList.toggle('hidden', !canEdit)
   }
 
 }
