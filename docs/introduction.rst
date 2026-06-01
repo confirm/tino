@@ -12,11 +12,11 @@ Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully 
 
 We wanted «document authoring as code», meaning:
 
-- Web-based and self-hosted
-- Version-controlled with full history
-- Authentication and authorisation via OpenID Connect
-- Real-time collaboration
-- Reusable templates and corporate design as packages
+- Web-based and :ref:`self-hosted <Deployment>`
+- :ref:`Version-controlled <Git>` with full history
+- :ref:`Authentication <Authentication>` and authorisation via OpenID Connect
+- Real-time :ref:`collaboration <Collaboration>`
+- Reusable templates and corporate design as :ref:`packages <Packages>`
 
 No existing tool ticked all the boxes. The first question was which document format to build on. `Markdown <https://en.wikipedia.org/wiki/Markdown>`_ and `reStructuredText <https://en.wikipedia.org/wiki/ReStructuredText>`_ lack the typographic control needed for polished deliverables. `LaTeX <https://en.wikipedia.org/wiki/LaTeX>`_ offers that control, but the learning curve makes it impractical for non-technical contributors.
 
@@ -59,20 +59,20 @@ TINO is a self-hosted web editor for `Typst`_ documents, built for teams that wa
 The TINO editor ships with the following features out of the box:
 
 - | **Inline SVG preview**
-  | Live-rendered preview next to the editor, updated on every change.
+  | Live-rendered preview next to the :ref:`editor <Editor>`, updated on every change.
 - | **PDF export**
-  | Compile and download production-ready PDFs directly from the editor.
+  | Compile and download production-ready PDFs directly from the :ref:`editor <Editor>`.
 - | **Real-time collaboration**
-  | Concurrent editing via CRDT over WebSockets. Changes merge automatically, no conflicts.
+  | :ref:`Concurrent editing <Collaboration>` via CRDT over WebSockets. Changes merge automatically, no conflicts.
 - | **Group-based access control**
-  | Assign viewer, editor, or committer roles per bucket, backed by OpenID Connect group claims.
+  | Assign viewer, editor, or committer roles per :ref:`bucket <Buckets>`, backed by :ref:`OpenID Connect <Authentication>` group claims. 
 - | **Git versioning**
-  | Every bucket is a git repository with built-in history, commits, and restore.
+  | Every bucket is a :ref:`Git <Git>` repository with built-in history, commits, and restore.
 - | **Drag & drop uploads**
-  | Drop files or ZIP archives into a bucket to import them. Archives are extracted automatically.
+  | Drop :ref:`files <Files>` or ZIP archives into a bucket to import them. Archives are extracted automatically.
 - | **Local packages**
-  | Reusable templates and shared components as Typst packages.
+  | Reusable templates and shared components as Typst :ref:`packages <Packages>`.
 - | **Custom fonts**
-  | Mount your own font library for consistent corporate typography.
+  | Mount your own :ref:`font library <Fonts>` for consistent corporate typography.
 - | **Minimal operations**
   | No database, no object storage. Just a filesystem and your identity provider.

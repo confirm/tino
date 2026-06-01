@@ -37,7 +37,7 @@ Start the development server with auto-reload:
     make server
 
 This launches Uvicorn on ``http://localhost:8000`` with hot-reload enabled.
-To skip authentication during development, set:
+To skip authentication during development (see :ref:`Deployment`), set:
 
 .. code-block:: bash
 
