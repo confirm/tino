@@ -168,7 +168,9 @@ async def theme_css():
         ':root{'
         f'--accent-50:var(--cd-{colour}-50);'
         f'--accent-60:var(--cd-{colour}-60);'
-        f'--accent-70:var(--cd-{colour}-70)'
+        f'--accent-70:var(--cd-{colour}-70);'
+        f'--logo-main-colour:var(--cd-{colour}-60);'
+        f'--logo-accent-colour:var(--cd-{colour}-80)'
         '}\n'
     )
     return Response(content=css, media_type='text/css')

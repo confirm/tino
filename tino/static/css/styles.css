@@ -18,6 +18,8 @@
   --accent-50: var(--cd-orange-50);
   --accent-60: var(--cd-orange-60);
   --accent-70: var(--cd-orange-70);
+  --logo-main-colour: var(--accent-60);
+  --logo-accent-colour: var(--cd-orange-80);
 }
 
 /* Dark theme */
