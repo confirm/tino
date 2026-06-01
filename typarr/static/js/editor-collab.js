@@ -1,17 +1,15 @@
 import { CollabSession } from './collab.js'
 
-/** Palette for remote-cursor colors, picked deterministically per username. */
+/* Remote-cursor color: a hue hashed from the username, with fixed saturation
+ * and lightness so every user gets a distinct but uniformly readable color. */
 
-const USER_COLORS = [
-  '#e6194b',
-  '#3cb44b',
-  '#4363d8',
-  '#f58231',
-  '#911eb4',
-  '#008080',
-  '#f032e6',
-  '#9a6324',
-]
+const HUE_STEPS = 360
+
+const HASH_PRIME = 31
+
+const CURSOR_SATURATION = 50
+
+const CURSOR_LIGHTNESS = 50
 
 /**
  * Manages the collaborative editing session lifecycle.
@@ -62,11 +60,17 @@ export class EditorCollab {
     return { color: EditorCollab._colorFor(name), name }
   }
 
+  /**
+   * Derive a stable, vivid cursor color from a username. The name is hashed to
+   * a hue (multiply-accumulate over its code points); saturation and lightness
+   * are held constant so the result is always readable, on light or dark.
+   */
+
   static _colorFor(name) {
-    let sum = 0
+    let hue = 0
     for (const ch of name)
-      sum += ch.codePointAt(0)
-    return USER_COLORS[sum % USER_COLORS.length]
+      hue = (hue * HASH_PRIME + ch.codePointAt(0)) % HUE_STEPS
+    return `hsl(${hue}, ${CURSOR_SATURATION}%, ${CURSOR_LIGHTNESS}%)`
   }
 
   /** Tear down the current collab session. */
