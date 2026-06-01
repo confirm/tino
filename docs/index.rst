@@ -20,6 +20,7 @@ Built for teams that want to author, review, and publish together.
    usage/buckets
    usage/files
    usage/editor
+   usage/collaboration
    usage/git
    usage/packages
    usage/fonts
