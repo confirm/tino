@@ -2,6 +2,7 @@
 
 import logging
 import shutil
+import tempfile
 import zipfile
 from datetime import datetime, timezone
 from io import BytesIO
@@ -204,6 +205,30 @@ class FileService:
 
         logger.info('Extracted ZIP into %s (%d files)', slug, len(extracted))
         return extracted
+
+    def zip(self, slug: str) -> Path | None:
+        '''Create a ZIP of all source files in the bucket. Returns the temp file path.'''
+        root = self._bucket_path(slug)
+
+        if not root.is_dir():
+            return None
+
+        tmp = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
+        tmp.close()
+
+        with zipfile.ZipFile(tmp.name, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for item in sorted(root.rglob('*')):
+                if not item.is_file():
+                    continue
+
+                rel = item.relative_to(root)
+
+                if any(p in IGNORED or p.startswith('.') for p in rel.parts):
+                    continue
+
+                zf.write(item, rel)
+
+        return Path(tmp.name)
 
     def delete(self, slug: str, file_path: str) -> bool:
         '''Delete a file. Returns False if not found.'''

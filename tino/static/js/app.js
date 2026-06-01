@@ -197,6 +197,7 @@ class TinoApp {
     document.getElementById('btn-save').classList.toggle('hidden', !canEdit)
     document.getElementById('btn-commit').classList.toggle('hidden', !canCommit)
     document.getElementById('btn-bucket-history').classList.toggle('hidden', !canView)
+    document.getElementById('btn-download').classList.toggle('hidden', !canView)
     document.getElementById('btn-history').classList.toggle('hidden', !canView)
     document.getElementById('btn-history-restore').classList.toggle('hidden', !canEdit)
   }

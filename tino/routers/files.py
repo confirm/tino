@@ -5,6 +5,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.params import File
 from fastapi.responses import FileResponse
+from starlette.background import BackgroundTask
 
 from ..collab import CollabManager
 from ..dependencies import get_collab_manager, get_file_service, get_notifier, require_editor, \
@@ -25,6 +26,26 @@ async def list_files(
 ):
     '''List all files and directories in a bucket (excludes .git and .meta.yml).'''
     return svc.list(slug)
+
+
+@router.get('/download')
+async def download_zip(
+    slug: str,
+    _user=Depends(require_viewer),
+    svc: FileService = Depends(get_file_service),
+):
+    '''Download all source files in the bucket as a ZIP archive.'''
+    zip_path = svc.zip(slug)
+
+    if zip_path is None:
+        raise HTTPException(404, 'Bucket not found')
+
+    return FileResponse(
+        zip_path,
+        filename=f'{slug}.zip',
+        media_type='application/zip',
+        background=BackgroundTask(zip_path.unlink, missing_ok=True),
+    )
 
 
 @router.get('/raw/{path:path}')

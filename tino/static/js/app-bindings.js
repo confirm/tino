@@ -29,6 +29,18 @@ const bindFileButtons = app => {
     })
 }
 
+const bindDownloadButton = app => {
+  document.getElementById('btn-download')
+    .addEventListener('click', () => {
+      if (!app.bucket) return
+      const slug = encodeURIComponent(app.bucket)
+      const link = document.createElement('a')
+      link.href = `/api/buckets/${slug}/files/download`
+      link.download = ''
+      link.click()
+    })
+}
+
 const bindGitButtons = app => {
   document.getElementById('btn-commit')
     .addEventListener('click', () => {
@@ -119,6 +131,7 @@ const bindPanelResize = app => {
 export const bindToolbar = app => {
   bindBucketSelect(app)
   bindFileButtons(app)
+  bindDownloadButton(app)
   bindGitButtons(app)
   bindThemeToggle()
   bindVimToggle(app)
