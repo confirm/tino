@@ -64,6 +64,7 @@ class CollabManager:
         self._rooms: dict[tuple[str, str], YRoom] = {}
         self._room_locks: dict[tuple[str, str], asyncio.Lock] = {}
         self._ttl_tasks: dict[tuple[str, str], asyncio.Task] = {}
+        self._room_tasks: dict[tuple[str, str], asyncio.Task] = {}
 
     def _get_lock(self, key: tuple[str, str]) -> asyncio.Lock:
         '''Return a per-room asyncio lock, creating it if needed.'''
@@ -102,7 +103,14 @@ class CollabManager:
                 ytext += result['content']
 
             room = YRoom(ydoc=ydoc)
-            asyncio.create_task(room.start())
+
+            # Keep a strong reference to the room's start() task. The event loop
+            # only weak-references tasks, so without this the room's background
+            # task group — which runs _broadcast_updates — can be garbage
+            # collected mid-run, silently killing document broadcast (while
+            # awareness, handled in the per-client serve loop, keeps working).
+
+            self._room_tasks[key] = asyncio.create_task(room.start())
             await room.started.wait()
             self._rooms[key] = room
             logger.info('Created room for %s/%s', slug, file_path)
@@ -123,6 +131,7 @@ class CollabManager:
             if ttl_task:
                 ttl_task.cancel()
             room = self._rooms.pop(key, None)
+            self._room_tasks.pop(key, None)
             if room:
                 try:
                     await room.stop()
@@ -176,6 +185,7 @@ class CollabManager:
                 await self._flush_room(slug, file_path, room)
             await room.stop()
             del self._rooms[key]
+            self._room_tasks.pop(key, None)
             logger.info('Cleaned up room for %s/%s after TTL', slug, file_path)
 
         if key not in self._rooms:
@@ -237,6 +247,9 @@ class CollabManager:
         for task in self._ttl_tasks.values():
             task.cancel()
         self._ttl_tasks.clear()
+        for task in self._room_tasks.values():
+            task.cancel()
+        self._room_tasks.clear()
         if not self._auto_save:
             return
         for (slug, file_path), room in list(self._rooms.items()):
