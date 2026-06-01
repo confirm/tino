@@ -192,14 +192,17 @@ class TinoApp {
     const canEdit =
       this.bucketRole === 'editor' || this.bucketRole === 'committer'
     const canCommit = this.bucketRole === 'committer'
-    document.getElementById('btn-new').classList.toggle('hidden', !canEdit)
-    document.getElementById('btn-template').classList.toggle('hidden', !canEdit)
-    document.getElementById('btn-save').classList.toggle('hidden', !canEdit)
-    document.getElementById('btn-commit').classList.toggle('hidden', !canCommit)
-    document.getElementById('btn-bucket-history').classList.toggle('hidden', !canView)
-    document.getElementById('btn-download').classList.toggle('hidden', !canView)
-    document.getElementById('btn-history').classList.toggle('hidden', !canView)
-    document.getElementById('btn-history-restore').classList.toggle('hidden', !canEdit)
+    for (const [id, visible] of Object.entries({
+      'btn-bucket-history': canView,
+      'btn-commit': canCommit,
+      'btn-download': canView,
+      'btn-history': canView,
+      'btn-history-restore': canEdit,
+      'btn-new': canEdit,
+      'btn-save': canEdit,
+      'btn-template': canEdit,
+    }))
+      document.getElementById(id).classList.toggle('hidden', !visible)
   }
 
 }

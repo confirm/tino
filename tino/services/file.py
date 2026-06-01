@@ -1,6 +1,7 @@
 '''File management service. Reads/writes files within bucket git repos.'''
 
 import logging
+import os
 import shutil
 import tempfile
 import zipfile
@@ -213,10 +214,10 @@ class FileService:
         if not root.is_dir():
             return None
 
-        tmp = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
-        tmp.close()
+        tmp_fd, tmp_name = tempfile.mkstemp(suffix='.zip')
+        os.close(tmp_fd)
 
-        with zipfile.ZipFile(tmp.name, 'w', zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(tmp_name, 'w', zipfile.ZIP_DEFLATED) as zf:
             for item in sorted(root.rglob('*')):
                 if not item.is_file():
                     continue
@@ -228,7 +229,7 @@ class FileService:
 
                 zf.write(item, rel)
 
-        return Path(tmp.name)
+        return Path(tmp_name)
 
     def delete(self, slug: str, file_path: str) -> bool:
         '''Delete a file. Returns False if not found.'''

@@ -32,7 +32,8 @@ const bindFileButtons = app => {
 const bindDownloadButton = app => {
   document.getElementById('btn-download')
     .addEventListener('click', () => {
-      if (!app.bucket) return
+      if (!app.bucket)
+        return
       const slug = encodeURIComponent(app.bucket)
       const link = document.createElement('a')
       link.href = `/api/buckets/${slug}/files/download`
