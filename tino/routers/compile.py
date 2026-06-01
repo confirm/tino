@@ -1,5 +1,7 @@
 '''REST endpoints for compiling Typst files to SVG or PDF.'''
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
@@ -7,16 +9,19 @@ from starlette.background import BackgroundTask
 from ..dependencies import get_compiler_service, require_viewer
 from ..services.compiler import CompilerService
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix='/api/buckets/{slug}/compile', tags=['compile'])
 
 
 @router.get('/pdf/{path:path}')
 async def compile_pdf(
     slug: str, path: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: CompilerService = Depends(get_compiler_service),
 ):
     '''Compile a .typ file and return the PDF.'''
+    logger.info('Compiling PDF for %s/%s (user: %s)', slug, path, user.username)
     try:
         pdf_path = svc.compile_pdf(slug, path)
         filename = path.rsplit('/', maxsplit=1)[-1].replace('.typ', '.pdf')
@@ -38,10 +43,11 @@ async def compile_pdf(
 @router.get('/svg/{path:path}')
 async def compile_svg(
     slug: str, path: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: CompilerService = Depends(get_compiler_service),
 ):
     '''Compile a .typ file and return a list of SVG strings (one per page).'''
+    logger.debug('Compiling SVG for %s/%s (user: %s)', slug, path, user.username)
     try:
         pages = svc.compile_svg(slug, path)
         return {'pages': pages}

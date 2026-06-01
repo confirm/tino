@@ -21,20 +21,22 @@ router = APIRouter(prefix='/api/buckets/{slug}/files', tags=['files'])
 @router.get('', response_model=list[FileEntry])
 async def list_files(
     slug: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: FileService = Depends(get_file_service),
 ):
     '''List all files and directories in a bucket (excludes .git and .meta.yml).'''
+    logger.debug('Listing files for %s (user: %s)', slug, user.username)
     return svc.list(slug)
 
 
 @router.get('/download')
 async def download_zip(
     slug: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: FileService = Depends(get_file_service),
 ):
     '''Download all source files in the bucket as a ZIP archive.'''
+    logger.info('Downloading ZIP for %s (user: %s)', slug, user.username)
     zip_path = svc.zip(slug)
 
     if zip_path is None:
@@ -51,10 +53,11 @@ async def download_zip(
 @router.get('/raw/{path:path}')
 async def raw_file(
     slug: str, path: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: FileService = Depends(get_file_service),
 ):
     '''Serve a file's raw content (for images, binary previews, etc.).'''
+    logger.debug('Serving raw file %s/%s (user: %s)', slug, path, user.username)
     target = svc.resolve(slug, path)
 
     if target is None:
@@ -66,10 +69,11 @@ async def raw_file(
 @router.get('/{path:path}')
 async def read_file(
     slug: str, path: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: FileService = Depends(get_file_service),
 ):
     '''Read a single file's content by path.'''
+    logger.debug('Reading file %s/%s (user: %s)', slug, path, user.username)
     result = svc.read(slug, path)
 
     if result is None:

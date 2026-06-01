@@ -115,10 +115,11 @@ async def git_tree(
 @router.get('/show/{ref}/content/{path:path}')
 async def git_show(
     slug: str, ref: str, path: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: GitService = Depends(get_git_service),
 ):
     '''Retrieve a file's content at a specific commit ref.'''
+    logger.debug('Showing %s/%s at %s (user: %s)', slug, path, ref, user.username)
     result = svc.show(slug, ref, path)
 
     if result is None:
@@ -130,10 +131,11 @@ async def git_show(
 @router.get('/show/{ref}/raw/{path:path}')
 async def git_show_raw(
     slug: str, ref: str, path: str,
-    _user=Depends(require_viewer),
+    user=Depends(require_viewer),
     svc: GitService = Depends(get_git_service),
 ):
     '''Serve a file's raw bytes at a specific commit ref (for images).'''
+    logger.debug('Serving raw %s/%s at %s (user: %s)', slug, path, ref, user.username)
     data = svc.show_raw(slug, ref, path)
 
     if data is None:

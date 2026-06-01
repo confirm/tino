@@ -16,19 +16,21 @@ router = APIRouter(tags=['templates'])
 
 @router.get('/api/templates/typst-universe')
 async def list_typst_universe_templates(
-    _user=Depends(get_current_user),
+    user=Depends(get_current_user),
     svc: TemplateService = Depends(get_template_service),
 ):
     '''Return all available Typst templates from the Typst Universe package index.'''
+    logger.debug('Listing Typst Universe templates (user: %s)', user.username)
     return svc.list_typst_universe_templates()
 
 
 @router.get('/api/templates/local')
 async def list_local_templates(
-    _user=Depends(get_current_user),
+    user=Depends(get_current_user),
     svc: TemplateService = Depends(get_template_service),
 ):
     '''Return templates from the local package directory.'''
+    logger.debug('Listing local templates (user: %s)', user.username)
     return svc.list_local_templates()
 
 

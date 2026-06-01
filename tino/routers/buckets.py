@@ -35,9 +35,10 @@ async def list_buckets(
 
 
 @router.get('/{slug}', response_model=BucketInfo)
-async def get_bucket(slug: str, _user=Depends(require_viewer),
+async def get_bucket(slug: str, user=Depends(require_viewer),
                      svc: BucketService = Depends(get_bucket_service)):
     '''Get metadata for a single bucket.'''
+    logger.debug('Getting bucket %s (user: %s)', slug, user.username)
     bucket = svc.get(slug)
 
     if not bucket:

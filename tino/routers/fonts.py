@@ -16,10 +16,11 @@ router = APIRouter(prefix='/api/fonts', tags=['fonts'])
 
 @router.get('', response_model=list[FontEntry])
 async def list_fonts(
-    _user=Depends(require_global_admin),
+    user=Depends(require_global_admin),
     svc: FontService = Depends(get_font_service),
 ):
     '''Return all installed custom fonts.'''
+    logger.debug('Listing fonts (user: %s)', user.username)
     return svc.list()
 
 
