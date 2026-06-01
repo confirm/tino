@@ -5,7 +5,7 @@ from pathlib import Path
 
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import FileResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, RedirectResponse
 
 from . import config
 from .models import AccessEntry, User
@@ -158,19 +158,3 @@ async def me(user: User = Depends(get_current_user)):
     data = user.model_dump()
     data['is_admin'] = is_global_admin(user)
     return data
-
-
-@router.get('/api/theme.css')
-async def theme_css():
-    '''Return CSS custom properties for the configured accent colour family.'''
-    colour = config.TINO_ACCENT_COLOUR
-    css = (
-        ':root{'
-        f'--accent-50:var(--cd-{colour}-50);'
-        f'--accent-60:var(--cd-{colour}-60);'
-        f'--accent-70:var(--cd-{colour}-70);'
-        f'--logo-main-colour:var(--cd-{colour}-60);'
-        f'--logo-accent-colour:var(--cd-{colour}-80)'
-        '}\n'
-    )
-    return Response(content=css, media_type='text/css')
