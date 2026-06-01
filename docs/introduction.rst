@@ -15,6 +15,7 @@ We wanted «document authoring as code», meaning:
 - Web-based and :ref:`self-hosted <Deployment>`
 - :ref:`Version-controlled <Git>` with full history
 - :ref:`Authentication <Authentication>` and authorisation via OpenID Connect
+- :ref:`API <REST API>` for automation and integration
 - Real-time :ref:`collaboration <Collaboration>`
 - Reusable templates and corporate design as :ref:`packages <Packages>`
 
