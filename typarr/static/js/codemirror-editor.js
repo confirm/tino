@@ -20,6 +20,7 @@ import {
   lineNumbers,
   placeholder,
   searchKeymap,
+  selectNextOccurrence,
   vim,
 } from './vendor/codemirror.js'
 import { typst, typstKeymap } from './codemirror-typst.js'
@@ -118,6 +119,7 @@ export class CodeMirrorEditor {
         bracketMatching(),
         highlightSelectionMatches(),
         indentUnit.of('  '),
+        EditorState.allowMultipleSelections.of(true),
         indentOnInput(),
         CodeMirrorEditor._historyExt(),
         this._collab.of([]),
@@ -125,6 +127,7 @@ export class CodeMirrorEditor {
         keymap.of([
           this._saveBinding(),
           CodeMirrorEditor._gotoLineBinding(),
+          CodeMirrorEditor._selectNextBinding(),
           ...typstKeymap,
           indentWithTab,
           ...searchKeymap,
@@ -154,6 +157,23 @@ export class CodeMirrorEditor {
       key: 'Mod-g',
       preventDefault: true,
       run: view => gotoLine(view),
+    }
+  }
+
+  /*
+   * Mod-d selects the next occurrence (multi-cursor). Always report the key as
+   * handled so the browser's Mod-d (bookmark) is suppressed even when there is
+   * no further occurrence — otherwise the bookmark dialog leaks through.
+   */
+
+  static _selectNextBinding() {
+    return {
+      key: 'Mod-d',
+      preventDefault: true,
+      run: view => {
+        selectNextOccurrence(view)
+        return true
+      },
     }
   }
 

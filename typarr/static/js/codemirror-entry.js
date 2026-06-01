@@ -39,6 +39,11 @@ export {
   indentUnit,
   syntaxHighlighting,
 } from '@codemirror/language'
-export { gotoLine, highlightSelectionMatches, searchKeymap } from '@codemirror/search'
+export {
+  gotoLine,
+  highlightSelectionMatches,
+  searchKeymap,
+  selectNextOccurrence,
+} from '@codemirror/search'
 export { tags } from '@lezer/highlight'
 export { vim } from '@replit/codemirror-vim'
