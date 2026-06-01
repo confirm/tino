@@ -3,7 +3,7 @@
 🤝 Collaboration
 ----------------
 
-Typarr edits are collaborative in real time. When two or more people open the
+TINO edits are collaborative in real time. When two or more people open the
 same file in a bucket, their changes are merged live and everyone works on the
 same document as it evolves.
 
@@ -30,7 +30,7 @@ the same colour.
 Connection handling
 ~~~~~~~~~~~~~~~~~~~~~
 
-If the connection drops — for example when the server restarts — Typarr
+If the connection drops — for example when the server restarts — TINO
 reconnects automatically and re-synchronises the document. Any edits you make
 while disconnected are preserved and replayed onto the latest server content
 once the connection is restored.

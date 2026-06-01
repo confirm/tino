@@ -1,32 +1,32 @@
-``typarr.services``
+``tino.services``
 ===================
 
-``typarr.services.bucket``
+``tino.services.bucket``
 --------------------------
 
-.. automodule:: typarr.services.bucket
+.. automodule:: tino.services.bucket
    :members:
 
-``typarr.services.compiler``
+``tino.services.compiler``
 ----------------------------
 
-.. automodule:: typarr.services.compiler
+.. automodule:: tino.services.compiler
    :members:
 
-``typarr.services.file``
+``tino.services.file``
 ------------------------
 
-.. automodule:: typarr.services.file
+.. automodule:: tino.services.file
    :members:
 
-``typarr.services.git``
+``tino.services.git``
 -----------------------
 
-.. automodule:: typarr.services.git
+.. automodule:: tino.services.git
    :members:
 
-``typarr.services.template``
+``tino.services.template``
 ----------------------------
 
-.. automodule:: typarr.services.template
+.. automodule:: tino.services.template
    :members:

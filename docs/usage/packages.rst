@@ -3,17 +3,17 @@
 📦 Local packages
 -----------------
 
-Typarr supports local `Typst packages <https://github.com/typst/packages>`_ for
+TINO supports local `Typst packages <https://github.com/typst/packages>`_ for
 sharing reusable libraries and templates across buckets.
 
-Local packages are stored in the :attr:`TYPARR_PACKAGE_DIR <typarr.config.TYPARR_PACKAGE_DIR>`
+Local packages are stored in the :attr:`TINO_PACKAGE_DIR <tino.config.TINO_PACKAGE_DIR>`
 directory, which defaults to a ``packages`` sub-directory inside the
-:attr:`TYPARR_BUCKET_DIR <typarr.config.TYPARR_BUCKET_DIR>`.
+:attr:`TINO_BUCKET_DIR <tino.config.TINO_BUCKET_DIR>`.
 
 .. hint::
 
     When the package directory is inside the bucket directory (the default),
-    it shows up as a regular bucket in the Typarr UI and can be edited directly.
+    it shows up as a regular bucket in the TINO UI and can be edited directly.
 
 Package structure
 ~~~~~~~~~~~~~~~~~

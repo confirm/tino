@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "build": "mkdir -p typarr/static/js/vendor && npm run build:codemirror",
-    "build:codemirror": "esbuild --bundle --minify --format=esm --log-level=warning --outfile=typarr/static/js/vendor/codemirror.js typarr/static/js/codemirror-entry.js"
+    "build": "mkdir -p tino/static/js/vendor && npm run build:codemirror",
+    "build:codemirror": "esbuild --bundle --minify --format=esm --log-level=warning --outfile=tino/static/js/vendor/codemirror.js tino/static/js/codemirror-entry.js"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",

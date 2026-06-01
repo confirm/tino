@@ -1,5 +1,5 @@
-``typarr.models``
+``tino.models``
 =================
 
-.. automodule:: typarr.models
+.. automodule:: tino.models
    :members:

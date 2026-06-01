@@ -9,8 +9,8 @@ __pycache__/
 build/
 .eggs/
 *.egg-info/
-typarr/static/css/vendor/
-typarr/static/js/vendor/
+tino/static/css/vendor/
+tino/static/js/vendor/
 
 # Javascript package cache
 package-lock.json

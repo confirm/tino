@@ -5,7 +5,7 @@ from datetime import date
 # ⚙️ Generic options.
 #
 
-project   = 'Typarr'
+project   = 'TINO'
 copyright = f'{date.today().strftime('%Y')}, confirm IT'
 author    = 'confirm IT'
 
@@ -39,7 +39,7 @@ extensions = [
 # 📝 To Do.
 #
 
-todo_include_todos = not environ.get('TYPARR_HIDE_TODOS', 'false') in {'true', 'yes', 'on', '1'}
+todo_include_todos = not environ.get('TINO_HIDE_TODOS', 'false') in {'true', 'yes', 'on', '1'}
 todo_link_only     = True
 
 #

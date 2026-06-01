@@ -1,44 +1,44 @@
-``typarr.routers``
+``tino.routers``
 ==================
 
-``typarr.routers.buckets``
+``tino.routers.buckets``
 --------------------------
 
-.. automodule:: typarr.routers.buckets
+.. automodule:: tino.routers.buckets
    :members:
 
-``typarr.routers.collab``
+``tino.routers.collab``
 -------------------------
 
-.. automodule:: typarr.routers.collab
+.. automodule:: tino.routers.collab
    :members:
 
-``typarr.routers.compile``
+``tino.routers.compile``
 --------------------------
 
-.. automodule:: typarr.routers.compile
+.. automodule:: tino.routers.compile
    :members:
 
-``typarr.routers.events``
+``tino.routers.events``
 -------------------------
 
-.. automodule:: typarr.routers.events
+.. automodule:: tino.routers.events
    :members:
 
-``typarr.routers.files``
+``tino.routers.files``
 ------------------------
 
-.. automodule:: typarr.routers.files
+.. automodule:: tino.routers.files
    :members:
 
-``typarr.routers.git``
+``tino.routers.git``
 ----------------------
 
-.. automodule:: typarr.routers.git
+.. automodule:: tino.routers.git
    :members:
 
-``typarr.routers.templates``
+``tino.routers.templates``
 ----------------------------
 
-.. automodule:: typarr.routers.templates
+.. automodule:: tino.routers.templates
    :members:

@@ -1,5 +1,5 @@
-``typarr.auth``
+``tino.auth``
 ===============
 
-.. automodule:: typarr.auth
+.. automodule:: tino.auth
    :members:

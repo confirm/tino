@@ -6,7 +6,7 @@ ARG TYPST_VERSION=0.14.2
 WORKDIR /usr/src
 
 COPY build/*.whl .
-COPY typarr/gitattributes /etc/gitattributes
+COPY tino/gitattributes /etc/gitattributes
 RUN apt-get update && apt-get install -y --no-install-recommends curl git git-lfs xz-utils \
     && pip install --no-cache-dir *.whl \
     && rm -f *.whl \
@@ -16,18 +16,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl git git-lf
     && git config --system core.attributesFile /etc/gitattributes \
     && apt-get purge -y --auto-remove xz-utils \
     && rm -rf /var/lib/apt/lists/* \
-    && groupadd -r -g 1234 typarr \
-    && useradd -r -u 1234 -g 1234 -d /typarr -m typarr \
+    && groupadd -r -g 1234 tino \
+    && useradd -r -u 1234 -g 1234 -d /tino -m tino \
     && mkdir -p /data \
-    && chown typarr: /data
+    && chown tino: /data
 
-USER typarr
+USER tino
 
-WORKDIR /typarr
+WORKDIR /tino
 
 VOLUME /data
 
-ENV TYPARR_DATA_DIR=/data
+ENV TINO_DATA_DIR=/data
 ENV XDG_CACHE_HOME=/tmp/.cache
 
 EXPOSE 5000
@@ -36,4 +36,4 @@ HEALTHCHECK --start-period=10s --start-interval=2s --interval=10s --timeout=10s 
     CMD curl -sfL http://127.0.0.1:5000/health
 
 ENTRYPOINT ["gunicorn"]
-CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:5000", "--worker-tmp-dir", "/tmp", "--chdir", "/tmp", "typarr:create_app()"]
+CMD ["-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:5000", "--worker-tmp-dir", "/tmp", "--chdir", "/tmp", "tino:create_app()"]

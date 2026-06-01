@@ -1,5 +1,5 @@
-``typarr.app``
+``tino.app``
 ==============
 
-.. automodule:: typarr.app
+.. automodule:: tino.app
    :members:

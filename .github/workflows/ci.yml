@@ -76,7 +76,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: vendor-css
-          path: typarr/static/css/vendor/
+          path: tino/static/css/vendor/
 
   vendor-js:
     needs: [test-isort, test-pycodestyle, test-pylint, test-eslint, test-stylelint]
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: vendor-js
-          path: typarr/static/js/vendor/
+          path: tino/static/js/vendor/
 
   docs:
     needs: [vendor-css, vendor-js]
@@ -135,11 +135,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: vendor-css
-          path: typarr/static/css/vendor/
+          path: tino/static/css/vendor/
       - uses: actions/download-artifact@v4
         with:
           name: vendor-js
-          path: typarr/static/js/vendor/
+          path: tino/static/js/vendor/
       - run: make package
       - uses: actions/upload-artifact@v4
         with:
@@ -166,7 +166,7 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ghcr.io/confirm/typarr
+          images: ghcr.io/confirm/tino
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}

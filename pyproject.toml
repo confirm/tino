@@ -1,6 +1,6 @@
 [project]
 
-name = 'typarr'
+name = 'tino'
 description = 'A collaborative, self-hosted editing platform around Typst.'
 readme = 'README.md'
 
@@ -63,8 +63,8 @@ build-backend = 'setuptools.build_meta'
 [tool.setuptools.packages.find]
 
 include = [
-    'typarr',
-    'typarr.*',
+    'tino',
+    'tino.*',
 ]
 
 exclude = [
@@ -74,7 +74,7 @@ exclude = [
 
 [tool.setuptools.package-data]
 
-'typarr' = [
+'tino' = [
     'static/**/*',
     'static/*',
 ]

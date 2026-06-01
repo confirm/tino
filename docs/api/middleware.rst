@@ -1,5 +1,5 @@
-``typarr.middleware``
+``tino.middleware``
 =====================
 
-.. automodule:: typarr.middleware
+.. automodule:: tino.middleware
    :members:

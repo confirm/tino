@@ -3,5 +3,5 @@
 🎚 Configuration
 ================
 
-.. automodule:: typarr.config
+.. automodule:: tino.config
    :members:

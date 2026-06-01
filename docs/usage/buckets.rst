@@ -39,4 +39,4 @@ Entries map an OIDC group to one of three roles:
 
 .. note::
 
-  Members of the configured admin groups (see :attr:`TYPARR_ADMIN_GROUPS <typarr.config.TYPARR_ADMIN_GROUPS>`) are implicitly treated as **Committer** on every bucket.
+  Members of the configured admin groups (see :attr:`TINO_ADMIN_GROUPS <tino.config.TINO_ADMIN_GROUPS>`) are implicitly treated as **Committer** on every bucket.

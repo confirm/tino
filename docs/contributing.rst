@@ -18,8 +18,8 @@ Clone the repository and create a virtual environment:
 
 .. code-block:: bash
 
-    git clone https://github.com/confirm/typarr.git
-    cd typarr
+    git clone https://github.com/confirm/tino.git
+    cd tino
     make venv
     source .venv/bin/activate
     make develop
@@ -41,14 +41,14 @@ To skip authentication during development, set:
 
 .. code-block:: bash
 
-    TYPARR_AUTH_DISABLED=true make server
+    TINO_AUTH_DISABLED=true make server
 
 Vendored assets
 ~~~~~~~~~~~~~~~
 
 Some front-end libraries (Prism.js, Yjs) are bundled into the
-``typarr/static/js/vendor/`` directory. After modifying
-``typarr/static/js/yjs-entry.js`` or updating Node dependencies, rebuild
+``tino/static/js/vendor/`` directory. After modifying
+``tino/static/js/yjs-entry.js`` or updating Node dependencies, rebuild
 with:
 
 .. code-block:: bash
@@ -114,7 +114,7 @@ Project layout
 
 ::
 
-    typarr/
+    tino/
     ├── auth.py             Authentication & OIDC
     ├── config.py           Environment-based configuration
     ├── dependencies.py     FastAPI dependency injection

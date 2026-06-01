@@ -2,7 +2,7 @@
 # Settings
 #
 
-SOURCE_DIRS = typarr
+SOURCE_DIRS = tino
 BUILD_DIR = build
 LINTER_CONFIGS = https://gitlab.confirm.ch/confirm/dev-configs/-/raw/main/linter
 
@@ -59,7 +59,7 @@ isort:
 	isort $(SOURCE_DIRS)
 
 server:
-	uvicorn typarr:create_app --factory --port 8000 --reload
+	uvicorn tino:create_app --factory --port 8000 --reload
 
 #
 # Test
@@ -98,7 +98,7 @@ docs:
 	sphinx-build docs $(BUILD_DIR)/docs
 
 autodocs:
-	sphinx-autobuild --open-browser --port 8888 --watch typarr docs $(BUILD_DIR)/docs
+	sphinx-autobuild --open-browser --port 8888 --watch tino docs $(BUILD_DIR)/docs
 
 vendor-css:
 	mkdir -p $(SOURCE_DIRS)/static/css/vendor
@@ -111,6 +111,6 @@ package:
 	python3 -mbuild -o $(BUILD_DIR)
 
 docker-image:
-	docker build -t ghcr.io/confirm/typarr .
+	docker build -t ghcr.io/confirm/tino .
 
 build: docs vendor-css vendor-js package

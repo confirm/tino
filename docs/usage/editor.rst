@@ -3,7 +3,7 @@
 ✏️ Editor
 ---------
 
-Typarr's editor is built on `CodeMirror 6 <https://codemirror.net/>`_ and
+TINO's editor is built on `CodeMirror 6 <https://codemirror.net/>`_ and
 offers Typst-aware syntax highlighting, structural indentation, search and
 navigation, code folding, and optional Vim keybindings.
 
@@ -132,7 +132,7 @@ Saving
 
 Files are **auto-saved** a short moment after you stop typing — by default
 250 ms, configurable via
-:attr:`TYPARR_SAVE_DEBOUNCE_MS <typarr.config.TYPARR_SAVE_DEBOUNCE_MS>`.
+:attr:`TINO_SAVE_DEBOUNCE_MS <tino.config.TINO_SAVE_DEBOUNCE_MS>`.
 You can also save manually with the **Save** button, :kbd:`Ctrl+S`, or ``:w`` in
 Vim mode. Unsaved files are marked with a dot on their tab.
 

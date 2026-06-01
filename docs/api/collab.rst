@@ -1,5 +1,5 @@
-``typarr.collab``
+``tino.collab``
 =================
 
-.. automodule:: typarr.collab
+.. automodule:: tino.collab
    :members:

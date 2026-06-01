@@ -3,8 +3,8 @@
 🔤 Custom fonts
 ---------------
 
-Typarr supports custom fonts for Typst compilations. Fonts placed in the
-:attr:`TYPARR_FONT_DIR <typarr.config.TYPARR_FONT_DIR>` directory are
+TINO supports custom fonts for Typst compilations. Fonts placed in the
+:attr:`TINO_FONT_DIR <tino.config.TINO_FONT_DIR>` directory are
 automatically available to all documents via the ``--font-path`` flag.
 
 .. note::
@@ -33,7 +33,7 @@ via a bind mount:
 .. code-block:: bash
 
     docker run -d \
-        -e TYPARR_FONT_DIR=/fonts
+        -e TINO_FONT_DIR=/fonts
         -v /fonts:/fonts \
         …
 
@@ -41,8 +41,8 @@ Or by adding them to the image at build time:
 
 .. code-block:: dockerfile
 
-    # Set environment variable so Typarr / Typst knows where to look for the fonts.
-    ENV TYPARR_FONT_DIR=/fonts
+    # Set environment variable so TINO / Typst knows where to look for the fonts.
+    ENV TINO_FONT_DIR=/fonts
 
     # Copy the fonts into the Docker image.
     COPY fonts/ /fonts
