@@ -31,10 +31,22 @@
 .. automodule:: tino.routers.files
    :members:
 
+``tino.routers.fonts``
+------------------------
+
+.. automodule:: tino.routers.fonts
+   :members:
+
 ``tino.routers.git``
 ----------------------
 
 .. automodule:: tino.routers.git
+   :members:
+
+``tino.routers.misc``
+-----------------------
+
+.. automodule:: tino.routers.misc
    :members:
 
 ``tino.routers.templates``
