@@ -11,19 +11,19 @@
 
 | Dark theme | Light theme |
 |---|---|
-| ![Dark theme](screenshots/demo-dark.jpg) | ![Light theme](screenshots/demo-light.jpg) |
+| ![Dark theme](screenshots/demo-dark.png) | ![Light theme](screenshots/demo-light.png) |
 
 | Bucket management | Access control |
 |---|---|
-| ![Bucket list](screenshots/bucket-list.jpg) | ![Bucket edit](screenshots/bucket-edit.jpg) |
+| ![Bucket list](screenshots/bucket-list.png) | ![Bucket edit](screenshots/bucket-edit.png) |
 
 | Templates | Fonts |
 |---|---|
-| ![Templates](screenshots/templates.jpg) | ![Fonts](screenshots/fonts.jpg) |
+| ![Templates](screenshots/templates.png) | ![Fonts](screenshots/fonts.png) |
 
 | Commit changes | File history |
 |---|---|
-| ![Commits](screenshots/commit.jpg) | ![History](screenshots/history.jpg) |
+| ![Commits](screenshots/commit.png) | ![History](screenshots/history.png) |
 
 ## Documentation
 
