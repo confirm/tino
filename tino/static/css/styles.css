@@ -681,7 +681,12 @@ html, body {
 /* Vim status bar (mode / : command line). */
 .editor .cm-vim-panel {
   font-family: var(--font-mono);
-  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.editor .cm-vim-panel input {
+  color: var(--text-primary);
 }
 
 /*
