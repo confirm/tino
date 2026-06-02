@@ -1,12 +1,12 @@
 .. _ADR-02:
 
-ADR-02: No relational database
-==============================
+ADR-02: No database
+===================
 
 Context
 -------
 
-Most web applications use a relational database (PostgreSQL, SQLite, …) to store metadata, user state, and application data. 
+Most web applications use a (relational) database (PostgreSQL, SQLite, …) to store metadata, user state, and application data. 
 The question was whether TINO should follow that convention.
 
 Decision
