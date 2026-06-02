@@ -1,7 +1,7 @@
-.. _Contributing:
+.. _Development Setup:
 
-🤝 Contributing
----------------
+🛠️ Development Setup
+---------------------
 
 Prerequisites
 ~~~~~~~~~~~~~

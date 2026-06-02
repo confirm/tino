@@ -33,7 +33,10 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.ifconfig',
     'sphinx.ext.todo',
+    'sphinxcontrib.mermaid',
 ]
+
+autosectionlabel_prefix_document = True
 
 #
 # 📝 To Do.

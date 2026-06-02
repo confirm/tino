@@ -18,7 +18,6 @@ Built for teams that want to author, review, and publish together.
    introduction
    deployment
    configuration
-   contributing
    support
 
 .. toctree::
@@ -35,6 +34,13 @@ Built for teams that want to author, review, and publish together.
    usage/fonts
    usage/theming
    usage/api
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Development
+
+   development/architecture
+   development/setup
 
 .. toctree::
    :maxdepth: 1

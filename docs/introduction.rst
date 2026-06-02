@@ -8,9 +8,9 @@
 🤷🏻‍♂️ Rationale
 -----------------
 
-Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully automated — but document production still relied on native desktop applications with templates that were hard to control and impossible to version.
+Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully automated — infrastructure as code, CI/CD pipelines, reproducible deployments. About 99% of our work is treated as code: auditable, versioned, and automatable. Document production was the last holdout. We used Apple Pages for a while — more usable than O365, but still impossible to automate in any meaningful way.
 
-We wanted «document authoring as code», meaning:
+The answer was obvious: treat documents the same way we treat everything else. In practice, that meant:
 
 - Web-based and :ref:`self-hosted <Deployment>`
 - :ref:`Version-controlled <Git>` with full history

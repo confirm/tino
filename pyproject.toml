@@ -46,6 +46,7 @@ develop = [
     'pylint',
     'Sphinx',
     'sphinx-autobuild',
+    'sphinxcontrib-mermaid',
 ]
 
 

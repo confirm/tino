@@ -18,6 +18,8 @@ Creating a bucket
 Administrators can create new buckets from the bucket picker dialog.
 Click **New Bucket**, fill in a slug (the unique identifier) and an optional description, then save.
 
+.. _Access control:
+
 Access control
 ~~~~~~~~~~~~~~
 
