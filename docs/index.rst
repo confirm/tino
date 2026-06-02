@@ -16,6 +16,7 @@ Built for teams that want to author, review, and publish together.
    :maxdepth: 1
 
    introduction
+   vision
    deployment
    configuration
    support
