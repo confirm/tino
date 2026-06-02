@@ -24,10 +24,7 @@ The goal is to make the desktop word processor unnecessary — not by mimicking 
 .. note::
 
     Word and O365 are fine products for people who enjoy watching a 50-page document silently reformat itself because a colleague opened it on a machine with a slightly different version installed.
-    We did not enjoy that, and we never will. TINO is, in part, our answer to thirty years of ``_final_v42_ACTUALLY_FINAL_UNSIGNED.docx``.
-
-    We are, admittedly, an opinionated bunch. Word is thirty years of workarounds dressed up as a product — and we refuse to build on that legacy.
-    We'd rather step on a LEGO than use that crap!
+    We did not enjoy that, and we never will. TINO is, in part, our answer to thirty years of ``_final_v42_ACTUALLY_FINAL_UNSIGNED.docx`` — we refuse to build on that legacy.
 
 .. _Automation layer:
 
