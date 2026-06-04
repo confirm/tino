@@ -54,9 +54,9 @@ To deploy TINO via a simple ``docker`` command, use the following CLI arguments:
         --name tino \
         --read-only \
         --tmpfs /tmp \
+        -e TINO_BASE_URL=https://tino.example.com \
         -e TINO_OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
         -e TINO_OIDC_CLIENT_SECRET=change-me \
-        -e TINO_TRUSTED_PROXIES='*' \
         -p 5000:5000 \
         -v data:/data \
         ghcr.io/confirm/tino
@@ -118,9 +118,7 @@ Register a new client (application) with your OIDC provider:
 Disabling authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-For local development, demo environments or external authentication, 
-you can disable the built-in OIDC authentication entirely by setting the 
-:attr:`TINO_AUTH_DISABLED <tino.config.TINO_AUTH_DISABLED>` environment variable:
+For local development, demo environments or external authentication, you can disable the built-in OIDC authentication entirely by setting the :attr:`TINO_AUTH_DISABLED <tino.config.TINO_AUTH_DISABLED>` environment variable:
 
 .. code-block:: bash
 
@@ -128,27 +126,13 @@ you can disable the built-in OIDC authentication entirely by setting the
 
 .. warning::
 
-    When authentication is disabled, all requests are treated as a built-in **no-auth** user
-    with full administrator privileges. OIDC configuration is not required in this mode.
+    When authentication is disabled, all requests are treated as a built-in **no-auth** user with full administrator privileges. 
+    OIDC configuration is not required in this mode.
 
-    In production this is only safe when TINO sits behind a reverse proxy or gateway
-    that already handles authentication (e.g. OAuth2 Proxy, Authelia, or a cloud IAP).
+    In production this is only safe when TINO sits behind a reverse proxy or gateway that already handles authentication (e.g. OAuth2 Proxy, Authelia, or a cloud IAP).
 
 Reverse proxy
 ~~~~~~~~~~~~~
 
-When TINO runs behind a reverse proxy (e.g. nginx, Traefik, Caddy), set
-:attr:`TINO_TRUSTED_PROXIES <tino.config.TINO_TRUSTED_PROXIES>` so that
-``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers are respected.
-This ensures OIDC redirect URIs are built with ``https://``.
-
-.. code-block:: bash
-
-    TINO_TRUSTED_PROXIES=*
-
-Set it to ``*`` to trust all sources, or to a comma-separated list of proxy
-IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``) for stricter control.
-
-.. hint::
-
-    When ``TINO_TRUSTED_PROXIES`` is not set, forwarded headers are ignored.
+TINO is typically deployed behind a reverse proxy (e.g. nginx, Traefik, Caddy) that terminates TLS.
+Set :attr:`TINO_BASE_URL <tino.config.TINO_BASE_URL>` to the public ``https://`` URL the proxy serves TINO on — it is used to build the OIDC redirect URLs.

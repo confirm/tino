@@ -19,6 +19,7 @@ Built for teams that want to author, review, and publish together.
    vision
    deployment
    configuration
+   upgrade
    support
 
 .. toctree::
