@@ -24,16 +24,25 @@ _STATIC_DIR = str(Path(__file__).parent / 'static')
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     '''Ensure the data directory exists on startup and flush collab rooms on shutdown.'''
+    # Suppress noisy loggers after uvicorn has finished configuring its own logging.
+    logging.getLogger('uvicorn.access').setLevel(logging.WARNING)
+    logging.getLogger('uvicorn.error').setLevel(logging.WARNING)
+
     config.TINO_DATA_DIR.mkdir(parents=True, exist_ok=True)
     config.TINO_BUCKET_DIR.mkdir(parents=True, exist_ok=True)
     config.TINO_PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
     config.TINO_FONT_DIR.mkdir(parents=True, exist_ok=True)
+
     config.sanity_checks()
+
     if not config.TINO_AUTH_DISABLED:
         await setup_oauth()
+
     collab_mgr = get_collab_manager()
     collab_mgr.start()
+
     yield
+
     await collab_mgr.shutdown()
 
 
@@ -41,8 +50,7 @@ def create_app() -> FastAPI:
     '''Create and return the TINO FastAPI application.'''
     logging.basicConfig(
         level=config.TINO_LOG_LEVEL,
-        format='%(asctime)s %(levelname)-8s %(name)s  %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
+        format='%(levelname)-8s %(name)s  %(message)s',
     )
     logging.getLogger('git').setLevel(logging.WARNING)
     logging.getLogger('httpcore').setLevel(logging.WARNING)

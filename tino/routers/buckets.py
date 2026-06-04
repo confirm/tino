@@ -55,7 +55,9 @@ async def create_bucket(
 ):
     '''Create a new bucket (initializes a git repo with .meta.yml).'''
     try:
-        return svc.create(body.slug, body.description, body.access, user=user)
+        result = svc.create(body.slug, body.description, body.access, user=user)
+        logger.info('Bucket created: %s (user: %s)', body.slug, user.username)
+        return result
     except FileExistsError as exc:
         logger.warning(
             'Bucket creation rejected: %s already exists (user: %s)',
@@ -77,6 +79,7 @@ async def update_bucket(
         logger.warning('Bucket update rejected: %s not found (user: %s)', slug, user.username)
         raise HTTPException(404, 'Bucket not found')
 
+    logger.info('Bucket updated: %s (user: %s)', slug, user.username)
     return bucket
 
 
@@ -90,3 +93,5 @@ async def delete_bucket(
     if not svc.delete(slug):
         logger.warning('Bucket deletion rejected: %s not found (user: %s)', slug, user.username)
         raise HTTPException(404, 'Bucket not found')
+
+    logger.info('Bucket deleted: %s (user: %s)', slug, user.username)

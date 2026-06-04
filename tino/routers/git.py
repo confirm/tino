@@ -52,6 +52,7 @@ async def git_commit(
         logger.warning('Commit failed for %s (user: %s): %s', slug, user.username, exc)
         raise HTTPException(400, str(exc)) from exc
 
+    logger.info('Committed %s: %r (user: %s)', slug, body.message, user.username)
     await get_notifier().notify(slug)
     return result
 
@@ -162,6 +163,8 @@ async def git_restore(
         )
         raise HTTPException(404, 'No files could be restored')
 
+    logger.info('Restored %d file(s) in %s from %s (user: %s)',
+                len(restored), slug, body.ref, user.username)
     await collab.reload_rooms(slug, restored)
     await get_notifier().notify(slug)
 

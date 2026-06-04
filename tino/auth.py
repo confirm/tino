@@ -158,7 +158,7 @@ async def callback(request: Request):
     if token.get('id_token'):
         request.session['id_token'] = token['id_token']
 
-    logger.info('User %s authenticated via OIDC', request.session['user']['username'])
+    logger.info('Authenticated via OIDC (user: %s)', request.session['user']['username'])
     return RedirectResponse(url='/')
 
 

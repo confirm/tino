@@ -35,7 +35,7 @@ async def create_key(
     Store it securely — it cannot be retrieved again.
     '''
     raw, record = svc.create(body.label, body.access)
-    logger.info('API key created by %s: %s (%s)', user.username, record['id'], body.label)
+    logger.info('API key created: %s (%s) (user: %s)', record['id'], body.label, user.username)
     return ApiKeyCreated(token=raw, **record)
 
 
@@ -50,7 +50,7 @@ async def update_key(
     result = svc.update(key_id, body.label, body.access)
     if result is None:
         raise HTTPException(404, 'API key not found')
-    logger.info('API key updated by %s: %s', user.username, key_id)
+    logger.info('API key updated: %s (user: %s)', key_id, user.username)
     return result
 
 
@@ -63,4 +63,4 @@ async def revoke_key(
     '''Revoke (permanently delete) an API key.'''
     if not svc.revoke(key_id):
         raise HTTPException(404, 'API key not found')
-    logger.info('API key revoked by %s: %s', user.username, key_id)
+    logger.info('API key revoked: %s (user: %s)', key_id, user.username)

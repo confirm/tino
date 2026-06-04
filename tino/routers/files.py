@@ -96,6 +96,7 @@ async def create_file(
         )
         raise HTTPException(409, 'File already exists or invalid path')
 
+    logger.info('File created: %s/%s (user: %s)', slug, body.path, user.username)
     await get_notifier().notify(slug)
     return {'path': body.path}
 
@@ -148,6 +149,7 @@ async def upload_files(
 
             uploaded.append(path)
 
+    logger.info('Uploaded %d file(s) to %s (user: %s)', len(uploaded), slug, user.username)
     await get_notifier().notify(slug)
     return {'uploaded': uploaded}
 
@@ -186,6 +188,10 @@ async def rename_file(
             )
             raise HTTPException(400, 'Invalid path or target exists')
 
+    logger.info(
+        'File renamed: %s/%s -> %s (user: %s)',
+        slug, body['old_path'], body['new_path'], user.username,
+    )
     await get_notifier().notify(slug)
     return {'old_path': body['old_path'], 'new_path': body['new_path']}
 
@@ -208,6 +214,10 @@ async def rename_dir(
         )
         raise HTTPException(400, 'Invalid path or target exists')
 
+    logger.info(
+        'Directory renamed: %s/%s -> %s (user: %s)',
+        slug, body['old_path'], body['new_path'], user.username,
+    )
     await get_notifier().notify(slug)
     return {'affected': affected}
 
@@ -228,6 +238,7 @@ async def delete_dir(
         )
         raise HTTPException(404, 'Directory not found')
 
+    logger.info('Directory deleted: %s/%s (user: %s)', slug, path, user.username)
     await get_notifier().notify(slug)
 
 
@@ -247,4 +258,5 @@ async def delete_file(
             )
             raise HTTPException(404, 'File not found')
 
+    logger.info('File deleted: %s/%s (user: %s)', slug, path, user.username)
     await get_notifier().notify(slug)

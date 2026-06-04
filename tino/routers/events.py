@@ -36,6 +36,5 @@ async def bucket_events(websocket: WebSocket, slug: str):
         return
 
     notifier = get_notifier()
-    logger.debug('Event subscriber connected for %s by %s', slug, user.username)
+    logger.info('Bucket selected: %s (user: %s)', slug, user.username)
     await notifier.serve(websocket, slug)
-    logger.debug('Event subscriber disconnected for %s by %s', slug, user.username)
