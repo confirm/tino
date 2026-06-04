@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: make vendor-css
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: vendor-css
           path: tino/static/css/vendor/
@@ -88,7 +88,7 @@ jobs:
           node-version: '22'
       - run: npm install
       - run: make vendor-js
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: vendor-js
           path: tino/static/js/vendor/
@@ -141,7 +141,7 @@ jobs:
           name: vendor-js
           path: tino/static/js/vendor/
       - run: make package
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: package
           path: build/*.whl
