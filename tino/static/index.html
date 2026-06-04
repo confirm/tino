@@ -54,6 +54,10 @@
         <span class="material-symbols-outlined">brand_family</span>
         Fonts
       </button>
+      <button class="toolbar-btn hidden" id="btn-api-keys" title="Manage API keys">
+        <span class="material-symbols-outlined">key</span>
+        API Keys
+      </button>
       <span class="toolbar-sep"></span>
       <button class="toolbar-btn" id="btn-vim" title="Toggle Vim keybindings">
         <span class="material-symbols-outlined">keyboard</span>
@@ -293,6 +297,62 @@
         <input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
       </div>
       <ul class="font-list" id="font-list"></ul>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="apikey-dialog">
+    <div class="dialog dialog-wide">
+      <div class="dialog-header" id="apikey-dialog-title">
+        <span>API Keys</span>
+        <button class="icon-btn" id="btn-apikey-close-x" title="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div id="apikey-view-list">
+        <ul class="apikey-list" id="apikey-list"></ul>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" id="btn-apikey-close">Close</button>
+          <button class="btn btn-primary" id="btn-apikey-new">New Key</button>
+        </div>
+      </div>
+
+      <div id="apikey-view-form" class="hidden">
+        <div class="bucket-form">
+          <label class="form-label">Label</label>
+          <input class="form-input" id="apikey-form-label" type="text" placeholder="e.g. Claude Desktop MCP">
+
+          <label class="form-label">Bucket Access</label>
+          <div id="apikey-access-list"></div>
+          <button class="btn btn-secondary btn-small" id="btn-apikey-access-add">
+            <span class="material-symbols-outlined">add</span> Add bucket
+          </button>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" id="btn-apikey-back">Back</button>
+          <button class="btn btn-primary" id="btn-apikey-create">Create</button>
+        </div>
+      </div>
+
+      <div id="apikey-view-token" class="hidden">
+        <div class="apikey-token-reveal">
+          <p class="apikey-token-warning">
+            <span class="material-symbols-outlined apikey-warning-icon">warning</span>
+            Copy this token now — it will not be shown again.
+          </p>
+          <div class="apikey-token-box">
+            <code class="apikey-token-value" id="apikey-token-value"></code>
+            <button class="btn btn-secondary btn-small" id="btn-apikey-copy">
+              <span class="material-symbols-outlined">content_copy</span>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-primary" id="btn-apikey-done">Done</button>
+        </div>
+      </div>
+
     </div>
   </div>
 

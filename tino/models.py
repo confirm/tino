@@ -12,6 +12,8 @@ class User(BaseModel):
     username: str
     email: str
     groups: list[str]
+    api_key_access: dict[str, str] | None = None
+    '''Per-bucket role map for API key authenticated requests (``None`` for OIDC users).'''
 
 
 # ── Buckets ──
@@ -112,6 +114,32 @@ class TemplateInit(BaseModel):
     namespace: str = 'preview'
     version: str
     target_dir: str = ''
+
+
+# ── API Keys ──
+
+
+class ApiKeyInfo(BaseModel):
+    '''API key metadata returned by the API (no raw token or hash).'''
+    id: str
+    label: str
+    created: str
+    access: dict[str, str]
+
+
+class ApiKeyCreate(BaseModel):
+    '''Request body for creating or updating an API key.'''
+    label: str
+    access: dict[str, str] = {}
+
+
+class ApiKeyCreated(BaseModel):
+    '''Response when an API key is first created — includes the raw token (shown once only).'''
+    token: str
+    id: str
+    label: str
+    created: str
+    access: dict[str, str]
 
 
 # ── Fonts ──

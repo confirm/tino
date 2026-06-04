@@ -31,6 +31,10 @@ const bindFileButtons = app => {
     .addEventListener('click', () => {
       app.fontManager.open()
     })
+  document.getElementById('btn-api-keys')
+    .addEventListener('click', () => {
+      app.apiKeyManager.open()
+    })
 }
 
 const bindDownloadButton = app => {

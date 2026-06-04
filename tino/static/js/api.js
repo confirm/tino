@@ -248,6 +248,41 @@ export class TinoAPI extends HttpClient {
     return this._json('POST', path, body)
   }
 
+  // ── API Keys ──
+
+  /** List all API keys (metadata only). */
+
+  listApiKeys() {
+    return this._fetch('/api/keys')
+  }
+
+  /**
+   * Create a new API key.
+   * @param {string} label
+   * @param {Object.<string,string>} access - Map of bucket slug → role.
+   */
+
+  createApiKey(label, access) {
+    return this._json('POST', '/api/keys', { access, label })
+  }
+
+  /**
+   * Update label and/or access for an existing key.
+   * @param {string} keyId
+   * @param {string} label
+   * @param {Object.<string,string>} access
+   */
+
+  updateApiKey(keyId, label, access) {
+    return this._json('PATCH', `/api/keys/${encodeURIComponent(keyId)}`, { access, label })
+  }
+
+  /** Revoke (permanently delete) an API key. */
+
+  revokeApiKey(keyId) {
+    return this._fetch(`/api/keys/${encodeURIComponent(keyId)}`, { method: 'DELETE' })
+  }
+
   // ── Fonts ──
 
   /** List all installed custom fonts. */

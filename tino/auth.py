@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 
 from . import config
 from .models import AccessEntry, User
+from .services.api_keys import ApiKeyService
 
 logger = getLogger(__name__)
 
@@ -19,6 +20,13 @@ router = APIRouter(tags=['auth'])
 oauth = OAuth()
 
 ROLE_HIERARCHY = {'viewer': 0, 'editor': 1, 'committer': 2}
+
+_api_key_service = ApiKeyService(config.TINO_DATA_DIR / 'api_keys.yml')
+
+
+def get_api_key_service() -> ApiKeyService:
+    '''Return the global :class:`~tino.services.api_keys.ApiKeyService` instance.'''
+    return _api_key_service
 
 
 # ── Authentication ──
@@ -44,9 +52,24 @@ _NOAUTH_USER = User(
 
 
 def get_current_user(request: Request) -> User:
-    '''Extract the authenticated user from the session (or return a demo user).'''
+    '''Extract the authenticated user from the session or an API key Bearer token.'''
     if config.TINO_AUTH_DISABLED:
         return _NOAUTH_USER
+
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer '):
+        token = auth_header[7:]
+        key = _api_key_service.verify(token)
+        if key is None:
+            raise HTTPException(401, 'Invalid API key')
+        logger.debug('API key auth: %s (%s)', key['id'], key.get('label', ''))
+        return User(
+            username=f'apikey:{key["id"]}',
+            email='',
+            groups=[],
+            api_key_access=key.get('access', {}),
+        )
+
     user_data = request.session.get('user')
     if not user_data:
         raise HTTPException(401, 'Not authenticated')
@@ -61,13 +84,22 @@ def is_global_admin(user: User) -> bool:
     return bool(config.TINO_ADMIN_GROUPS & set(user.groups))
 
 
-def resolve_role(user: User, access: list[AccessEntry]) -> str | None:
-    '''Return the highest role the user holds in a bucket, or None if no access.'''
+def resolve_role(user: User, access: list[AccessEntry], slug: str | None = None) -> str | None:
+    '''Return the highest role the user holds in a bucket, or ``None`` if no access.
+
+    For API key users the role is looked up directly from ``user.api_key_access``
+    using *slug*; the bucket ACL is ignored.
+    '''
+    if user.api_key_access is not None:
+        return user.api_key_access.get(slug) if slug else None
+
     if is_global_admin(user):
         return 'committer'
+
     if not access:
         default = config.TINO_DEFAULT_ROLE
         return default if default != 'none' else None
+
     best = None
     for entry in access:
         if entry.group in user.groups:
@@ -76,12 +108,13 @@ def resolve_role(user: User, access: list[AccessEntry]) -> str | None:
     return best
 
 
-def check_access(user: User, access: list[AccessEntry], min_role: str) -> None:
+def check_access(user: User, access: list[AccessEntry], min_role: str,
+                 slug: str | None = None) -> None:
     '''Raise 403 if the user lacks the minimum required role on a bucket.'''
     if is_global_admin(user):
         return
 
-    role = resolve_role(user, access)
+    role = resolve_role(user, access, slug)
     if role is None:
         raise HTTPException(403, 'You do not have access to this bucket')
 
