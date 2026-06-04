@@ -11,6 +11,7 @@ __all__ = (
     'TINO_ACCENT_COLOUR',
     'TINO_ADMIN_GROUPS',
     'TINO_AUTH_DISABLED',
+    'TINO_BASE_URL',
     'TINO_BUCKET_DIR',
     'TINO_DATA_DIR',
     'TINO_DEFAULT_ROLE',
@@ -24,7 +25,6 @@ __all__ = (
     'TINO_ROOM_TTL',
     'TINO_SAVE_DEBOUNCE_MS',
     'TINO_SECRET_KEY',
-    'TINO_TRUSTED_PROXIES',
 )
 
 import os
@@ -34,11 +34,8 @@ from pathlib import Path
 from secrets import token_hex
 from sys import exit as sys_exit
 
-#
-# 📂 Directories
-#
-# Paths to different data directories.
-#
+
+# ----- 📂 Directories -----
 
 _DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent / 'data')
 #: ⭕ The root directory where all the user data is stored.
@@ -91,11 +88,14 @@ _DEFAULT_FONT_DIR = str(TINO_DATA_DIR / 'fonts')
 #:  `volume`_ or a `bind mount`_ mounted on the path.
 TINO_FONT_DIR = Path(environ.get('TINO_FONT_DIR', _DEFAULT_FONT_DIR))
 
-#
-# 🔐 Security
-#
-# Security-related settings.
-#
+
+# ----- 🔗 Connection settings -----
+
+#: 🔴 TINO's public base URL (e.g. ``https://tino.example.com``), without a trailing path.
+#: The externally reachable address of this instance.
+TINO_BASE_URL = (environ.get('TINO_BASE_URL') or '').rstrip('/') or None
+
+# ----- 🔐 Security settings -----
 
 #: When set to ``true``, authentication is completely disabled.
 #: All requests are treated as an admin user without requiring OIDC.
@@ -119,18 +119,8 @@ _ADMIN_GROUPS_RAW = environ.get('TINO_ADMIN_GROUPS', 'admins')
 #: ⭕ Comma-separated list of OIDC groups whose members are TINO administrators.
 TINO_ADMIN_GROUPS: set[str] = {g.strip() for g in _ADMIN_GROUPS_RAW.split(',') if g.strip()}
 
-_TRUSTED_PROXIES = environ.get('TINO_TRUSTED_PROXIES', '')
-#: Comma-separated list of trusted proxy IP addresses (e.g. ``127.0.0.1,10.0.0.0/8``).
-#: When set, ``X-Forwarded-For`` and ``X-Forwarded-Proto`` headers from these
-#: proxies are respected. Use ``*`` to trust all sources.
-#: Leave empty when TINO is not behind a reverse proxy.
-TINO_TRUSTED_PROXIES: list[str] = [h.strip() for h in _TRUSTED_PROXIES.split(',') if h.strip()]
 
-#
-# 🔑 OIDC
-#
-# TINO requires users to login via OIDC logins.
-#
+# ----- 🔑 OIDC settings -----
 
 #: 🔴 The OIDC discovery URL (e.g. ``https://sso.example.com/.well-known/openid-configuration``).
 TINO_OIDC_DISCOVERY_URL = environ.get('TINO_OIDC_DISCOVERY_URL')
@@ -144,11 +134,8 @@ TINO_OIDC_CLIENT_SECRET = environ.get('TINO_OIDC_CLIENT_SECRET')
 #: ⭕ The OIDC token claim that contains the user's group memberships.
 TINO_OIDC_GROUPS_CLAIM = environ.get('TINO_OIDC_GROUPS_CLAIM', 'groups')
 
-#
-# ⚙️ Application settings
-#
-# Other application settings not matching the groups above :)
-#
+
+# ----- ⚙️ Application settings -----
 
 #: ⭕ The CI accent colour family used across the UI.
 #:
@@ -174,9 +161,7 @@ TINO_ROOM_TTL = int(environ.get('TINO_ROOM_TTL', '300'))
 TINO_LOG_LEVEL = environ.get('TINO_LOG_LEVEL', 'INFO')
 
 
-#
-# Sanity checks.
-#
+# ----- Sanity checks -----
 
 
 def sanity_checks():  # pylint: disable=too-complex,too-many-branches
@@ -193,6 +178,11 @@ def sanity_checks():  # pylint: disable=too-complex,too-many-branches
         errors['TINO_DATA_DIR'] = f'{TINO_DATA_DIR} does not exist or is not a directory'
     elif not os.access(TINO_DATA_DIR, os.W_OK):
         errors['TINO_DATA_DIR'] = f'{TINO_DATA_DIR} is not writable'
+
+    if not TINO_BASE_URL:
+        errors['TINO_BASE_URL'] = "Set to TINO's public base URL"
+    elif not TINO_BASE_URL.startswith('https://'):
+        errors['TINO_BASE_URL'] = 'Must start with https://'
 
     if not TINO_ADMIN_GROUPS:
         errors['TINO_ADMIN_GROUPS'] = 'Set to a comma-separated list of admin groups'

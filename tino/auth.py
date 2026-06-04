@@ -134,7 +134,7 @@ async def login_page():
 @router.get('/oidc/login', include_in_schema=False)
 async def login(request: Request):
     '''Redirect the user to the OIDC provider for authentication.'''
-    redirect_uri = str(request.url_for('callback'))
+    redirect_uri = f'{config.TINO_BASE_URL}/oidc/callback'
     return await oauth.oidc.authorize_redirect(request, redirect_uri)
 
 
@@ -167,7 +167,7 @@ async def logout(request: Request):
     '''Clear the session and redirect to the OIDC provider's logout endpoint.'''
     id_token = request.session.get('id_token')
     request.session.clear()
-    login_url = f'{request.base_url}login'
+    login_url = f'{config.TINO_BASE_URL}/login'
 
     end_session_url = None
     try:
