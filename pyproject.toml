@@ -30,7 +30,7 @@ dependencies = [
     'itsdangerous==2.2.0',
     'pycrdt==0.13.1',
     'pycrdt-websocket==0.16.1',
-    'python-multipart==0.0.29',
+    'python-multipart==0.0.30',
     'pyyaml==6.0.3',
     'uvicorn[standard]==0.48.0',
 ]
