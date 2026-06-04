@@ -156,6 +156,12 @@ export class FileTree {
 
   static _folderActionsHtml() {
     return '<div class="file-actions">' +
+      '<button class="icon-btn folder-new-file" title="New file">' +
+      '<span class="material-symbols-outlined">' +
+      'note_add</span></button>' +
+      '<button class="icon-btn folder-new-folder" title="New folder">' +
+      '<span class="material-symbols-outlined">' +
+      'create_new_folder</span></button>' +
       '<button class="icon-btn folder-rename" title="Rename">' +
       '<span class="material-symbols-outlined">' +
       'edit</span></button>' +
@@ -243,7 +249,11 @@ export class FileTree {
   _handleFolderClick(evt, folder) {
     const folderItem = folder.closest('.folder-item')
     const folderPath = folderItem.dataset.folder
-    if (evt.target.closest('.folder-delete'))
+    if (evt.target.closest('.folder-new-file'))
+      this.actions.createFileInFolder(folderPath)
+    else if (evt.target.closest('.folder-new-folder'))
+      this.actions.createFolder(`${folderPath}/`)
+    else if (evt.target.closest('.folder-delete'))
       this.actions.deleteFolder(folderPath)
     else if (evt.target.closest('.folder-rename'))
       this.actions.renameFolder(folderPath)

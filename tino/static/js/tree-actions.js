@@ -11,6 +11,19 @@ export class TreeActions {
     this.app = app
   }
 
+  async createFileInFolder(folderPath) {
+    await this.app.editor.createNewFile(`${folderPath}/`)
+  }
+
+  async createFolder(prefix) {
+    // eslint-disable-next-line no-alert
+    const name = prompt('Folder name:', prefix || '')
+    if (!name || !name.trim())
+      return
+    await this.app.api.createDir(this.app.bucket, name.trim())
+    await this._refresh()
+  }
+
   async deleteFile(filePath) {
     // eslint-disable-next-line no-alert
     if (!confirm(`Delete "${filePath}"?`))

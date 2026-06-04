@@ -42,9 +42,7 @@ async def init_template(
 ):
     '''Initialize a bucket from a Typst template via typst init.'''
     try:
-        svc.init_template(
-            slug, body.name, body.version, body.namespace,
-        )
+        svc.init_template(slug, body)
         return {'status': 'ok'}
 
     except FileNotFoundError as exc:

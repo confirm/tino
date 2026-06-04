@@ -104,6 +104,19 @@ class FileService:
 
         return True
 
+    def create_dir(self, slug: str, dir_path: str) -> bool:
+        '''Create an empty directory. Returns False if it exists or the path is invalid.'''
+        root = self._bucket_path(slug)
+        target = self._safe_path(root, dir_path)
+
+        if target is None or target.exists():
+            return False
+
+        target.mkdir(parents=True, exist_ok=True)
+        logger.info('Created directory %s/%s', slug, dir_path)
+
+        return True
+
     def upload(self, slug: str, file_path: str, data: bytes) -> bool:
         '''Write raw bytes to a file. Creates parent dirs as needed.'''
         root   = self._bucket_path(slug)

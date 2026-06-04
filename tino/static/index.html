@@ -21,7 +21,11 @@
       </button>
       <button class="toolbar-btn" id="btn-new" title="New file">
         <span class="material-symbols-outlined">note_add</span>
-        New
+        File
+      </button>
+      <button class="toolbar-btn" id="btn-new-folder" title="New folder">
+        <span class="material-symbols-outlined">create_new_folder</span>
+        Folder
       </button>
       <button class="toolbar-btn" id="btn-template" title="New from template">
         <span class="material-symbols-outlined">dashboard</span>
@@ -268,6 +272,7 @@
       </div>
       <div class="template-search">
         <input class="form-input" id="template-search" type="text" placeholder="Search templates...">
+        <select class="form-input" id="template-target-dir" title="Target directory"></select>
       </div>
       <ul class="template-list" id="template-list"></ul>
     </div>

@@ -146,9 +146,9 @@ export class EditorManager {
 
   /** Prompt for a filename and create a new file. */
 
-  async createNewFile() {
+  async createNewFile(prefix) {
     // eslint-disable-next-line no-alert
-    const name = prompt('File name:')
+    const name = prompt('File name:', prefix || '')
     if (!name || !this.app.bucket)
       return
     try {

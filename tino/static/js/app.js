@@ -199,6 +199,7 @@ class TinoApp {
       'btn-history': canView,
       'btn-history-restore': canEdit,
       'btn-new': canEdit,
+      'btn-new-folder': canEdit,
       'btn-save': canEdit,
       'btn-template': canEdit,
     }))

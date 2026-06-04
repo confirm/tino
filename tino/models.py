@@ -111,6 +111,7 @@ class TemplateInit(BaseModel):
     name: str
     namespace: str = 'preview'
     version: str
+    target_dir: str = ''
 
 
 # ── Fonts ──

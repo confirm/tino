@@ -15,6 +15,10 @@ const bindFileButtons = app => {
     .addEventListener('click', () => {
       app.editor.createNewFile()
     })
+  document.getElementById('btn-new-folder')
+    .addEventListener('click', () => {
+      app.fileTree.actions.createFolder()
+    })
   document.getElementById('btn-template')
     .addEventListener('click', () => {
       app.templatePicker.open()

@@ -60,10 +60,20 @@ class TemplateService:
 
         return templates
 
-    def init_template(
-        self, slug: str, name: str, version: str,
-        namespace: str = 'preview',
-    ) -> None:
+    def _resolve_dest(self, slug: str, target_dir: str) -> Path:
+        '''Resolve and validate the destination directory for template init.'''
+        bucket_dir = (self.data_dir / slug).resolve()
+        if not bucket_dir.is_dir():
+            raise FileNotFoundError(f'Bucket {slug} not found')
+        if not target_dir:
+            return bucket_dir
+        dest_dir = (bucket_dir / target_dir).resolve()
+        if not dest_dir.is_relative_to(bucket_dir):
+            raise RuntimeError('Invalid target directory')
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        return dest_dir
+
+    def init_template(self, slug: str, body) -> None:
         '''Run typst init in a temp directory, then copy files into the bucket.
 
         This avoids the "project directory already exists" error that occurs
@@ -72,9 +82,7 @@ class TemplateService:
         Raises FileNotFoundError if the bucket doesn't exist,
         or RuntimeError if typst init fails.
         '''
-        bucket_dir = (self.data_dir / slug).resolve()
-        if not bucket_dir.is_dir():
-            raise FileNotFoundError(f'Bucket {slug} not found')
+        dest_dir = self._resolve_dest(slug, body.target_dir)
 
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / 'project'
@@ -83,7 +91,8 @@ class TemplateService:
             if self.package_dir:
                 cmd.extend(['--package-path', str(self.package_dir)])
 
-            cmd.extend([f'@{namespace}/{name}:{version}', str(out)])
+            ref = f'@{body.namespace}/{body.name}:{body.version}'
+            cmd.extend([ref, str(out)])
 
             result = subprocess.run(
                 cmd,
@@ -98,7 +107,7 @@ class TemplateService:
                     result.stderr.strip() or 'Template init failed',
                 )
 
-            conflicts = _find_conflicts(out, bucket_dir)
+            conflicts = _find_conflicts(out, dest_dir)
             if conflicts:
                 names = ', '.join(sorted(conflicts))
                 raise FileExistsError(
@@ -106,13 +115,13 @@ class TemplateService:
                 )
 
             for item in out.iterdir():
-                dest = bucket_dir / item.name
+                dest = dest_dir / item.name
                 if item.is_dir():
                     shutil.copytree(item, dest, dirs_exist_ok=True)
                 else:
                     shutil.copy2(item, dest)
 
-            logger.info('Initialized %s from template @%s/%s:%s', slug, namespace, name, version)
+            logger.info('Initialized %s from template %s', slug, ref)
 
     def list_local_templates(self) -> list[dict]:
         '''Scan the package directory for local template packages, grouped by name.

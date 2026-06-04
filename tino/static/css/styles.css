@@ -1630,13 +1630,24 @@ html, body {
 /* ── Template Picker ── */
 
 .template-search {
+  display: flex;
+  gap: 8px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
 
 .template-search .form-input {
-  width: 100%;
   box-sizing: border-box;
+}
+
+.template-search .form-input:first-child {
+  flex: 1;
+}
+
+.template-search select.form-input {
+  width: auto;
+  min-width: 120px;
+  max-width: 200px;
 }
 
 .template-list {

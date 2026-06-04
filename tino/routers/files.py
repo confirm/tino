@@ -152,6 +152,24 @@ async def upload_files(
     return {'uploaded': uploaded}
 
 
+@router.post('/mkdir', status_code=201)
+async def create_dir(
+    slug: str, body: dict,
+    user=Depends(require_editor),
+    svc: FileService = Depends(get_file_service),
+):
+    '''Create an empty directory in the bucket.'''
+    if not svc.create_dir(slug, body['path']):
+        logger.warning(
+            'Directory creation rejected for %s/%s (exists or invalid path) (user: %s)',
+            slug, body['path'], user.username,
+        )
+        raise HTTPException(409, 'Directory already exists or invalid path')
+
+    await get_notifier().notify(slug)
+    return {'path': body['path']}
+
+
 @router.post('/rename')
 async def rename_file(
     slug: str, body: dict,

@@ -17,6 +17,7 @@ export class TemplatePicker {
     this._dialog = document.getElementById('template-dialog')
     this._list = document.getElementById('template-list')
     this._search = document.getElementById('template-search')
+    this._targetDir = document.getElementById('template-target-dir')
   }
 
   /** Open the dialog and load templates. */
@@ -25,8 +26,33 @@ export class TemplatePicker {
     if (!this.app.bucket)
       return
     this._search.value = ''
+    this._populateDirs()
     this._dialog.classList.add('visible')
     await this._loadAndRender()
+  }
+
+  _populateDirs() {
+    const dirs = TemplatePicker._extractDirs(this.app.fileTree.filePaths)
+    this._targetDir.innerHTML = ''
+    this._addDirOption('', '/ (root)')
+    dirs.forEach(dir => this._addDirOption(dir, dir))
+  }
+
+  _addDirOption(value, label) {
+    const opt = document.createElement('option')
+    opt.value = value
+    opt.textContent = label
+    this._targetDir.appendChild(opt)
+  }
+
+  static _extractDirs(filePaths) {
+    const dirs = new Set()
+    for (const fp of filePaths) {
+      const idx = fp.lastIndexOf('/')
+      if (idx > 0)
+        dirs.add(fp.slice(0, idx))
+    }
+    return [...dirs].sort()
   }
 
   /** Close the dialog. */
@@ -119,15 +145,18 @@ export class TemplatePicker {
   }
 
   async _selectTemplate(name, version, namespace, entrypoint) {
+    const targetDir = this._targetDir.value
     try {
       await this.app.api.initTemplate(
-        this.app.bucket, name, version, namespace,
+        this.app.bucket, name, version, namespace, targetDir,
       )
       this.close()
       await this.app.git.loadStatus()
       await this.app.fileTree.loadFiles()
-      if (entrypoint)
-        this.app.editor.openFile(entrypoint)
+      if (entrypoint) {
+        const fullPath = targetDir ? `${targetDir}/${entrypoint}` : entrypoint
+        this.app.editor.openFile(fullPath)
+      }
     }
     catch (err) {
       this.app.toast.error(

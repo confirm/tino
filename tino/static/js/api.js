@@ -104,6 +104,14 @@ export class TinoAPI extends HttpClient {
     )
   }
 
+  /** Create an empty directory. */
+
+  createDir(slug, path) {
+    return this._json(
+      'POST', `${TinoAPI._bucketPath(slug)}/files/mkdir`, { path },
+    )
+  }
+
   /** Delete a file from the bucket. */
 
   deleteFile(slug, path) {
@@ -232,9 +240,12 @@ export class TinoAPI extends HttpClient {
 
   /** Initialize a bucket from a Typst template. */
 
-  initTemplate(slug, name, version, namespace) {
+  initTemplate(slug, name, version, namespace, targetDir) {
     const path = `${TinoAPI._bucketPath(slug)}/init-template`
-    return this._json('POST', path, { name, namespace: namespace || 'preview', version })
+    const body = { name, namespace: namespace || 'preview', version }
+    if (targetDir)
+      body.target_dir = targetDir
+    return this._json('POST', path, body)
   }
 
   // ── Fonts ──
