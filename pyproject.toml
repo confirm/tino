@@ -53,7 +53,7 @@ develop = [
 [build-system]
 
 requires = [
-    'setuptools>=65',
+    'setuptools>=82.0.1',
     'setuptools_scm[toml]',
     'wheel',
 ]
