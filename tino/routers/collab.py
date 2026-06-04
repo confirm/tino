@@ -35,6 +35,6 @@ async def collab_websocket(websocket: WebSocket, slug: str, path: str):
         return
 
     collab = get_collab_manager()
-    logger.info('Collab session started for %s/%s by %s', slug, path, user.username)
+    logger.info('Collab session started: %s/%s (user: %s)', slug, path, user.username)
     await collab.serve(websocket, slug, path)
-    logger.info('Collab session ended for %s/%s by %s', slug, path, user.username)
+    logger.info('Collab session ended: %s/%s (user: %s)', slug, path, user.username)
