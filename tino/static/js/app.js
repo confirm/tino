@@ -1,4 +1,5 @@
 import { readRoute, writeRoute } from './router.js'
+import { ApiKeyManager } from './api-key-manager.js'
 import { BucketEvents } from './bucket-events.js'
 import { CodeMirrorEditor } from './codemirror-editor.js'
 import { EditorManager } from './editor-manager.js'
@@ -74,6 +75,7 @@ class TinoApp {
     this.panelResize = new PanelResize()
     this.preview = new PreviewManager(this)
     this.fontManager = new FontManager(this)
+    this.apiKeyManager = new ApiKeyManager(this)
     this.templatePicker = new TemplatePicker(this)
   }
 
@@ -98,6 +100,7 @@ class TinoApp {
     this.editor.bindEditor()
     this._bindFileTree()
     this.fontManager.bind()
+    this.apiKeyManager.bind()
     this.templatePicker.bind()
     this.preview.bindZoom()
   }
@@ -131,6 +134,8 @@ class TinoApp {
       this.els.userLabel.textContent = user.username
       this.isAdmin = user.is_admin
       document.getElementById('btn-fonts')
+        .classList.toggle('hidden', !this.isAdmin)
+      document.getElementById('btn-api-keys')
         .classList.toggle('hidden', !this.isAdmin)
     }
     catch {

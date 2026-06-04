@@ -24,7 +24,7 @@ async def list_buckets(
 
     for bucket in svc.list():
 
-        role = resolve_role(user, bucket.access)
+        role = resolve_role(user, bucket.access, bucket.slug)
 
         if role is not None:
             info         = bucket.model_dump()

@@ -41,7 +41,8 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
         if path in _PUBLIC_PATHS or path.startswith(_STATIC_PREFIXES):
             return await call_next(request)
 
-        if not request.session.get('user'):
+        has_bearer = request.headers.get('Authorization', '').startswith('Bearer ')
+        if not request.session.get('user') and not has_bearer:
             if path.startswith('/api/'):
                 return JSONResponse({'detail': 'Not authenticated'}, status_code=401)
 

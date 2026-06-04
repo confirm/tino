@@ -29,7 +29,7 @@ async def collab_websocket(websocket: WebSocket, slug: str, path: str):
         return
 
     try:
-        check_access(user, bucket.access, 'editor')
+        check_access(user, bucket.access, 'editor', slug)
     except HTTPException:
         await websocket.close(code=4403, reason='Editor role required')
         return

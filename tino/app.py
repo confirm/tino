@@ -12,7 +12,7 @@ from .auth import router as auth_router
 from .auth import setup_oauth
 from .dependencies import get_collab_manager
 from .middleware import register_middleware
-from .routers import buckets, collab
+from .routers import api_keys, buckets, collab
 from .routers import compile as compile_router
 from .routers import events, files, fonts, git, misc, templates
 
@@ -53,6 +53,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(misc.router)
+    app.include_router(api_keys.router)
     app.include_router(buckets.router)
     app.include_router(collab.router)
     app.include_router(compile_router.router)
