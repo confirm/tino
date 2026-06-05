@@ -23,7 +23,8 @@ The Typst CLI is invoked as a subprocess for compilation to PDF and SVG (preview
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **Typographic control**
   | Typst produces publication-quality output — page layout, headers and footers, tables, math, citations — without the complexity of LaTeX.
@@ -41,7 +42,8 @@ Consequences
 - | **AI-friendly target**
   | Typst's clean, structured syntax makes it a practical output format for language-model-driven document generation (see :ref:`Rationale`).
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **CLI coupling**
   | TINO is tightly coupled to the Typst CLI binary — a breaking change in its interface requires a TINO update.

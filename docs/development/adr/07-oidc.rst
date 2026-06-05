@@ -21,7 +21,8 @@ Authentication can be disabled entirely via ``TINO_AUTH_DISABLED`` for local dev
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **No user management**
   | TINO has no user database, no password storage, and no account lifecycle to manage — all of that lives in the identity provider.
@@ -35,7 +36,8 @@ Consequences
   | OIDC is the standard authentication protocol for most enterprises and cloud platforms.
   | Chances are the identity provider is already in place and TINO just plugs in.
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **External dependency**
   | A production deployment requires a running OIDC provider. 

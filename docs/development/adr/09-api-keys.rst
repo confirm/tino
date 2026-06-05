@@ -27,7 +27,8 @@ TINO issues **static API keys** — long-lived bearer tokens for programmatic ac
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **Automation without a browser**
   | CI pipelines and scripts authenticate with a single header, no interactive login required.
@@ -38,7 +39,8 @@ Consequences
 - | **Hashed at rest**
   | Only token hashes are stored, so a leaked ``api_keys.yml`` exposes no usable credentials.
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **Long-lived secrets**
   | A key stays valid until explicitly revoked — there is no automatic expiry. Leaked keys must be revoked by hand, which argues for narrow scoping.
