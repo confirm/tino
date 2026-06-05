@@ -136,6 +136,8 @@ export class BucketPicker {
     slugInput.readOnly = !isNew
     this.app.els.bucketFormDesc.value =
       isNew ? '' : bucket.description || ''
+    this.app.els.bucketFormMcp.value =
+      isNew ? '' : bucket.mcp_instructions || ''
     this._editingSlug = isNew ? null : bucket.slug
     BucketPicker._renderAccessList(bucket ? bucket.access : [])
     if (isNew)
@@ -198,13 +200,15 @@ export class BucketPicker {
   async _saveBucket() {
     const slug = this.app.els.bucketFormSlug.value.trim()
     const description = this.app.els.bucketFormDesc.value.trim()
+    const mcpInstructions = this.app.els.bucketFormMcp.value.trim()
     const access = BucketPicker._collectAccessEntries()
     if (!this._validateSlug(slug))
       return
+    const update = { access, description, mcp_instructions: mcpInstructions }
     if (this._editingSlug)
-      await this.app.api.updateBucket(this._editingSlug, { access, description })
+      await this.app.api.updateBucket(this._editingSlug, update)
     else
-      await this.app.api.createBucket(slug, description, access)
+      await this.app.api.createBucket(slug, description, access, mcpInstructions)
     await this.app.fileTree.loadBuckets()
     this._showListView()
     await this._renderList()

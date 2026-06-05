@@ -33,12 +33,14 @@ class BucketCreate(BaseModel):
     slug: Slug
     description: str = ''
     access: list[AccessEntry] = []
+    mcp_instructions: str = ''
 
 
 class BucketUpdate(BaseModel):
     '''Request body for updating bucket metadata. Omitted fields are unchanged.'''
     description: str | None = None
     access: list[AccessEntry] | None = None
+    mcp_instructions: str | None = None
 
 
 class BucketInfo(BaseModel):
@@ -47,6 +49,7 @@ class BucketInfo(BaseModel):
     description: str
     created: str | None
     access: list[AccessEntry]
+    mcp_instructions: str = ''
 
 
 # ── Files ──

@@ -1,17 +1,12 @@
-import { HttpClient } from './http-client.js'
+import { GitAPI, bucketPath } from './git-api.js'
 
 /**
  * HTTP client for the TINO REST API.
  * Wraps all backend endpoints (buckets, files, git, compile).
+ * Git endpoints live in GitAPI, which this class extends.
  */
 
-export class TinoAPI extends HttpClient {
-
-  /** @returns {string} Encoded bucket API base path. */
-
-  static _bucketPath(slug) {
-    return `/api/buckets/${encodeURIComponent(slug)}`
-  }
+export class TinoAPI extends GitAPI {
 
   config() {
     return this._fetch('/api/config')
@@ -36,29 +31,32 @@ export class TinoAPI extends HttpClient {
   /** Get metadata for a single bucket. */
 
   getBucket(slug) {
-    return this._fetch(TinoAPI._bucketPath(slug))
+    return this._fetch(bucketPath(slug))
   }
 
   /** Create a new bucket. */
 
-  createBucket(slug, description, access) {
-    return this._json('POST', '/api/buckets', {
+  createBucket(slug, description, access, mcpInstructions) {
+    const body = {
       access: access || [],
       description: description || '',
       slug,
-    })
+    }
+    if (mcpInstructions)
+      body.mcp_instructions = mcpInstructions
+    return this._json('POST', '/api/buckets', body)
   }
 
   /** Delete a bucket and its git repo. */
 
   deleteBucket(slug) {
-    return this._fetch(TinoAPI._bucketPath(slug), { method: 'DELETE' })
+    return this._fetch(bucketPath(slug), { method: 'DELETE' })
   }
 
   /** Update a bucket's metadata (description, access rules). */
 
   updateBucket(slug, data) {
-    return this._json('PUT', TinoAPI._bucketPath(slug), data)
+    return this._json('PUT', bucketPath(slug), data)
   }
 
   // ── Files ──
@@ -66,20 +64,20 @@ export class TinoAPI extends HttpClient {
   /** List all files in a bucket. */
 
   listFiles(slug) {
-    return this._fetch(`${TinoAPI._bucketPath(slug)}/files`)
+    return this._fetch(`${bucketPath(slug)}/files`)
   }
 
   /** Read a file's content. */
 
   readFile(slug, path) {
-    return this._fetch(`${TinoAPI._bucketPath(slug)}/files/${path}`)
+    return this._fetch(`${bucketPath(slug)}/files/${path}`)
   }
 
   /** Save (overwrite) a file's content. */
 
   saveFile(slug, path, content) {
     return this._json(
-      'PUT', `${TinoAPI._bucketPath(slug)}/files/${path}`, { content },
+      'PUT', `${bucketPath(slug)}/files/${path}`, { content },
     )
   }
 
@@ -87,7 +85,7 @@ export class TinoAPI extends HttpClient {
 
   createFile(slug, path, content) {
     return this._json(
-      'POST', `${TinoAPI._bucketPath(slug)}/files`, { content: content || '', path },
+      'POST', `${bucketPath(slug)}/files`, { content: content || '', path },
     )
   }
 
@@ -99,7 +97,7 @@ export class TinoAPI extends HttpClient {
       form.append('files', file)
     const qp = prefix ? `?prefix=${encodeURIComponent(prefix)}` : ''
     return this._fetch(
-      `${TinoAPI._bucketPath(slug)}/files/upload${qp}`,
+      `${bucketPath(slug)}/files/upload${qp}`,
       { body: form, method: 'POST' },
     )
   }
@@ -108,7 +106,7 @@ export class TinoAPI extends HttpClient {
 
   createDir(slug, path) {
     return this._json(
-      'POST', `${TinoAPI._bucketPath(slug)}/files/mkdir`, { path },
+      'POST', `${bucketPath(slug)}/files/mkdir`, { path },
     )
   }
 
@@ -116,7 +114,7 @@ export class TinoAPI extends HttpClient {
 
   deleteFile(slug, path) {
     return this._fetch(
-      `${TinoAPI._bucketPath(slug)}/files/${path}`, { method: 'DELETE' },
+      `${bucketPath(slug)}/files/${path}`, { method: 'DELETE' },
     )
   }
 
@@ -124,7 +122,7 @@ export class TinoAPI extends HttpClient {
 
   deleteDir(slug, path) {
     return this._fetch(
-      `${TinoAPI._bucketPath(slug)}/files/dir/${path}`,
+      `${bucketPath(slug)}/files/dir/${path}`,
       { method: 'DELETE' },
     )
   }
@@ -132,7 +130,7 @@ export class TinoAPI extends HttpClient {
   /** Rename/move a file. */
 
   renameFile(slug, oldPath, newPath) {
-    const path = `${TinoAPI._bucketPath(slug)}/files/rename`
+    const path = `${bucketPath(slug)}/files/rename`
     return this._json(
       'POST', path, { new_path: newPath, old_path: oldPath },
     )
@@ -141,87 +139,16 @@ export class TinoAPI extends HttpClient {
   /** Rename/move a directory. */
 
   renameDir(slug, oldPath, newPath) {
-    const path = `${TinoAPI._bucketPath(slug)}/files/rename-dir`
+    const path = `${bucketPath(slug)}/files/rename-dir`
     return this._json(
       'POST', path, { new_path: newPath, old_path: oldPath },
-    )
-  }
-
-  // ── Git ──
-
-  /** Get working tree status. */
-
-  gitStatus(slug) {
-    return this._fetch(`${TinoAPI._bucketPath(slug)}/git/status`)
-  }
-
-  /** Stage files and create a commit. */
-
-  gitCommit(slug, files, message) {
-    return this._json(
-      'POST', `${TinoAPI._bucketPath(slug)}/git/commit`, { files, message },
-    )
-  }
-
-  /** Get commit history, optionally filtered by path. */
-
-  gitLog(slug, path, limit) {
-    let url = `${TinoAPI._bucketPath(slug)}/git/log`
-    const params = new URLSearchParams()
-    if (path)
-      params.set('path', path)
-    if (limit)
-      params.set('max_count', limit)
-    if (params.size)
-      url += `?${params}`
-    return this._fetch(url)
-  }
-
-  /**
-   * Get unified diffs.
-   * Without ``ref`` returns working-tree diffs vs HEAD.
-   * With ``ref`` returns the changes introduced by that commit.
-   */
-
-  gitDiff(slug, path, ref) {
-    const params = []
-    if (path)
-      params.push(`path=${encodeURIComponent(path)}`)
-    if (ref)
-      params.push(`ref=${encodeURIComponent(ref)}`)
-    const qs = params.length ? `?${params.join('&')}` : ''
-    return this._fetch(`${TinoAPI._bucketPath(slug)}/git/diff${qs}`)
-  }
-
-  /** List all file paths at a specific commit. */
-
-  gitTree(slug, ref) {
-    return this._fetch(
-      `${TinoAPI._bucketPath(slug)}/git/tree/${encodeURIComponent(ref)}`,
-    )
-  }
-
-  /** Retrieve a file's content at a specific commit. */
-
-  gitShow(slug, ref, path) {
-    const rev = encodeURIComponent(ref)
-    return this._fetch(
-      `${TinoAPI._bucketPath(slug)}/git/show/${rev}/content/${path}`,
-    )
-  }
-
-  /** Restore files from a specific commit into the working tree. */
-
-  gitRestore(slug, ref, paths) {
-    return this._json(
-      'POST', `${TinoAPI._bucketPath(slug)}/git/restore`, { paths, ref },
     )
   }
 
   // ── Compile ──
 
   compile(slug, path) {
-    return this._fetch(`${TinoAPI._bucketPath(slug)}/compile/svg/${path}`)
+    return this._fetch(`${bucketPath(slug)}/compile/svg/${path}`)
   }
 
   // ── Templates ──
@@ -241,7 +168,7 @@ export class TinoAPI extends HttpClient {
   /** Initialize a bucket from a Typst template. */
 
   initTemplate(slug, name, version, namespace, targetDir) {
-    const path = `${TinoAPI._bucketPath(slug)}/init-template`
+    const path = `${bucketPath(slug)}/init-template`
     const body = { name, namespace: namespace || 'preview', version }
     if (targetDir)
       body.target_dir = targetDir

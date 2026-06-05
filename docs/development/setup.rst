@@ -1,6 +1,6 @@
-.. _Development Setup:
+.. _Development setup:
 
-🛠️ Development Setup
+🛠️ Development setup
 ---------------------
 
 Prerequisites
@@ -9,7 +9,7 @@ Prerequisites
 - Python 3.14+
 - Node.js (for vendored JS and linters)
 - `Typst CLI <https://github.com/typst/typst>`_
-- Git
+- Git with `Git LFS <https://git-lfs.com/>`_
 
 Project setup
 ~~~~~~~~~~~~~
@@ -24,8 +24,7 @@ Clone the repository and create a virtual environment:
     source .venv/bin/activate
     make develop
 
-``make develop`` installs the Python package in editable mode (with dev
-dependencies) and the Node.js dependencies.
+``make develop`` installs the Python package in editable mode (with dev dependencies) and the Node.js dependencies.
 
 Running the dev server
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -43,13 +42,48 @@ To skip authentication during development (see :ref:`Deployment`), set:
 
     TINO_AUTH_DISABLED=true make server
 
+Developing the MCP server
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MCP OAuth requires a public HTTPS URL.
+``localhost`` is not enough because the MCP client needs to reach TINO's well-known endpoints and the OIDC provider needs to redirect back to a real origin.
+
+The easiest way to get one during development is a `Cloudflare Tunnel <https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/>`_ (``cloudflared``):
+
+.. code-block:: bash
+
+    # In one terminal — start TINO with auth enabled:
+    TINO_BASE_URL=https://<tunnel-host> \
+    TINO_MCP_ENABLED=true \
+    TINO_OIDC_DISCOVERY_URL=https://<sso-host>/realms/<realm>/.well-known/openid-configuration \
+    TINO_OIDC_CLIENT_ID=tino \
+    TINO_OIDC_CLIENT_SECRET=<secret> \
+    make server
+
+    # In another terminal — expose localhost via the tunnel:
+    cloudflared tunnel --url http://localhost:8000
+
+.. note::
+
+    ``cloudflared`` prints the temporary public URL (e.g. ``https://random-words.trycloudflare.com``).
+    Use that as ``TINO_BASE_URL``.
+
+.. important::
+
+   The tunnel hostname must be registered as a valid redirect URI in your OIDC provider (e.g. as a ``Valid redirect URIs`` entry in Keycloak).
+   For a persistent hostname, create a `named tunnel <https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/>`_ instead of the quick ``--url`` shortcut.
+
+Once the tunnel is up, point an MCP client at it:
+
+.. code-block:: console
+
+    $ claude mcp add --transport http tino https://<tunnel-host>/mcp
+
 Vendored assets
 ~~~~~~~~~~~~~~~
 
-Some front-end libraries (Prism.js, Yjs) are bundled into the
-``tino/static/js/vendor/`` directory. After modifying
-``tino/static/js/yjs-entry.js`` or updating Node dependencies, rebuild
-with:
+The CodeMirror editor is bundled into ``tino/static/js/vendor/codemirror.js``.
+After modifying ``tino/static/js/codemirror-entry.js`` or updating Node dependencies, rebuild with:
 
 .. code-block:: bash
 
@@ -95,19 +129,15 @@ Or start a live-reloading preview:
 
     make autodocs
 
-This opens the docs in your browser on ``http://localhost:8888`` and
-watches for changes.
+This opens the docs in your browser on ``http://localhost:8888`` and watches for changes.
 
 Building the Docker image
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-    make package
-    make docker-image
-
-``make package`` creates a wheel in ``build/``, which the Dockerfile
-copies into the image.
+    make package            # creates a wheel in ``build/``
+    make docker-image       # copies wheel from ``build/`` into Docker image.
 
 Project layout
 ~~~~~~~~~~~~~~
@@ -115,11 +145,15 @@ Project layout
 ::
 
     tino/
+    ├── app.py              FastAPI application factory
     ├── auth.py             Authentication & OIDC
+    ├── collab.py           Real-time collaboration (Yjs/WebSocket)
     ├── config.py           Environment-based configuration
     ├── dependencies.py     FastAPI dependency injection
+    ├── mcp_server.py       MCP server & OAuth resource server
     ├── middleware.py        ASGI middleware stack
     ├── models.py           Pydantic request/response schemas
+    ├── notifier.py         File-change notifications
     ├── routers/            API endpoint modules
     ├── services/           Business logic (bucket, file, git, compiler, …)
     └── static/             SPA frontend

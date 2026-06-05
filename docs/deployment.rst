@@ -79,15 +79,88 @@ Then bring the stack up with:
 
     docker compose up -d
 
-.. _Authentication setup:
+.. _Standalone:
 
-🔐 Authentication setup
------------------------
+📦 Standalone (without Docker)
+------------------------------
+
+.. warning::
+
+   Running TINO without Docker is **not recommended and unsupported**.
+   You are responsible for managing Python, the Typst CLI, process
+   supervision, and upgrades yourself.  The Docker image is the only
+   officially supported deployment method.
+
+If you cannot use Docker, TINO can be installed as a regular Python package
+and run with Gunicorn.
+
+Prerequisites
+~~~~~~~~~~~~~
+
+- Python 3.14+
+- `Typst CLI <https://github.com/typst/typst>`_ available on ``$PATH``
+- Git with `Git LFS <https://git-lfs.com/>`_
+
+Building the wheel
+~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    make package
+
+This produces a wheel in ``build/`` (e.g. ``build/tino-<version>-py3-none-any.whl``).
+
+Installing
+~~~~~~~~~~
+
+.. code-block:: bash
+
+    pip install build/tino-*.whl
+
+This installs TINO and all its Python dependencies (including Gunicorn and
+Uvicorn).
+
+Running
+~~~~~~~
+
+.. code-block:: bash
+
+    export TINO_BASE_URL=https://tino.example.com
+    export TINO_OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration
+    export TINO_OIDC_CLIENT_SECRET=change-me
+    # … set any other TINO_* variables (see Configuration)
+
+    gunicorn \
+        -k uvicorn.workers.UvicornWorker \
+        -w 1 \
+        -b 0.0.0.0:5000 \
+        'tino:create_app()'
+
+This is the same command the Docker image runs internally.
+
+.. hint::
+
+    See :ref:`Configuration` for the full list of environment variables.
+    Make sure :attr:`TINO_DATA_DIR <tino.config.TINO_DATA_DIR>` points to a
+    writable directory that is backed up regularly.
+
+.. _Integration:
+
+🔗 Integration
+--------------
+
+Reverse proxy
+~~~~~~~~~~~~~
+
+TINO is typically deployed behind a reverse proxy (e.g. nginx, Traefik, Caddy) that terminates TLS.
+
+Set :attr:`TINO_BASE_URL <tino.config.TINO_BASE_URL>` to the public ``https://`` URL the proxy serves TINO on.
+It is used to build OIDC redirect URLs and, when :ref:`MCP <MCP server>` is enabled, as the resource identifier in the OAuth discovery metadata.
 
 OIDC
 ~~~~
 
-TINO requires an OpenID Connect (OIDC) provider for authentication.
+TINO requires an **OAuth 2.0** / OpenID Connect (OIDC) provider for authentication.
 Any provider that supports `OpenID Connect Discovery <https://openid.net/specs/openid-connect-discovery-1_0.html>`_ is supported (e.g. Keycloak, Authentik, Azure AD, Okta, Zitadel).
 
 Register a new client (application) with your OIDC provider:
@@ -111,9 +184,27 @@ Register a new client (application) with your OIDC provider:
 6. Make sure a user matches an admin group (see :attr:`TINO_ADMIN_GROUPS <tino.config.TINO_ADMIN_GROUPS>`)
 7. Set the :attr:`TINO_OIDC_CLIENT_SECRET <tino.config.TINO_OIDC_CLIENT_SECRET>` to the **client secret**
 
-.. hint::
+.. seealso::
 
     See :ref:`Configuration` for the full list of environment variables.
+
+MCP
+~~~
+
+The :ref:`MCP server <MCP server>` is disabled by default.
+To enable it, set :attr:`TINO_MCP_ENABLED <tino.config.TINO_MCP_ENABLED>` to ``true``.
+
+MCP authentication happens via **OAuth 2.0**, and the OIDC provider must support CIMD.
+No additional client registration is needed.
+
+.. note::
+
+    On `Keycloak <https://www.keycloak.org/>`_ this requires version `26.6.0 <https://www.keycloak.org/2026/04/keycloak-2660-released>`_ or later, where `Client ID Metadata Document <https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/>`_ support ships as an experimental feature.
+    Check out the `Client Registration <https://www.keycloak.org/securing-apps/mcp-authz-server#_client_registration>`_ docs for more information.
+
+.. seealso::
+
+    Check out the :ref:`MCP authentication <MCP authentication>` for how the auth flow works, and the :ref:`MCP configuration <MCP configuration>` for the full list of MCP-related settings.
 
 Disabling authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,9 +221,3 @@ For local development, demo environments or external authentication, you can dis
     OIDC configuration is not required in this mode.
 
     In production this is only safe when TINO sits behind a reverse proxy or gateway that already handles authentication (e.g. OAuth2 Proxy, Authelia, or a cloud IAP).
-
-Reverse proxy
-~~~~~~~~~~~~~
-
-TINO is typically deployed behind a reverse proxy (e.g. nginx, Traefik, Caddy) that terminates TLS.
-Set :attr:`TINO_BASE_URL <tino.config.TINO_BASE_URL>` to the public ``https://`` URL the proxy serves TINO on — it is used to build the OIDC redirect URLs.

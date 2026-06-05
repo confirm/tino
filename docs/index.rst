@@ -36,6 +36,7 @@ Built for teams that want to author, review, and publish together.
    usage/fonts
    usage/theming
    usage/api
+   usage/mcp
 
 .. toctree::
    :maxdepth: 1
@@ -52,6 +53,7 @@ Built for teams that want to author, review, and publish together.
    api/models
    api/auth
    api/collab
+   api/mcp_server
    api/middleware
    api/services
    api/routers
