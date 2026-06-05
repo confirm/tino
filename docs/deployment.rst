@@ -68,7 +68,7 @@ To deploy TINO via a simple ``docker`` command, use the following CLI arguments:
 Docker Compose
 ~~~~~~~~~~~~~~
 
-Use the following ``docker-compose.yml`` file to start TINO:
+Use the following ``docker-compose.yml`` `Compose file </docker-compose.yml>`_ to start TINO:
 
 .. literalinclude:: _extras/docker-compose.yml
     :language: yaml
