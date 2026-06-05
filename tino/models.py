@@ -47,7 +47,6 @@ class BucketInfo(BaseModel):
     '''Bucket metadata returned by the API.'''
     slug: str
     description: str
-    created: str | None
     access: list[AccessEntry]
     mcp_instructions: str = ''
 
