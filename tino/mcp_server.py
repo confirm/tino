@@ -138,9 +138,13 @@ class OIDCTokenVerifier(TokenVerifier):  # pylint: disable=too-few-public-method
                 signing_key.key,
                 algorithms=['RS256'],
                 issuer=self._issuer,
-                # Signature, issuer and expiry are validated. The audience is NOT
-                # checked: token-to-resource binding is left to the provider's
-                # configuration. Tighten this once the token's `aud` is known.
+                # Signature, issuer and expiry are validated, but NOT the
+                # audience: Keycloak issues CIMD-flow tokens with no ``aud`` claim
+                # (the ephemeral client has no registered entry to carry an
+                # audience mapper), so there is nothing to bind to. A token issued
+                # to another client in the same realm is therefore accepted here
+                # and constrained only by per-bucket authorization. See ADR-10
+                # and tino#24; enable verify_aud once the provider sets ``aud``.
                 options={'verify_aud': False},
             )
         except jwt.ExpiredSignatureError as exc:
