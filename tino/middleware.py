@@ -9,6 +9,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from . import config
+from .auth import get_api_key_service
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
     '''Redirect unauthenticated requests to the login page (or return 401 for API calls).'''
 
     async def dispatch(self, request, call_next):
-        '''Check session for authentication before forwarding the request.'''
+        '''Reject unauthenticated requests before forwarding to the route.'''
         if config.TINO_AUTH_DISABLED:
             logger.debug('Auth disabled, skipping checks for %s %s',
                          request.method, request.url.path)
@@ -42,35 +43,45 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
 
         path = request.url.path
 
-        # The MCP resource endpoint validates its own OAuth bearer tokens.
+        # Public, static, MCP, and OAuth-discovery paths bypass the session gate.
+        # MCP endpoints validate their own OAuth bearer tokens downstream.
         is_public = path in _PUBLIC_PATHS
         is_static = path.startswith(_STATIC_PREFIXES)
         is_mcp = path.startswith('/mcp')
         is_well_known = path.startswith('/.well-known/')
-        if is_public or is_static or is_mcp or is_well_known:
-            if is_mcp or is_well_known:
-                logger.debug('MCP/well-known auth bypass: %s %s', request.method, path)
-            else:
-                logger.debug('Auth bypass for public/static path: %s', path)
-            return await call_next(request)
+        if not (is_public or is_static or is_mcp or is_well_known):
+            rejection = self._reject_if_unauthenticated(request, path)
+            if rejection is not None:
+                return rejection
 
-        has_bearer = request.headers.get('Authorization', '').startswith('Bearer ')
-        if has_bearer:
-            logger.debug('Bearer token present on non-MCP path: %s %s',
-                         request.method, path)
-        if not request.session.get('user') and not has_bearer:
-            if path.startswith('/api/'):
-                logger.debug('Unauthenticated API request rejected (401): %s %s',
-                             request.method, path)
-                return JSONResponse({'detail': 'Not authenticated'}, status_code=401)
-
-            logger.debug('Unauthenticated browser request redirected to login: %s', path)
-            return RedirectResponse('/login')
-
-        auth_method = 'Bearer token' if has_bearer else 'session cookie'
-        logger.debug('Authenticated request forwarded: %s %s (%s)',
-                     request.method, path, auth_method)
         return await call_next(request)
+
+    @staticmethod
+    def _reject_if_unauthenticated(request, path):
+        '''Return a 401/redirect response if the request lacks valid auth, else ``None``.
+
+        The only valid bearer credential here is a static API key — MCP OAuth
+        tokens target ``/mcp`` (bypassed above). The key is validated at the gate
+        rather than trusting any ``Bearer`` header to reach a route dependency, so
+        a route added without an auth dependency cannot be reached unauthenticated.
+        '''
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            if get_api_key_service().verify(auth_header[7:]) is None:
+                logger.warning('Invalid API key rejected: %s %s', request.method, path)
+                return JSONResponse({'detail': 'Invalid API key'}, status_code=401)
+            return None
+
+        if request.session.get('user'):
+            return None
+
+        if path.startswith('/api/'):
+            logger.debug('Unauthenticated API request rejected (401): %s %s',
+                         request.method, path)
+            return JSONResponse({'detail': 'Not authenticated'}, status_code=401)
+
+        logger.debug('Unauthenticated browser request redirected to login: %s', path)
+        return RedirectResponse('/login')
 
 
 class _TrailingSlashMiddleware:  # pylint: disable=too-few-public-methods
