@@ -4,7 +4,7 @@ import logging
 from importlib.metadata import PackageNotFoundError, version
 
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from starlette.responses import JSONResponse, Response
 
 from .. import config
@@ -111,7 +111,7 @@ async def oauth_protected_resource():
 
 
 @router.get('/.well-known/oauth-authorization-server')
-async def oauth_authorization_server():
+async def oauth_authorization_server(request: Request):
     '''RFC 8414 Authorization Server Metadata proxy for MCP CIMD support.
 
     MCP clients such as Claude select
@@ -148,10 +148,9 @@ async def oauth_authorization_server():
 
     discovery = config.TINO_OIDC_DISCOVERY_URL
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(discovery, timeout=10)
-            resp.raise_for_status()
-            meta = resp.json()
+        resp = await request.app.state.http_client.get(discovery)
+        resp.raise_for_status()
+        meta = resp.json()
     except httpx.HTTPError as exc:
         logger.error('Failed to fetch AS metadata from %s: %s', discovery, exc)
         return JSONResponse({'error': 'upstream unavailable'}, status_code=502)
