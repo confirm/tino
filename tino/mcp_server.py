@@ -185,10 +185,15 @@ class OIDCTokenVerifier(TokenVerifier):  # pylint: disable=too-few-public-method
         )
         _current_user.set(user)
         logger.info('MCP authenticated user: %s', user.username)
+        # ``aud``/``azp``/``client_id`` are logged for auth diagnostics. Keycloak
+        # CIMD tokens carry no ``aud`` (see the ``verify_aud`` note above); ``azp``
+        # holds the client's CIMD URL. ``aud`` uses %r as it may be a string or list.
         logger.debug(
-            'MCP token details: user=%s, email=%s, groups=%s, iss=%s, exp=%s',
+            'MCP token details: user=%s, email=%s, groups=%s, iss=%s, exp=%s, '
+            'aud=%r, azp=%s, client_id=%s',
             user.username, user.email, user.groups,
             claims.get('iss'), claims.get('exp'),
+            claims.get('aud'), claims.get('azp'), claims.get('client_id'),
         )
 
         return AccessToken(
