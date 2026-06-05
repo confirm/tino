@@ -77,3 +77,5 @@ The TINO editor ships with the following features out of the box:
   | Mount your own :ref:`font library <Fonts>` for consistent corporate typography.
 - | **Minimal operations**
   | No database, no object storage. Just a filesystem and your identity provider.
+- | **MCP server** *(experimental)*
+  | Built-in :ref:`Model Context Protocol <MCP server>` server that lets AI agents list, read, write, compile, and commit Typst files — with the same access rules as a human user.
