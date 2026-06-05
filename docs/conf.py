@@ -16,6 +16,7 @@ author    = 'confirm IT'
 html_theme       = 'furo'
 html_static_path = ['_static']
 html_extra_path  = ['_extras']
+html_css_files   = ['custom.css']
 
 html_theme_options = {
     'light_logo': 'logo.svg',

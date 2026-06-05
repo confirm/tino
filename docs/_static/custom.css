@@ -1,0 +1,28 @@
+/*
+ * Landing-page table of contents.
+ *
+ * Flow the section blocks into two balanced columns instead of one tall
+ * vertical stack. Each section (caption + its list) is kept intact within a
+ * single column, and collapses back to one column on narrow screens.
+ */
+
+.toc-columns {
+    columns: 2;
+    column-gap: 2.5rem;
+}
+
+.toc-columns .toctree-wrapper {
+    break-inside: avoid;
+    margin-bottom: 2rem;
+}
+
+/* The first block carries no caption — drop its top margin so columns align. */
+.toc-columns > .toctree-wrapper:first-child > ul {
+    margin-top: 0;
+}
+
+@media (max-width: 46em) {
+    .toc-columns {
+        columns: 1;
+    }
+}

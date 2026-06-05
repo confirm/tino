@@ -1,26 +1,32 @@
-TINO
-======
+TINO docs
+=========
 
 Welcome to the official documentation of TINO - a collaborative, self-hosted editing platform around `Typst <https://typst.app/>`_.
 Built for teams that want to author, review, and publish together.
 
-.. important::
+.. image:: /_static/mascot2.svg
+   :alt: TINO mascot
+   :align: right
+   :width: 300px
 
-   **TINO is not affiliated with** `Typst <https://typst.app/>`_. 
+.. raw:: html
 
-   `Typst`_ develops both the `open-source compiler <https://typst.app/open-source/>`_ and its own commercial web editor at `typst.app <https://typst.app/>`_. TINO would not exist without their open-source compiler — we are grateful for their work and the ecosystem they have created 👏🏻.
-
-   Their editor is more polished, more feature-rich, and backed by commercial support — in many ways it is the better product. If you don't need self-hosting or deep integration with your own infrastructure, we genuinely recommend it — and using it directly supports the people who make the language we all benefit from. TINO exists for teams that require full control over where their documents live.
+   <div class="toc-columns">
 
 .. toctree::
    :maxdepth: 1
 
    introduction
    vision
-   deployment
-   configuration
-   upgrade
    support
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Operations
+
+   operations/deployment
+   operations/configuration
+   operations/upgrade
 
 .. toctree::
    :maxdepth: 1
@@ -58,6 +64,17 @@ Built for teams that want to author, review, and publish together.
    api/services
    api/routers
 
+.. raw:: html
+
+   </div>
+
+.. important::
+
+   **TINO is not affiliated with** `Typst <https://typst.app/>`_. 
+
+   `Typst`_ develops both the `open-source compiler <https://typst.app/open-source/>`_ and its own commercial web editor at `typst.app <https://typst.app/>`_. TINO would not exist without their open-source compiler — we are grateful for their work and the ecosystem they have created 👏🏻.
+
+   Their editor is more polished, more feature-rich, and backed by commercial support — in many ways it is the better product. If you don't need self-hosting or deep integration with your own infrastructure, we genuinely recommend it — and using it directly supports the people who make the language we all benefit from. TINO exists for teams that require full control over where their documents live.
 
 .. ifconfig:: todo_include_todos
 
