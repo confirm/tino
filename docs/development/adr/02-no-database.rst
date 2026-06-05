@@ -29,7 +29,8 @@ There is no database process, schema, migration, or connection pool.
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **Zero dependencies**
   | Deploy with a single container and a volume — no database process, schema, or connection pool.
@@ -38,7 +39,8 @@ Consequences
 - | **Inspectable**
   | All state is readable and editable with standard tools (``cat``, ``git``, ``vim``).
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **No rich querying**
   | Listing buckets iterates the directory. Acceptable at the scale TINO targets (tens to low hundreds of buckets).

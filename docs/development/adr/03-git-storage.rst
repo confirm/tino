@@ -23,7 +23,8 @@ TINO uses `GitPython <https://gitpython.readthedocs.io/>`_ to drive git operatio
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **Full history**
   | Every change carries an author, timestamp, and commit message — for free.
@@ -39,7 +40,8 @@ Consequences
   | Should direct repository access ever be desired the infrastructure is already in place.
   | Git is a well-understood, widely supported interface to build on.
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **Write serialisation**
   | The working tree and index must be managed carefully to avoid lock contention under concurrent writes — TINO serialises per-slug writes with a threading lock.

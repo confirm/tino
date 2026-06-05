@@ -19,7 +19,8 @@ Users switch between buckets explicitly; there is no global file tree spanning m
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **Isolation**
   | Each bucket is self-contained — its history, access rules, and files are independent of every other bucket.
@@ -30,7 +31,8 @@ Consequences
 - | **Independent history**
   | Commits, diffs, and restores are scoped to a single bucket, keeping history clean and relevant.
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **No cross-bucket operations**
   | Files cannot be shared or referenced across buckets. 

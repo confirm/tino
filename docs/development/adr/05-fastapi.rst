@@ -26,7 +26,8 @@ There is no separate build pipeline, reverse proxy (in development), or inter-se
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **Simple deployment**
   | A single container with a single volume is all that is needed — no service mesh, no orchestration, no inter-service networking to configure.
@@ -43,7 +44,8 @@ Consequences
 - | **No distributed state**
   | The Yjs collaboration manager, the file service, and the API all share the same process memory — no message broker or shared cache required.
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **Younger ecosystem**
   | FastAPI is newer than Flask or Django; some integrations and patterns are less established.

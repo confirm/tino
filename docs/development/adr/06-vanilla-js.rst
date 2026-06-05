@@ -20,7 +20,8 @@ CSS is hand-written; no utility framework is used.
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **No build toolchain**
   | No npm, no bundler, no transpiler in the development loop. Edit a file, reload the browser.
@@ -35,7 +36,8 @@ Consequences
 - | **AI-friendly**
   | Plain JS is an excellent foundation for AI-assisted development: no framework abstractions, no transpilation layer, and no generated code for the model to reason through — just files the AI can read, edit, and reload directly.
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **Manual DOM updates**
   | No reactive data binding — DOM updates are written by hand. Manageable at TINO's current UI complexity, but would become painful if the interface grew significantly.

@@ -24,7 +24,8 @@ Rooms are evicted after a configurable TTL (``TINO_ROOM_TTL``) of inactivity.
 Consequences
 ------------
 
-**Positive**
+Positive
+~~~~~~~~
 
 - | **Conflict-free merges**
   | Merges are automatic and instantaneous — no conflict dialogs, ever.
@@ -35,7 +36,8 @@ Consequences
 - | **Battle-tested**
   | The CRDT model is well-studied and Yjs is widely deployed in production.
 
-**Negative**
+Negative
+~~~~~~~~
 
 - | **In-memory state**
   | The server holds live document state for each active room — memory usage scales with the number of concurrently open files.
