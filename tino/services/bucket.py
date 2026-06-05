@@ -3,7 +3,6 @@
 import logging
 import shutil
 import threading
-from datetime import datetime, timezone
 from pathlib import Path
 
 import git
@@ -55,24 +54,6 @@ class BucketService:
             yaml.dump(meta, default_flow_style=False),
         )
 
-    @staticmethod
-    def _get_created(path: Path) -> str | None:
-        '''Derive the creation timestamp from the initial commit of .meta.yml.'''
-        try:
-            repo = git.Repo(path)
-            try:
-                commits = list(repo.iter_commits(paths=META_FILE, max_count=1))
-                if commits:
-                    ts = datetime.fromtimestamp(commits[-1].committed_date, tz=timezone.utc)
-                    return ts.isoformat()
-            finally:
-                repo.close()
-
-        except (git.InvalidGitRepositoryError, git.GitCommandError):
-            pass
-
-        return None
-
     def _to_info(self, slug: str, path: Path) -> BucketInfo:
         '''Build a BucketInfo response from the bucket directory on disk.'''
         meta = self._read_meta(path)
@@ -80,7 +61,6 @@ class BucketService:
         return BucketInfo(
             slug=slug,
             description=meta.get('description', ''),
-            created=self._get_created(path),
             access=[AccessEntry(**a) for a in meta.get('access', [])],
             mcp_instructions=meta.get('mcp_instructions', ''),
         )
