@@ -10,6 +10,11 @@
    It depends on your OIDC provider acting as a :ref:`CIMD-capable authorisation server <MCP authentication>`,
    and the surrounding ecosystem is still stabilising.
 
+   There are also 2 known issues ocurred during the development in combination with Keycloak:
+
+   - `Keycloak missing "none" in token_endpoint_auth_methods_supported breaks MCP CIMD <https://github.com/confirm/tino/issues/23>`_
+   - `Keycloak CIMD tokens omit aud, so MCP access tokens aren't audience-bound to TINO <https://github.com/confirm/tino/issues/24>`_
+
    It is disabled by default — enable it at your own risk.
 
 .. seealso::

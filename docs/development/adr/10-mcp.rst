@@ -73,16 +73,17 @@ Negative
 - | **Provider must support CIMD**
   | The identity provider has to act as a CIMD-capable MCP authorization server.
   | CIMD is an emerging and still-experimental OAuth 2.0 / MCP capability.
-- | **Discovery metadata proxy** 
-  | Keycloak does not advertise the required ``"none"`` in ``token_endpoint_auth_methods_supported``.
-  | TINO must work around this by proxying the authorization server metadata and injecting the missing value into the ``token_endpoint_auth_methods_supported`` (see `tino#23 <https://github.com/confirm/tino/issues/23>`_).
-  | This adds complexity, and authentication logic which shouldn't be part of TINO.
-  | The proxy can be removed once `keycloak#49730 <https://github.com/keycloak/keycloak/issues/49730>`_ is resolved upstream.
 - | **Maturing ecosystem**
   | Both the CIMD draft and MCP OAuth client support are still stabilising.
   | Interoperability can vary between versions and vendors.
-- | **Audience binding is provider-specific**
-  | Strict resource-audience validation depends on how the provider maps audiences onto issued tokens, and must be configured there rather than in TINO.
+- | **Discovery metadata proxy**
+  | Not every provider advertises the required ``"none"`` in ``token_endpoint_auth_methods_supported``. Keycloak, for example, omits it (see `tino#23 <https://github.com/confirm/tino/issues/23>`_ & `keycloak#49730 <https://github.com/keycloak/keycloak/issues/49730>`_).
+  | Where it is missing, TINO must work around it by proxying the authorization server metadata and injecting the value, which adds (authentication) complexity TINO shouldn't have.
+  | The proxy can be removed once the providers advertise ``"none"`` natively (tracked in `tino#23`_).
+- | **No audience binding**
+  | A provider may issue CIMD-flow tokens without an ``aud`` claim — the ephemeral client has no registered entry to carry an audience mapper. Keycloak, for example, omits it (see `tino#24 <https://github.com/confirm/tino/issues/24>`_).
+  | Without ``aud``, TINO cannot bind a token to the ``/mcp`` resource: a valid token issued to another client in the same realm is accepted, constrained only by TINO's per-bucket authorization.
+  | Strict audience validation must first be enabled on the provider — via `RFC 8707 <https://datatracker.ietf.org/doc/html/rfc8707>`_ resource indicators that stamp the requested resource into ``aud`` — before TINO can enforce it (for Keycloak, tracked in `tino#24`_, resp. `keycloak#41526 <https://github.com/keycloak/keycloak/issues/41526>`_).
 
 .. note::
 
