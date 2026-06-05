@@ -99,11 +99,6 @@ TINO_FONT_DIR = Path(environ.get('TINO_FONT_DIR', _DEFAULT_FONT_DIR))
 #: The externally reachable address of this instance.
 TINO_BASE_URL = (environ.get('TINO_BASE_URL') or '').rstrip('/') or None
 
-#: When set to ``true``, authentication is completely disabled.
-#: All requests are treated as an admin user without requiring OIDC.
-#: Intended for local development and demo environments only.
-TINO_AUTH_DISABLED = environ.get('TINO_AUTH_DISABLED', '').lower() in _TRUEISH
-
 #: ⭕ Secret key for signing session cookies.
 #:
 #: .. hint::
