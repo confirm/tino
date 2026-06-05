@@ -17,6 +17,8 @@ __all__ = (
     'TINO_DEFAULT_ROLE',
     'TINO_FONT_DIR',
     'TINO_LOG_LEVEL',
+    'TINO_MCP_ENABLED',
+    'TINO_MCP_INSTRUCTIONS',
     'TINO_OIDC_CLIENT_ID',
     'TINO_OIDC_CLIENT_SECRET',
     'TINO_OIDC_DISCOVERY_URL',
@@ -33,6 +35,8 @@ from os import environ
 from pathlib import Path
 from secrets import token_hex
 from sys import exit as sys_exit
+
+_TRUEISH = {'1', 'true', 'yes'}
 
 
 # ----- 📂 Directories -----
@@ -89,18 +93,16 @@ _DEFAULT_FONT_DIR = str(TINO_DATA_DIR / 'fonts')
 TINO_FONT_DIR = Path(environ.get('TINO_FONT_DIR', _DEFAULT_FONT_DIR))
 
 
-# ----- 🔗 Connection settings -----
+# ----- 🔐 Security settings -----
 
 #: 🔴 TINO's public base URL (e.g. ``https://tino.example.com``), without a trailing path.
 #: The externally reachable address of this instance.
 TINO_BASE_URL = (environ.get('TINO_BASE_URL') or '').rstrip('/') or None
 
-# ----- 🔐 Security settings -----
-
 #: When set to ``true``, authentication is completely disabled.
 #: All requests are treated as an admin user without requiring OIDC.
 #: Intended for local development and demo environments only.
-TINO_AUTH_DISABLED = environ.get('TINO_AUTH_DISABLED', '').lower() in {'1', 'true', 'yes'}
+TINO_AUTH_DISABLED = environ.get('TINO_AUTH_DISABLED', '').lower() in _TRUEISH
 
 #: ⭕ Secret key for signing session cookies.
 #:
@@ -109,6 +111,11 @@ TINO_AUTH_DISABLED = environ.get('TINO_AUTH_DISABLED', '').lower() in {'1', 'tru
 #:  This is secure, but it will invalidate all existing sessions and forces users to log in again
 #:  after a container restart.
 TINO_SECRET_KEY = environ.get('TINO_SECRET_KEY', token_hex(32))
+
+#: When set to ``true``, authentication is completely disabled.
+#: All requests are treated as an admin user without requiring OIDC.
+#: Intended for local development and demo environments only.
+TINO_AUTH_DISABLED = environ.get('TINO_AUTH_DISABLED', '').lower() in _TRUEISH
 
 #: ⭕ The default role for authenticated users on buckets without an access list.
 #: Must be one of ``viewer``, ``editor``, ``committer``, or ``none``.
@@ -133,6 +140,20 @@ TINO_OIDC_CLIENT_SECRET = environ.get('TINO_OIDC_CLIENT_SECRET')
 
 #: ⭕ The OIDC token claim that contains the user's group memberships.
 TINO_OIDC_GROUPS_CLAIM = environ.get('TINO_OIDC_GROUPS_CLAIM', 'groups')
+
+
+# ----- 🤖 MCP -----
+
+#: When set to ``true``, the :ref:`MCP <MCP server>` server is mounted at ``/mcp``.
+#:
+#: .. warning::
+#:  The MCP server is **experimental** and disabled by default.
+TINO_MCP_ENABLED = environ.get('TINO_MCP_ENABLED', '').lower() in _TRUEISH
+
+#: Optional additional instructions appended to the built-in MCP server instructions.
+#: Use this to provide global context to AI agents connecting via MCP
+#: (e.g. house style, terminology, or organisational policies).
+TINO_MCP_INSTRUCTIONS = environ.get('TINO_MCP_INSTRUCTIONS') or None
 
 
 # ----- ⚙️ Application settings -----
@@ -162,7 +183,6 @@ TINO_LOG_LEVEL = environ.get('TINO_LOG_LEVEL', 'INFO')
 
 
 # ----- Sanity checks -----
-
 
 def sanity_checks():  # pylint: disable=too-complex,too-many-branches
     '''Validate all required settings on startup. Exits with code 1 if any are missing.'''
@@ -199,6 +219,11 @@ def sanity_checks():  # pylint: disable=too-complex,too-many-branches
 
         if not TINO_OIDC_GROUPS_CLAIM:
             errors['TINO_OIDC_GROUPS_CLAIM'] = 'Set to the OIDC group claim'
+
+        if TINO_MCP_ENABLED and not TINO_BASE_URL:
+            errors['TINO_BASE_URL'] = (
+                "Set to TINO's public base URL (or disable MCP with TINO_MCP_ENABLED=false)"
+            )
 
     _valid_roles = {'viewer', 'editor', 'committer', 'none'}
     if TINO_DEFAULT_ROLE not in _valid_roles:

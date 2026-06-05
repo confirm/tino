@@ -55,7 +55,10 @@ async def create_bucket(
 ):
     '''Create a new bucket (initializes a git repo with .meta.yml).'''
     try:
-        result = svc.create(body.slug, body.description, body.access, user=user)
+        result = svc.create(
+            body.slug, body.description, body.access,
+            mcp_instructions=body.mcp_instructions, user=user,
+        )
         logger.info('Bucket created: %s (user: %s)', body.slug, user.username)
         return result
     except FileExistsError as exc:
@@ -73,7 +76,10 @@ async def update_bucket(
     svc: BucketService = Depends(get_bucket_service),
 ):
     '''Update a bucket's description or access rules.'''
-    bucket = svc.update(slug, body.description, body.access, user=user)
+    bucket = svc.update(
+        slug, body.description, body.access,
+        mcp_instructions=body.mcp_instructions, user=user,
+    )
 
     if not bucket:
         logger.warning('Bucket update rejected: %s not found (user: %s)', slug, user.username)

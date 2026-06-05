@@ -11,6 +11,8 @@ from . import config
 from .auth import router as auth_router
 from .auth import setup_oauth
 from .dependencies import get_collab_manager
+from .mcp_server import mcp as mcp_server
+from .mcp_server import mcp_asgi_app
 from .middleware import register_middleware
 from .routers import api_keys, buckets, collab
 from .routers import compile as compile_router
@@ -42,7 +44,18 @@ async def lifespan(_app: FastAPI):
     collab_mgr = get_collab_manager()
     collab_mgr.start()
 
-    yield
+    if config.TINO_MCP_ENABLED:
+        logger.info('MCP server enabled, starting session manager')
+        # The MCP Streamable HTTP session manager must run for the lifetime of
+        # the app. Mounted sub-apps don't get their lifespan invoked, so we run
+        # it here within TINO's own lifespan.
+        async with mcp_server.session_manager.run():
+            logger.info('MCP session manager started')
+            yield
+            logger.info('MCP session manager shutting down')
+    else:
+        logger.debug('MCP server disabled')
+        yield
 
     await collab_mgr.shutdown()
 
@@ -74,6 +87,13 @@ def create_app() -> FastAPI:
     app.include_router(templates.router)
 
     register_middleware(app)
+
+    if config.TINO_MCP_ENABLED:
+        auth_mode = 'no-auth' if config.TINO_AUTH_DISABLED else 'OAuth'
+        logger.info('Mounting MCP sub-app at /mcp (auth_mode=%s)', auth_mode)
+        app.mount('/mcp', mcp_asgi_app, name='mcp')
+    else:
+        logger.debug('MCP endpoint not mounted (TINO_MCP_ENABLED is false)')
 
     app.mount('/', StaticFiles(directory=_STATIC_DIR, html=True), name='frontend')
 

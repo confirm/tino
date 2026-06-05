@@ -42,7 +42,16 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
 
         path = request.url.path
 
-        if path in _PUBLIC_PATHS or path.startswith(_STATIC_PREFIXES):
+        # The MCP resource endpoint validates its own OAuth bearer tokens.
+        is_public = path in _PUBLIC_PATHS
+        is_static = path.startswith(_STATIC_PREFIXES)
+        is_mcp = path.startswith('/mcp')
+        is_well_known = path.startswith('/.well-known/')
+        if is_public or is_static or is_mcp or is_well_known:
+            if is_mcp or is_well_known:
+                logger.debug('MCP/well-known auth bypass: %s %s', request.method, path)
+            else:
+                logger.debug('Auth bypass for public/static path: %s', path)
             return await call_next(request)
 
         has_bearer = request.headers.get('Authorization', '').startswith('Bearer ')
@@ -64,6 +73,23 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
         return await call_next(request)
 
 
+class _TrailingSlashMiddleware:  # pylint: disable=too-few-public-methods
+    '''Append a trailing slash to ``/mcp`` so the Starlette Mount matches.
+
+    Starlette's ``Mount('/mcp')`` compiles to a regex that requires at least
+    ``/mcp/``.  Bare ``/mcp`` falls through to the static-files catch-all and
+    returns 405.  This ASGI middleware rewrites the path in-place — no redirect.
+    '''
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope['type'] == 'http' and scope.get('path') == '/mcp':
+            scope['path'] = '/mcp/'
+        await self.app(scope, receive, send)
+
+
 def register_middleware(app: FastAPI) -> None:
     '''Attach session and auth middleware to the application.
 
@@ -73,3 +99,4 @@ def register_middleware(app: FastAPI) -> None:
     app.add_middleware(AuthMiddleware)
     secret_key = config.TINO_SECRET_KEY or secrets.token_hex(32)
     app.add_middleware(SessionMiddleware, secret_key=secret_key)
+    app.add_middleware(_TrailingSlashMiddleware)
