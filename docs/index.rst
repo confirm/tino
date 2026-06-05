@@ -7,7 +7,7 @@ Built for teams that want to author, review, and publish together.
 .. image:: /_static/mascot2.svg
    :alt: TINO mascot
    :align: right
-   :width: 300px
+   :width: 250px
 
 .. raw:: html
 
