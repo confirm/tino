@@ -13,21 +13,16 @@ It is not a full changelog; only changes that ask something of you are recorded 
   Review this page before upgrading.
   Some releases add **required** settings that TINO refuses to start without, so an upgrade can otherwise fail at boot.
 
-main
-----
-
-.. warning::
-
-  The ``main`` changes are unreleased and subject to change at any time.
-  Once finalised, they will be moved into a versioned section below.
+1.13.0
+------
 
 ``TINO_BASE_URL`` is now required
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TINO no longer derives its public address from the incoming request and reverse-proxy headers.
-You must set :attr:`TINO_BASE_URL <tino.config.TINO_BASE_URL>` to the externally reachable URL of your instance, e.g. ``https://tino.example.com``.
+TINO no longer derives its public address from the incoming request and reverse-proxy headers:
 
-``TINO_TRUSTED_PROXIES`` has been **removed**, so you can drop it from your configuration.
+- You must set :attr:`TINO_BASE_URL <tino.config.TINO_BASE_URL>` to the externally reachable URL of your instance.
+- ``TINO_TRUSTED_PROXIES`` has been **removed**, so you can drop it from your configuration.
 
 .. note:: 
 
