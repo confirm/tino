@@ -28,7 +28,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
 from . import config
-from .auth import resolve_role
+from .auth import ROLE_HIERARCHY, resolve_role
 from .dependencies import get_bucket_service, get_compiler_service, get_file_service, \
     get_git_service, get_notifier
 from .models import User
@@ -38,7 +38,6 @@ logger = logging.getLogger(__name__)
 #: The authenticated user for the in-flight MCP request.
 _current_user: ContextVar[User | None] = ContextVar('mcp_user', default=None)
 
-_ROLE_RANK = {'viewer': 0, 'editor': 1, 'committer': 2}
 _DISCOVERY_SUFFIX = '/.well-known/openid-configuration'
 
 _INSTRUCTIONS = '''\
@@ -292,7 +291,7 @@ def _require(slug: str, min_role: str) -> User:
         raise FileNotFoundError(f'Bucket not found: {slug}')
 
     role = resolve_role(user, bucket.access, slug)
-    if role is None or _ROLE_RANK[role] < _ROLE_RANK[min_role]:
+    if role is None or ROLE_HIERARCHY[role] < ROLE_HIERARCHY[min_role]:
         logger.warning(
             'MCP authorization denied: user=%s, bucket=%s, required=%s, actual=%s',
             user.username, slug, min_role, role,
