@@ -4,6 +4,7 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import httpx
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
@@ -44,6 +45,10 @@ async def lifespan(_app: FastAPI):
     collab_mgr = get_collab_manager()
     collab_mgr.start()
 
+    # One shared HTTP client for TINO's outbound calls (the MCP discovery proxy),
+    # reused across requests instead of constructed per call.
+    _app.state.http_client = httpx.AsyncClient(timeout=10)
+
     if config.TINO_MCP_ENABLED:
         logger.info('MCP server enabled, starting session manager')
         # The MCP Streamable HTTP session manager must run for the lifetime of
@@ -57,6 +62,7 @@ async def lifespan(_app: FastAPI):
         logger.debug('MCP server disabled')
         yield
 
+    await _app.state.http_client.aclose()
     await collab_mgr.shutdown()
 
 
