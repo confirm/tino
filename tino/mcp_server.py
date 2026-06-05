@@ -29,8 +29,8 @@ from mcp.server.transport_security import TransportSecuritySettings
 
 from . import config
 from .auth import ROLE_HIERARCHY, resolve_role
-from .dependencies import get_bucket_service, get_compiler_service, get_file_service, \
-    get_git_service, get_notifier
+from .dependencies import get_bucket_service, get_collab_manager, get_compiler_service, \
+    get_file_service, get_git_service, get_notifier
 from .models import User
 
 logger = logging.getLogger(__name__)
@@ -359,8 +359,14 @@ def read_file(bucket: str, path: str) -> str:
     '''Read the text content of a file in a bucket.'''
     logger.debug('MCP read_file called: bucket=%s, path=%s', bucket, path)
     _require(bucket, 'viewer')
-    result = get_file_service().read(bucket, path)
 
+    # If the file is open in the web UI, return the live collab-room content so
+    # reads reflect unsaved edits rather than the (older) on-disk copy.
+    live = get_collab_manager().get_content(bucket, path)
+    if live is not None:
+        return live
+
+    result = get_file_service().read(bucket, path)
     if result is None:
         raise FileNotFoundError(f'File not found: {bucket}/{path}')
     if result.get('binary'):
@@ -378,6 +384,9 @@ async def write_file(bucket: str, path: str, content: str) -> dict:
     if modified is None:
         raise ValueError(f'Invalid path: {path}')
 
+    # Push the new content into any open collab room so connected web-UI clients
+    # see it, and the room's eventual flush doesn't overwrite this write.
+    await get_collab_manager().reload_rooms(bucket, [path])
     logger.info('MCP wrote %s/%s (user: %s)', bucket, path, user.username)
     await get_notifier().notify(bucket)
     return {'path': path, 'modified': modified}
@@ -388,8 +397,11 @@ async def delete_file(bucket: str, path: str) -> dict:
     '''Delete a file from a bucket. Requires the editor role.'''
     user = _require(bucket, 'editor')
 
-    if not get_file_service().delete(bucket, path):
-        raise FileNotFoundError(f'File not found: {bucket}/{path}')
+    # Evict any open collab room (without flushing) around the delete, so a
+    # pending flush can't re-create the file the tool just removed.
+    async with get_collab_manager().lock_path(bucket, path):
+        if not get_file_service().delete(bucket, path):
+            raise FileNotFoundError(f'File not found: {bucket}/{path}')
 
     logger.info('MCP deleted %s/%s (user: %s)', bucket, path, user.username)
     await get_notifier().notify(bucket)
