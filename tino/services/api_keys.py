@@ -34,19 +34,44 @@ class ApiKeyService:
 
     def __init__(self, path: Path) -> None:
         self._path = path
+        self._cache_mtime: float | None = None
+        self._keys: list[dict] = []
+        self._by_hash: dict[str, dict] = {}
 
     # ── Private helpers ──
 
     def _load(self) -> list[dict]:
-        if not self._path.exists():
-            return []
-        with open(self._path, encoding='utf-8') as f:
-            data = yaml.safe_load(f) or {}
-        return data.get('keys', [])
+        '''Return all key records, re-reading the file only when it has changed.
+
+        The parsed keys and a ``hash → record`` index are cached and refreshed
+        when the file's mtime changes (or after a local write, which clears the
+        cached mtime). This keeps :meth:`verify` an O(1) in-memory lookup on the
+        per-request hot path instead of a disk read plus YAML parse every time.
+        '''
+        try:
+            mtime = self._path.stat().st_mtime
+        except FileNotFoundError:
+            self._keys = []
+            self._by_hash = {}
+            self._cache_mtime = None
+            return self._keys
+
+        if mtime != self._cache_mtime:
+            with open(self._path, encoding='utf-8') as f:
+                data = yaml.safe_load(f) or {}
+            self._keys = data.get('keys', [])
+            self._by_hash = {k['hash']: k for k in self._keys if 'hash' in k}
+            self._cache_mtime = mtime
+
+        return self._keys
 
     def _save(self, keys: list[dict]) -> None:
         with open(self._path, 'w', encoding='utf-8') as f:
             yaml.dump({'keys': keys}, f, default_flow_style=False, allow_unicode=True)
+        # Force the next _load to re-read and rebuild the index. Clearing the
+        # mtime (rather than trusting the freshly written one) avoids a stale
+        # read if two writes land within the filesystem's mtime resolution.
+        self._cache_mtime = None
 
     @staticmethod
     def _strip_hash(record: dict) -> dict:
@@ -67,8 +92,7 @@ class ApiKeyService:
             'created': str(date.today()),
             'access': access,
         }
-        keys = self._load()
-        keys.append(record)
+        keys = [*self._load(), record]
         self._save(keys)
         logger.info('API key created: %s (%s)', record['id'], label)
         return raw, self._strip_hash(record)
@@ -77,11 +101,9 @@ class ApiKeyService:
         '''Return the key record for *token*, or ``None`` if the token is invalid.'''
         if not token.startswith(_TOKEN_PREFIX):
             return None
-        h = _hash(token)
-        for key in self._load():
-            if key.get('hash') == h:
-                return self._strip_hash(key)
-        return None
+        self._load()
+        record = self._by_hash.get(_hash(token))
+        return self._strip_hash(record) if record is not None else None
 
     def list_keys(self) -> list[dict]:
         '''Return all key records without hashes.'''
