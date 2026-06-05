@@ -4,7 +4,8 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from ..dependencies import get_api_keys_service, require_global_admin
+from ..auth import get_api_key_service
+from ..dependencies import require_global_admin
 from ..models import ApiKeyCreate, ApiKeyCreated, ApiKeyInfo
 from ..services.api_keys import ApiKeyService
 
@@ -16,7 +17,7 @@ router = APIRouter(prefix='/api/keys', tags=['api-keys'])
 @router.get('', response_model=list[ApiKeyInfo])
 async def list_keys(
     user=Depends(require_global_admin),
-    svc: ApiKeyService = Depends(get_api_keys_service),
+    svc: ApiKeyService = Depends(get_api_key_service),
 ):
     '''List all API keys (metadata only — tokens are never returned after creation).'''
     logger.debug('Listing API keys (user: %s)', user.username)
@@ -27,7 +28,7 @@ async def list_keys(
 async def create_key(
     body: ApiKeyCreate,
     user=Depends(require_global_admin),
-    svc: ApiKeyService = Depends(get_api_keys_service),
+    svc: ApiKeyService = Depends(get_api_key_service),
 ):
     '''Create a new API key.
 
@@ -44,7 +45,7 @@ async def update_key(
     key_id: str,
     body: ApiKeyCreate,
     user=Depends(require_global_admin),
-    svc: ApiKeyService = Depends(get_api_keys_service),
+    svc: ApiKeyService = Depends(get_api_key_service),
 ):
     '''Update the label and/or access map of an existing API key.'''
     result = svc.update(key_id, body.label, body.access)
@@ -58,7 +59,7 @@ async def update_key(
 async def revoke_key(
     key_id: str,
     user=Depends(require_global_admin),
-    svc: ApiKeyService = Depends(get_api_keys_service),
+    svc: ApiKeyService = Depends(get_api_key_service),
 ):
     '''Revoke (permanently delete) an API key.'''
     if not svc.revoke(key_id):

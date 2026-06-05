@@ -5,7 +5,7 @@ from functools import lru_cache
 from fastapi import Depends, HTTPException
 
 from . import config
-from .auth import check_access, get_api_key_service, get_current_user, is_global_admin
+from .auth import check_access, get_current_user, is_global_admin
 from .collab import CollabManager
 from .models import User
 from .notifier import BucketNotifier
@@ -100,8 +100,3 @@ def get_collab_manager() -> CollabManager:
 require_viewer    = _require_role('viewer')
 require_editor    = _require_role('editor')
 require_committer = _require_role('committer')
-
-
-def get_api_keys_service():
-    '''Return the global :class:`~tino.services.api_keys.ApiKeyService` instance.'''
-    return get_api_key_service()
