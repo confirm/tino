@@ -16,6 +16,11 @@ It is not a full changelog; only changes that ask something of you are recorded 
 main
 ----
 
+.. warning::
+
+  The ``main`` changes are unreleased and subject to change at any time.
+  Once finalised, they will be moved into a versioned section below.
+
 ``TINO_BASE_URL`` is now required
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
