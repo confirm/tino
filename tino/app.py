@@ -51,6 +51,7 @@ def create_app() -> FastAPI:
     logging.basicConfig(
         level=config.TINO_LOG_LEVEL,
         format='%(levelname)-8s %(name)s  %(message)s',
+        force=True,
     )
     logging.getLogger('git').setLevel(logging.WARNING)
     logging.getLogger('httpcore').setLevel(logging.WARNING)
