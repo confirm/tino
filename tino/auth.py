@@ -34,6 +34,7 @@ def get_api_key_service() -> ApiKeyService:
 
 async def setup_oauth():
     '''Register the OIDC provider with authlib and pre-fetch discovery metadata.'''
+    logger.info('Registering OIDC provider: %s', config.TINO_OIDC_DISCOVERY_URL)
     oauth.register(
         name='oidc',
         client_id=config.TINO_OIDC_CLIENT_ID,
@@ -42,6 +43,7 @@ async def setup_oauth():
         client_kwargs={'scope': 'openid email profile'},
     )
     await oauth.oidc.load_server_metadata()
+    logger.info('OIDC provider ready (client_id=%s)', config.TINO_OIDC_CLIENT_ID)
 
 
 _NOAUTH_USER = User(
@@ -54,6 +56,7 @@ _NOAUTH_USER = User(
 def get_current_user(request: Request) -> User:
     '''Extract the authenticated user from the session or an API key Bearer token.'''
     if config.TINO_AUTH_DISABLED:
+        logger.debug('Auth disabled, returning noauth user')
         return _NOAUTH_USER
 
     auth_header = request.headers.get('Authorization', '')
@@ -61,6 +64,7 @@ def get_current_user(request: Request) -> User:
         token = auth_header[7:]
         key = _api_key_service.verify(token)
         if key is None:
+            logger.warning('Invalid API key from %s', request.url.path)
             raise HTTPException(401, 'Invalid API key')
         logger.debug('API key auth: %s (%s)', key['id'], key.get('label', ''))
         return User(
@@ -72,6 +76,7 @@ def get_current_user(request: Request) -> User:
 
     user_data = request.session.get('user')
     if not user_data:
+        logger.debug('No session user for %s', request.url.path)
         raise HTTPException(401, 'Not authenticated')
     return User(**user_data)
 

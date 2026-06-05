@@ -1,5 +1,6 @@
 '''HTTP middleware for authentication enforcement.'''
 
+import logging
 import secrets
 
 from fastapi import FastAPI
@@ -8,6 +9,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from . import config
+
+logger = logging.getLogger(__name__)
 
 _PUBLIC_PATHS = {
     '/api/config',
@@ -33,6 +36,8 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
     async def dispatch(self, request, call_next):
         '''Check session for authentication before forwarding the request.'''
         if config.TINO_AUTH_DISABLED:
+            logger.debug('Auth disabled, skipping checks for %s %s',
+                         request.method, request.url.path)
             return await call_next(request)
 
         path = request.url.path
@@ -41,12 +46,21 @@ class AuthMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-meth
             return await call_next(request)
 
         has_bearer = request.headers.get('Authorization', '').startswith('Bearer ')
+        if has_bearer:
+            logger.debug('Bearer token present on non-MCP path: %s %s',
+                         request.method, path)
         if not request.session.get('user') and not has_bearer:
             if path.startswith('/api/'):
+                logger.debug('Unauthenticated API request rejected (401): %s %s',
+                             request.method, path)
                 return JSONResponse({'detail': 'Not authenticated'}, status_code=401)
 
+            logger.debug('Unauthenticated browser request redirected to login: %s', path)
             return RedirectResponse('/login')
 
+        auth_method = 'Bearer token' if has_bearer else 'session cookie'
+        logger.debug('Authenticated request forwarded: %s %s (%s)',
+                     request.method, path, auth_method)
         return await call_next(request)
 
 

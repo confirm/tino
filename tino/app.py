@@ -37,6 +37,7 @@ async def lifespan(_app: FastAPI):
 
     if not config.TINO_AUTH_DISABLED:
         await setup_oauth()
+        logger.info('OAuth setup complete')
 
     collab_mgr = get_collab_manager()
     collab_mgr.start()
