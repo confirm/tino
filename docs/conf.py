@@ -1,5 +1,12 @@
+import logging
 from os import environ
 from datetime import date
+
+# autodoc imports the tino.* modules — tino.mcp_server builds its ASGI app at
+# import time and logs while doing so. Silence the application logger so those
+# INFO/WARNING lines don't clutter the docs build; Sphinx's own warnings use a
+# separate logger and remain visible.
+logging.getLogger('tino').setLevel(logging.ERROR)
 
 #
 # ⚙️ Generic options.
