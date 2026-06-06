@@ -100,7 +100,11 @@ jobs:
         with:
           python-version: '3.14'
       - run: pip install -e .[develop]
+      # Build with the container's data dir so the auto-generated config
+      # reference documents the /data defaults, not the runner's checkout path.
       - run: make docs
+        env:
+          TINO_DATA_DIR: /data
       - uses: actions/upload-pages-artifact@v5
         with:
           path: build/docs/
