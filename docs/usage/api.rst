@@ -16,4 +16,4 @@ Authentication
 ~~~~~~~~~~~~~~
 
 Browser-based clients use the OIDC session cookie. Non-interactive clients —
-scripts and CI — authenticate with an :ref:`API key <API keys>` instead.
+scripts and CI — authenticate with an :ref:`API key <usage/authentication:API keys>` instead.

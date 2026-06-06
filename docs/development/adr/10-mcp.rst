@@ -6,7 +6,7 @@ ADR-10: MCP server
 Context
 -------
 
-TINO's :ref:`vision <AI integration>` is to make document production a first-class participant in AI workflows.
+TINO's :ref:`vision <vision:TINO as the glue for AI integration>` is to make document production a first-class participant in AI workflows.
 The `Model Context Protocol <https://modelcontextprotocol.io/>`_ (MCP) has emerged as the standard way to expose an application's capabilities as tools an AI model can call.
 
 Two questions had to be answered:
@@ -23,7 +23,7 @@ They discover an authorization server and obtain a ``client_id`` through one of 
 Decision
 --------
 
-TINO embeds the MCP server in the main FastAPI process as a Streamable HTTP sub-application mounted at ``/mcp``, reusing the existing :ref:`services <Architecture>` and :ref:`access model <Access control>`.
+TINO embeds the MCP server in the main FastAPI process as a Streamable HTTP sub-application mounted at ``/mcp``, reusing the existing :ref:`services <Architecture>` and :ref:`access model <usage/buckets:Access control>`.
 
 For authentication, TINO acts as an **OAuth 2.0 Resource Server** and delegates authentication entirely to the same `OpenID Connect <https://openid.net/developers/how-connect-works/>`_ provider used for the web UI (:ref:`ADR-07`).
 Authorization and the per-bucket access model (:ref:`ADR-04`) remains TINO's.
@@ -44,7 +44,7 @@ The protocol itself is handled by the official `MCP Python SDK <https://github.c
   | Dynamic Client Registration is supported by more providers today, but every MCP session creates a new client record in the provider's database. Over time this pollutes the client registry with a large number of abandoned entries that are never cleaned up. CIMD avoids this entirely — the client identifies itself via a URL, no state is written, and nothing accumulates.
 
   | **Static API keys**
-  | MCP clients such as Claude do not support static token authentication, as they expect a standard OAuth flow. Static :ref:`API keys` therefore serve a different purpose (automating the REST API from CI) and are not accepted by the MCP server.
+  | MCP clients such as Claude do not support static token authentication, as they expect a standard OAuth flow. Static :ref:`API keys <usage/authentication:API keys>` therefore serve a different purpose (automating the REST API from CI) and are not accepted by the MCP server.
 
 Consequences
 ------------

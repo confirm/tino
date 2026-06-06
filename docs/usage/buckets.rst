@@ -18,8 +18,6 @@ Creating a bucket
 Administrators can create new buckets from the bucket picker dialog.
 Click **New Bucket**, fill in a slug (the unique identifier) and an optional description, then save.
 
-.. _Access control:
-
 Access control
 ~~~~~~~~~~~~~~
 
@@ -43,12 +41,10 @@ Entries map an OIDC group to one of three roles:
 
   Members of the configured admin groups (see :attr:`TINO_ADMIN_GROUPS <tino.config.TINO_ADMIN_GROUPS>`) are implicitly treated as **Committer** on every bucket.
 
-.. _Bucket MCP instructions:
-
 MCP instructions
 ~~~~~~~~~~~~~~~~
 
 Each bucket can carry optional **MCP instructions** — free-text guidance shown to AI agents that connect via the :ref:`MCP server <MCP server>`.
 Edit the *MCP Instructions* field in the bucket settings dialog to tell an agent what the bucket contains, which conventions to follow, or how to structure its output.
 
-See :ref:`MCP instructions` for details on global vs. per-bucket instructions.
+See :ref:`MCP instructions <usage/mcp:Instructions>` for details on global vs. per-bucket instructions.

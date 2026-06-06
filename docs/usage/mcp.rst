@@ -7,7 +7,7 @@
 
    The MCP server is **experimental**.
 
-   It depends on your OIDC provider acting as a :ref:`CIMD-capable authorisation server <MCP authentication>`,
+   It depends on your OIDC provider acting as a :ref:`CIMD-capable authorisation server <usage/authentication:MCP>`,
    and the surrounding ecosystem is still stabilising.
 
    There are also 2 known issues ocurred during the development in combination with Keycloak:
@@ -24,8 +24,6 @@
 TINO ships with a built-in `Model Context Protocol <https://modelcontextprotocol.io/>`_ (MCP) server that exposes buckets, files, compilation, and git as **tools** for AI agents.
 An assistant can list buckets, read and write Typst files, compile them to check for errors, and commit the result.
 All through TINO, with the same access rules as a human user.
-
-.. _Connecting a client:
 
 Connecting a client
 ~~~~~~~~~~~~~~~~~~~
@@ -44,17 +42,15 @@ With the `Claude Code <https://docs.claude.com/en/docs/claude-code>`_ CLI:
   The CLI opens your browser for the OAuth login, then connects. 
   No token needs to be copied or configured by hand — the client identifies itself with a CIMD and obtains the token automatically.
 
-.. _MCP tools:
-
 Authentication
 ~~~~~~~~~~~~~~
 
-MCP clients authenticate via **OAuth 2.0**, as documented in the :ref:`authentication <MCP authentication>` chapter.
+MCP clients authenticate via **OAuth 2.0**, as documented in the :ref:`authentication <usage/authentication:MCP>` chapter.
 
 Available tools
 ~~~~~~~~~~~~~~~
 
-Each tool enforces the minimum :ref:`role <Access control>` the user must hold on the target bucket:
+Each tool enforces the minimum :ref:`role <usage/buckets:Access control>` the user must hold on the target bucket:
 
 .. list-table::
    :header-rows: 1
@@ -95,8 +91,6 @@ Each tool enforces the minimum :ref:`role <Access control>` the user must hold o
 
     The ``compile_typst`` tool lets an agent verify its own work: after editing a file it can compile, read the error, fix the source, and only ``commit`` once the document is valid.
 
-.. _MCP instructions:
-
 Instructions
 ~~~~~~~~~~~~
 
@@ -130,7 +124,7 @@ Per-bucket instructions
 | Per-bucket instructions apply to a single bucket.
 
 | **Configuration**
-| Edit them in the bucket settings dialog (:ref:`Bucket MCP instructions`) or via the REST API (``mcp_instructions`` in the bucket metadata). They are stored in the bucket's ``.meta.yml`` and returned by the ``list_buckets`` tool so the agent sees them when it discovers available buckets.
+| Edit them in the bucket settings dialog (:ref:`Bucket MCP instructions <usage/buckets:MCP instructions>`) or via the REST API (``mcp_instructions`` in the bucket metadata). They are stored in the bucket's ``.meta.yml`` and returned by the ``list_buckets`` tool so the agent sees them when it discovers available buckets.
 
 | **Example usage**
 | Describe the bucket's content, structure, and conventions, e.g.:
@@ -138,5 +132,3 @@ Per-bucket instructions
 - Write all content in British English. 
 - Place new customer-related documents in a ``customers/{customer name}/`` directory.
 - Never modify files under ``templates/``.
-
-.. _MCP configuration:

@@ -15,9 +15,7 @@ To sign out, click the **Logout** button in the top-right corner of the toolbar.
 
 .. seealso::
 
-    Also have a look at the :ref:`Access control`, and :ref:`OIDC integration <operations/deployment:oidc>`.
-
-.. _API keys:
+    Also have a look at the :ref:`Access control <usage/buckets:Access control>`, and :ref:`OIDC integration <operations/deployment:oidc>`.
 
 API keys
 --------
@@ -35,7 +33,7 @@ Creating a key
 
 Administrators manage keys from the **API Keys** button in the toolbar.
 
-Click **New Key**, give it a descriptive label, and add one row per bucket and :ref:`role <Access control>` the key may access.
+Click **New Key**, give it a descriptive label, and add one row per bucket and :ref:`role <usage/buckets:Access control>` the key may access.
 
 .. important::
 
@@ -59,8 +57,6 @@ Revoking a key
 
 Open the **API Keys** dialog and delete the key.
 
-.. _MCP authentication:
-
 MCP
 ---
 
@@ -74,4 +70,4 @@ Every tool then runs **as that user** — the agent can only access buckets the 
     MCP clients always authenticate via OAuth.
     The OIDC provider must be able to act as a `CIMD`_-capable MCP authorisation server (see :ref:`MCP integration <operations/deployment:mcp>`).
 
-    Static :ref:`API keys` are deliberately **not accepted** by the MCP server — those are for automating the REST API.
+    Static :ref:`API keys <usage/authentication:API keys>` are deliberately **not accepted** by the MCP server — those are for automating the REST API.

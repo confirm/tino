@@ -20,7 +20,6 @@ Select the files to include, write a commit message, and submit.
 
    `Git LFS <https://git-lfs.com/>`_ is used to store binary files in Git.
 
-
 Viewing history
 ~~~~~~~~~~~~~~~
 

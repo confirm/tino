@@ -6,8 +6,6 @@
 This document describes TINO's high-level architecture and links to the individual
 Architecture Decision Records (ADRs) that explain key design choices.
 
-.. _Components:
-
 Components
 ----------
 
@@ -40,8 +38,6 @@ runtime dependencies beyond a filesystem and an optional OIDC provider.
         R --> T
         R --> O
 
-.. _Storage Layout:
-
 Storage layout
 --------------
 
@@ -57,8 +53,6 @@ All persistent state lives on the filesystem — no database is required.
     │   │   └── *.typ, img/, …   ← source files
     │   └── packages/             ← TINO_PACKAGE_DIR (local Typst packages)
     └── fonts/                    ← TINO_FONT_DIR (custom fonts)
-
-.. _Request Lifecycle:
 
 Request lifecycle
 -----------------
@@ -111,8 +105,6 @@ A typical editing session follows this flow:
         Typst->>FS: read source + fonts
         Typst-->>FastAPI: SVG pages
         FastAPI-->>Browser: SVG pages
-
-.. _ADRs:
 
 Architecture Decision Records
 ------------------------------

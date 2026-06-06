@@ -8,8 +8,6 @@
     TINO is functional today, but what follows is where we want to take it. 
     These are not features on a roadmap with dates — they are the direction we are working towards and the problems we want TINO to solve.
 
-.. _Desktop replacement:
-
 Replacing desktop document applications
 ---------------------------------------
 
@@ -25,8 +23,6 @@ The goal is to make the desktop word processor unnecessary — not by mimicking 
 
     Word and O365 are fine products for people who enjoy watching a 50-page document silently reformat itself because a colleague opened it on a machine with a slightly different version installed.
     We did not enjoy that, and we never will. TINO is, in part, our answer to thirty years of ``_final_v42_ACTUALLY_FINAL_UNSIGNED.docx`` — we refuse to build on that legacy.
-
-.. _Automation layer:
 
 TINO as the automation layer
 ----------------------------
@@ -44,8 +40,6 @@ By wrapping Typst in a clean REST API, TINO makes document production a first-cl
 Letters, contracts, quotes, reports — anything that can be described as a template and a set of data can be generated, compiled, committed, and delivered programmatically, without a human ever opening an editor.
 
 We see Typst & TINO as the glue between raw data and polished, versioned documents.
-
-.. _AI integration:
 
 TINO as the glue for AI integration
 -----------------------------------

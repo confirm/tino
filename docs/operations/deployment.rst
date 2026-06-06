@@ -204,7 +204,7 @@ No additional client registration is needed.
 
 .. seealso::
 
-    Check out the :ref:`MCP authentication <MCP authentication>` for how the auth flow works, and the :ref:`MCP configuration <MCP configuration>` for the full list of MCP-related settings.
+    Check out the :ref:`MCP authentication <usage/authentication:MCP>` for how the auth flow works, and the :ref:`MCP server <MCP server>` documentation for usage and settings.
 
 Disabling authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~
