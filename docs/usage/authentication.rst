@@ -15,7 +15,7 @@ To sign out, click the **Logout** button in the top-right corner of the toolbar.
 
 .. seealso::
 
-    Also have a look at the :ref:`Access control`, and :ref:`OIDC integration <deployment:oidc>`.
+    Also have a look at the :ref:`Access control`, and :ref:`OIDC integration <operations/deployment:oidc>`.
 
 .. _API keys:
 
@@ -72,6 +72,6 @@ Every tool then runs **as that user** — the agent can only access buckets the 
 .. important::
 
     MCP clients always authenticate via OAuth.
-    The OIDC provider must be able to act as a `CIMD`_-capable MCP authorisation server (see :ref:`MCP integration <deployment:mcp>`).
+    The OIDC provider must be able to act as a `CIMD`_-capable MCP authorisation server (see :ref:`MCP integration <operations/deployment:mcp>`).
 
     Static :ref:`API keys` are deliberately **not accepted** by the MCP server — those are for automating the REST API.
