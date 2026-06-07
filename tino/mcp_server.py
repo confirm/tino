@@ -409,6 +409,83 @@ async def delete_file(bucket: str, path: str) -> dict:
 
 
 @mcp.tool()
+async def rename_file(bucket: str, old_path: str, new_path: str) -> dict:
+    '''Rename or move a file within a bucket. Requires the editor role.
+
+    Fails if the source is missing, the destination already exists, or the path
+    is invalid.
+    '''
+    user = _require(bucket, 'editor')
+
+    # Evict any open collab room for the source (without flushing) so a pending
+    # flush can't re-create the file at its old path after the move.
+    async with get_collab_manager().lock_path(bucket, old_path):
+        if not get_file_service().rename(bucket, old_path, new_path):
+            raise ValueError(
+                f'Invalid path or target exists: {old_path} -> {new_path}')
+
+    logger.info('MCP renamed %s/%s -> %s (user: %s)',
+                bucket, old_path, new_path, user.username)
+    await get_notifier().notify(bucket)
+    return {'old_path': old_path, 'new_path': new_path}
+
+
+@mcp.tool()
+async def create_dir(bucket: str, path: str) -> dict:
+    '''Create an empty directory in a bucket. Requires the editor role.
+
+    Fails if the directory already exists or the path is invalid.  Note that git
+    does not track empty directories, so a created directory only persists once
+    it contains a committed file.
+    '''
+    user = _require(bucket, 'editor')
+
+    if not get_file_service().create_dir(bucket, path):
+        raise ValueError(f'Directory already exists or invalid path: {path}')
+
+    logger.info('MCP created dir %s/%s (user: %s)', bucket, path, user.username)
+    await get_notifier().notify(bucket)
+    return {'path': path}
+
+
+@mcp.tool()
+async def rename_dir(bucket: str, old_path: str, new_path: str) -> dict:
+    '''Rename or move a directory and all its contents. Requires the editor role.'''
+    user = _require(bucket, 'editor')
+
+    # Evict any open collab rooms under the directory before moving it.
+    await get_collab_manager().evict_under(bucket, old_path)
+    affected = get_file_service().rename_dir(bucket, old_path, new_path)
+
+    if affected is None:
+        raise ValueError(
+            f'Invalid path or target exists: {old_path} -> {new_path}')
+
+    logger.info('MCP renamed dir %s/%s -> %s (user: %s)',
+                bucket, old_path, new_path, user.username)
+    await get_notifier().notify(bucket)
+    return {'old_path': old_path, 'new_path': new_path, 'affected': affected}
+
+
+@mcp.tool()
+async def delete_dir(bucket: str, path: str) -> dict:
+    '''Delete a directory and all its contents. Requires the editor role.'''
+    user = _require(bucket, 'editor')
+
+    # Evict any open collab rooms under the directory before deleting it.
+    await get_collab_manager().evict_under(bucket, path)
+    affected = get_file_service().delete_dir(bucket, path)
+
+    if affected is None:
+        raise FileNotFoundError(f'Directory not found: {bucket}/{path}')
+
+    logger.info('MCP deleted dir %s/%s (%d files) (user: %s)',
+                bucket, path, len(affected), user.username)
+    await get_notifier().notify(bucket)
+    return {'deleted': path, 'affected': affected}
+
+
+@mcp.tool()
 def compile_typst(bucket: str, path: str) -> dict:
     '''Compile a Typst file to verify it is valid.
 

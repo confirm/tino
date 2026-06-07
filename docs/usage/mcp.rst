@@ -83,6 +83,18 @@ Each tool enforces the minimum :ref:`role <usage/buckets:Access control>` the us
    * - ``delete_file``
      - Editor
      - Delete a file.
+   * - ``rename_file``
+     - Editor
+     - Rename or move a file.
+   * - ``create_dir``
+     - Editor
+     - Create an empty directory.
+   * - ``rename_dir``
+     - Editor
+     - Rename or move a directory and its contents.
+   * - ``delete_dir``
+     - Editor
+     - Delete a directory and all its contents.
    * - ``commit``
      - Committer
      - Commit changes to the bucket's git repository.
