@@ -38,20 +38,6 @@ It is, we'll admit, a bit of an oxymoron. We built a tool whose entire job is pr
 
 So TINO is *for* the office and, by name, *Not Office*. Both true. 
 
-.. _Purpose:
-
-🎯 Purpose
-----------
-
-TINO is a self-hosted web editor for `Typst`_ documents, built for teams that want to author, review, and publish together.
-
-- | **Replace desktop word processors**
-  | Move document production to the browser, with version control and collaboration built in.
-- | **Keep documents on your infrastructure**
-  | Privacy-aware. Self-hosted by design. Nothing leaves your network.
-- | **Empower the whole team**
-  | `Typst`_ – powerful typesetting for professional output, approachable for everyone.
-
 .. _Features:
 
 ✨ Features

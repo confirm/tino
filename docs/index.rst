@@ -1,13 +1,27 @@
 TINO docs
 =========
 
-Welcome to the official documentation of TINO - a collaborative, self-hosted editing platform around `Typst <https://typst.app/>`_.
-Built for teams that want to author, review, and publish together.
+Welcome to the official documentation of TINO — a collaborative, self-hosted editing platform around `Typst <https://typst.app/>`_ documents, built for teams that want to author, review, and publish together.
 
 .. image:: /_static/mascot2.svg
    :alt: TINO mascot
    :align: right
-   :width: 250px
+   :width: 280px
+
+TINO sets out to do three things:
+
+- | **Replace desktop word processors**
+  | Move document production to the browser,
+  | with version control and collaboration built in.
+- | **Keep documents on your infrastructure**
+  | Privacy-aware. Self-hosted by design. 
+  | Nothing leaves your network.
+- | **Empower the whole team**
+  | `Typst`_ — powerful typesetting for professional output,
+  | approachable for everyone.
+
+Content
+-------
 
 .. raw:: html
 
@@ -82,7 +96,7 @@ Built for teams that want to author, review, and publish together.
 
       <div style="clear: both;"></div>
 
-   To Do's
-   -------
+   To-dos
+   ------
 
    .. todolist::
