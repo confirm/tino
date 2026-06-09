@@ -12,6 +12,12 @@ export class TinoAPI extends GitAPI {
     return this._fetch('/api/config')
   }
 
+  /** @returns {Promise<{instructions: string}>} Server-wide MCP instructions (admin only). */
+
+  mcpInstructions() {
+    return this._fetch('/api/mcp/instructions')
+  }
+
   // ── Auth ──
 
   /** @returns {Promise<{username: string, email: string, groups: string[]}>} */

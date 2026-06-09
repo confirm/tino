@@ -11,6 +11,7 @@ export class BucketPicker {
   constructor(app) {
     this.app = app
     this._editingSlug = null
+    this._globalMcp = null
   }
 
   /** Open the bucket picker dialog and populate the list. */
@@ -128,6 +129,26 @@ export class BucketPicker {
     document.getElementById('bucket-view-form')
       .classList.remove('hidden')
     this._populateFormFields(bucket, isNew)
+    this._renderGlobalMcp()
+  }
+
+  /** Show the server-wide MCP instructions (read-only) when they are set. */
+
+  async _renderGlobalMcp() {
+    const details = document.getElementById('bucket-mcp-global')
+    details.open = false
+    details.hidden = true
+    try {
+      if (this._globalMcp === null)
+        this._globalMcp = (await this.app.api.mcpInstructions()).instructions || ''
+    }
+    catch {
+      this._globalMcp = ''
+    }
+    if (this._globalMcp) {
+      document.getElementById('bucket-mcp-global-text').textContent = this._globalMcp
+      details.hidden = false
+    }
   }
 
   _populateFormFields(bucket, isNew) {

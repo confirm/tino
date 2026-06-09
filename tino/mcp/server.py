@@ -27,11 +27,12 @@ from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
-from . import config
-from .auth import ROLE_HIERARCHY, resolve_role
-from .dependencies import get_bucket_service, get_collab_manager, get_compiler_service, \
+from .. import config
+from ..auth import ROLE_HIERARCHY, resolve_role
+from ..dependencies import get_bucket_service, get_collab_manager, get_compiler_service, \
     get_file_service, get_git_service, get_notifier
-from .models import User
+from ..models import User
+from .instructions import server_instructions
 
 logger = logging.getLogger(__name__)
 
@@ -40,16 +41,7 @@ _current_user: ContextVar[User | None] = ContextVar('mcp_user', default=None)
 
 _DISCOVERY_SUFFIX = '/.well-known/openid-configuration'
 
-_INSTRUCTIONS = '''\
-TINO is a collaborative Typst document platform. Documents live in *buckets*
-(git repositories). Use these tools to list, read, write, compile, and commit
-Typst source files. Always compile after editing to verify the document is valid.
-Each bucket may have specific instructions — always list buckets first and follow
-any per-bucket guidance.
-'''
-
-if config.TINO_MCP_INSTRUCTIONS:
-    _INSTRUCTIONS += '\n' + config.TINO_MCP_INSTRUCTIONS + '\n'
+_INSTRUCTIONS = server_instructions()
 
 
 def _issuer_url(discovery_url: str) -> str:

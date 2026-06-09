@@ -4,10 +4,12 @@ import logging
 from importlib.metadata import PackageNotFoundError, version
 
 import httpx
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from starlette.responses import JSONResponse, Response
 
 from .. import config
+from ..dependencies import require_global_admin
+from ..mcp.instructions import server_instructions
 from ..services.compiler import CompilerService
 
 logger = logging.getLogger(__name__)
@@ -60,6 +62,20 @@ async def frontend_config():
         'saveDebounceMs': config.TINO_SAVE_DEBOUNCE_MS,
         'version': _APP_VERSION,
     }
+
+
+@router.get('/api/mcp/instructions')
+async def mcp_instructions(user=Depends(require_global_admin)):
+    '''Return the full server-level MCP instructions (admin only).
+
+    This is the built-in instructions plus the optional
+    :attr:`~tino.config.TINO_MCP_INSTRUCTIONS` override — i.e. everything an
+    agent receives before per-bucket instructions — so the bucket settings
+    dialog can show it read-only alongside the per-bucket field.  Admin-gated
+    because it is internal policy text, not public config.
+    '''
+    logger.debug('Server MCP instructions requested (user: %s)', user.username)
+    return {'instructions': server_instructions()}
 
 
 @router.get('/api/theme.css')

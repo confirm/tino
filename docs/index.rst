@@ -73,7 +73,7 @@ Content
    api/models
    api/auth
    api/collab
-   api/mcp_server
+   api/mcp
    api/middleware
    api/services
    api/routers

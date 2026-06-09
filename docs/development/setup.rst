@@ -161,7 +161,7 @@ Project layout
     ├── collab.py           Real-time collaboration (Yjs/WebSocket)
     ├── config.py           Environment-based configuration
     ├── dependencies.py     FastAPI dependency injection
-    ├── mcp_server.py       MCP server & OAuth resource server
+    ├── mcp/                MCP server, OAuth resource server & instructions
     ├── middleware.py        ASGI middleware stack
     ├── models.py           Pydantic request/response schemas
     ├── notifier.py         File-change notifications

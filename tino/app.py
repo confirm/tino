@@ -12,8 +12,8 @@ from . import config
 from .auth import router as auth_router
 from .auth import setup_oauth
 from .dependencies import get_collab_manager
-from .mcp_server import mcp as mcp_server
-from .mcp_server import mcp_asgi_app
+from .mcp.server import mcp as mcp_server
+from .mcp.server import mcp_asgi_app
 from .middleware import register_middleware
 from .routers import api_keys, buckets, collab
 from .routers import compile as compile_router
