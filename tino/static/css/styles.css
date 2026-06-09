@@ -1337,7 +1337,7 @@ html, body {
   color: var(--text-secondary);
   font-family: var(--font-sans);
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: break-word;
   max-height: 160px;
   overflow-y: auto;
 }
