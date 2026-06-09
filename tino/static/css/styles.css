@@ -368,7 +368,13 @@ html, body {
   opacity: 1;
 }
 
-/* Git status badges */
+/* A file's leading icon doubles as its git-status indicator — show it at full
+   strength so the status colour (not the dimmed file-icon) comes through. */
+.file-item .file-icon.git-status {
+  opacity: 1;
+}
+
+/* Git status badges (commit dialog) */
 .git-badge {
   font-size: 14px;
   flex-shrink: 0;
@@ -387,10 +393,6 @@ html, body {
   margin-left: auto;
   opacity: 0;
   transition: opacity var(--transition);
-}
-
-.file-item .git-badge {
-  margin-left: 0;
 }
 
 .file-item:hover .file-actions {

@@ -186,17 +186,17 @@ export class FileTree {
 
   _fileItemHtml(node) {
     const status = node.status || this.app.gitStatuses[node.path]
-    const badge = FileTree._badgeHtml(status)
+    const icon = FileTree._leadingIconHtml(status)
     if (!this._canEditCached)
-      return `${FILE_ICON}<span>${escapeHtml(node.name)}</span>${badge}`
+      return `${icon}<span>${escapeHtml(node.name)}</span>`
     const actions = FileTree._fileActionsHtml(status)
-    return `${FILE_ICON}<span>${escapeHtml(node.name)}</span>${badge}${actions}`
+    return `${icon}<span>${escapeHtml(node.name)}</span>${actions}`
   }
 
-  static _badgeHtml(status) {
+  static _leadingIconHtml(status) {
     if (!status)
-      return ''
-    return '<span class="material-symbols-outlined git-badge ' +
+      return FILE_ICON
+    return '<span class="material-symbols-outlined file-icon git-status ' +
       `${STATUS_CLASSES[status]}">${STATUS_ICONS[status]}</span>`
   }
 

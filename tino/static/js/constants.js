@@ -67,9 +67,9 @@ export const TOGGLE_ICON =
 /** Maps git file status to its Material Symbols icon name. */
 
 export const STATUS_ICONS = {
-  deleted: 'close',
-  modified: 'edit',
-  untracked: 'add',
+  deleted: 'do_not_disturb_on',
+  modified: 'pending',
+  untracked: 'add_circle',
 }
 
 /** Escape &, <, > for safe insertion into HTML. */
