@@ -58,7 +58,15 @@ isort:
 	curl -sSfLo .isort.cfg $(LINTER_CONFIGS)/isort.cfg
 	isort $(SOURCE_DIRS)
 
+# Dev server env defaults. Override via your shell or the command line.
+TINO_AUTH_DISABLED ?= true
+TINO_BASE_URL      ?= http://localhost:8000
+TINO_SECRET_KEY    ?= develop
+
 server:
+	TINO_AUTH_DISABLED='$(TINO_AUTH_DISABLED)' \
+	TINO_BASE_URL='$(TINO_BASE_URL)' \
+	TINO_SECRET_KEY='$(TINO_SECRET_KEY)' \
 	uvicorn tino:create_app --factory --port 8000 --reload
 
 #

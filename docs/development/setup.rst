@@ -36,11 +36,21 @@ Start the development server with auto-reload:
     make server
 
 This launches Uvicorn on ``http://localhost:8000`` with hot-reload enabled.
-To skip authentication during development (see :ref:`Deployment`), set:
+For convenience, ``make server`` sets dev-friendly defaults so it runs without any further configuration:
+
+- ``TINO_AUTH_DISABLED=true``
+- ``TINO_BASE_URL=http://localhost:8000``
+- ``TINO_SECRET_KEY=develop`` (which keeps you logged in across reloads)
+
+These defaults are overridable from your shell or the command line — for example, to run with authentication enabled (see :ref:`Deployment`):
 
 .. code-block:: bash
 
-    TINO_AUTH_DISABLED=true make server
+    make server \
+        TINO_AUTH_DISABLED=false \
+        TINO_OIDC_DISCOVERY_URL=https://<sso-host>/realms/<realm>/.well-known/openid-configuration \
+        TINO_OIDC_CLIENT_ID=tino \
+        TINO_OIDC_CLIENT_SECRET=<secret>
 
 Developing the MCP server
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -53,6 +63,7 @@ The easiest way to get one during development is a `Cloudflare Tunnel <https://d
 .. code-block:: bash
 
     # In one terminal — start TINO with auth enabled:
+    TINO_AUTH_DISABLED=false \
     TINO_BASE_URL=https://<tunnel-host> \
     TINO_MCP_ENABLED=true \
     TINO_OIDC_DISCOVERY_URL=https://<sso-host>/realms/<realm>/.well-known/openid-configuration \
