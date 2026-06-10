@@ -103,10 +103,6 @@ Then bring the stack up with:
 
     docker compose up -d
 
-.. important::
-
-    foo
-
 .. _Standalone:
 
 📦 Standalone (without Docker)

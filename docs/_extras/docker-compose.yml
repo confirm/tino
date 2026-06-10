@@ -115,9 +115,9 @@ services:
     #
     # 📁 Filesystem
     #
-    # TINO requires 2 writable filesystems:
+    # TINO requires 2 writable directories:
     #
-    #   1. The data directory for the persisted user data (buckets, fonts and local packages)
+    #   1. The data directory for the persisted user data (buckets, fonts and local packages).
     #   2. The tmp directory (Typst cache, Gunicorn worker files).
     #
 
