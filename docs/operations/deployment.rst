@@ -5,6 +5,32 @@
 
 TINO ships as a single Docker image with no external dependencies — just point it at an OIDC provider and add a data volume, and you're up.
 
+.. _System requirements:
+
+🖥️ System requirements
+----------------------
+
+TINO is distributed as a multi-architecture Docker image and runs comfortably on modest hardware.
+
+The official ``ghcr.io/confirm/tino`` image is published for the following platforms:
+
+- ``linux/amd64`` — 64-bit x86 (Intel/AMD)
+- ``linux/arm64`` — 64-bit ARM (AArch64, including Apple Silicon)
+
+No other architectures are supported.
+
+TINO needs at least **128 MB** of memory, but **256 MB** is recommended.
+Typst compilation and active collaboration rooms add to that, so allow more headroom for large documents or many concurrent editors.
+
+.. note::
+
+   32-bit ARM (``linux/arm/v7``) and RISC-V (``linux/riscv64``) are **not** supported.
+
+   Several of TINO's compiled Python dependencies publish no prebuilt wheels for these platforms, and the runtime image intentionally ships without a build toolchain:
+
+   - ``linux/riscv64`` — ``pycrdt`` (the Rust library powering real-time collaboration) has no RISC-V wheel.
+   - ``linux/arm/v7`` — ``uvloop`` and ``httptools`` (Uvicorn's accelerated event loop and HTTP parser) have no 32-bit ARM wheels.
+
 .. _Quick start:
 
 ⚡ Quick start (demo)
