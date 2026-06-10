@@ -5,6 +5,7 @@ ARG TYPST_VERSION=0.14.2
 
 # Populated automatically by BuildKit/buildx from the target platform.
 ARG TARGETARCH
+ARG TARGETVARIANT
 
 WORKDIR /usr/src
 
@@ -13,10 +14,12 @@ COPY tino/gitattributes /etc/gitattributes
 RUN apt-get update && apt-get install -y --no-install-recommends curl git git-lfs xz-utils \
     && pip install --no-cache-dir *.whl \
     && rm -f *.whl \
-    && case "$TARGETARCH" in \
-         amd64)   TYPST_TARGET=x86_64-unknown-linux-musl ;; \
-         arm64)   TYPST_TARGET=aarch64-unknown-linux-musl ;; \
-         *) echo "Unsupported target architecture: '${TARGETARCH}'" >&2; exit 1 ;; \
+    && case "$TARGETARCH/$TARGETVARIANT" in \
+         amd64/*)   TYPST_TARGET=x86_64-unknown-linux-musl ;; \
+         arm64/*)   TYPST_TARGET=aarch64-unknown-linux-musl ;; \
+         arm/v7)    TYPST_TARGET=armv7-unknown-linux-musleabi ;; \
+         riscv64/*) TYPST_TARGET=riscv64gc-unknown-linux-gnu ;; \
+         *) echo "No Typst binary for target platform: '${TARGETARCH}/${TARGETVARIANT}'" >&2; exit 1 ;; \
        esac \
     && curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-${TYPST_TARGET}.tar.xz \
        | tar -xJ --strip-components=1 -C /usr/local/bin typst-${TYPST_TARGET}/typst \
