@@ -3,6 +3,9 @@ FROM python:3.14-slim
 # renovate: github-releases depName=typst/typst
 ARG TYPST_VERSION=0.14.2
 
+# Populated automatically by BuildKit/buildx from the target platform.
+ARG TARGETARCH
+
 WORKDIR /usr/src
 
 COPY build/*.whl .
@@ -10,8 +13,13 @@ COPY tino/gitattributes /etc/gitattributes
 RUN apt-get update && apt-get install -y --no-install-recommends curl git git-lfs xz-utils \
     && pip install --no-cache-dir *.whl \
     && rm -f *.whl \
-    && curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz \
-       | tar -xJ --strip-components=1 -C /usr/local/bin typst-x86_64-unknown-linux-musl/typst \
+    && case "$TARGETARCH" in \
+         amd64)   TYPST_TARGET=x86_64-unknown-linux-musl ;; \
+         arm64)   TYPST_TARGET=aarch64-unknown-linux-musl ;; \
+         *) echo "Unsupported target architecture: '${TARGETARCH}'" >&2; exit 1 ;; \
+       esac \
+    && curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-${TYPST_TARGET}.tar.xz \
+       | tar -xJ --strip-components=1 -C /usr/local/bin typst-${TYPST_TARGET}/typst \
     && git lfs install --system \
     && git config --system core.attributesFile /etc/gitattributes \
     && apt-get purge -y --auto-remove xz-utils \
