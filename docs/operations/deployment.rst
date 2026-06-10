@@ -78,8 +78,6 @@ To deploy TINO via a simple ``docker`` command, use the following CLI arguments:
 
     docker run -d \
         --name tino \
-        --read-only \
-        --tmpfs /tmp \
         -e TINO_BASE_URL=https://tino.example.com \
         -e TINO_OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
         -e TINO_OIDC_CLIENT_SECRET=change-me \
@@ -89,7 +87,7 @@ To deploy TINO via a simple ``docker`` command, use the following CLI arguments:
 
 .. hint::
 
-    It's recommended to deploy TINO via `Docker Compose`_.
+    It's recommended to deploy TINO via `Docker Compose`_ and use the additional deployment settings mentioned in the Compose file.
 
 Docker Compose
 ~~~~~~~~~~~~~~
@@ -104,6 +102,10 @@ Then bring the stack up with:
 .. code-block:: bash
 
     docker compose up -d
+
+.. important::
+
+    foo
 
 .. _Standalone:
 

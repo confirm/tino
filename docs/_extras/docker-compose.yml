@@ -1,27 +1,149 @@
 ---
+#
+# Recommended Docker Compose deployment for TINO.
+#
+# This file is verbose and heavily commented by design. TINO would run with
+# fewer options, but that is not recommended.
+#
+# Copy this file, adjust the values below, then run:
+#
+#   docker compose up -d
+#
+
 services:
 
   tino:
 
+    #
+    # 🐳 Docker image
+    #
+    # Pin a release tag (e.g. ghcr.io/confirm/tino:1.2.3) for reproducible deployments.
+    #
+    # Find tags right here:
+    # https://github.com/confirm/tino/pkgs/container/tino
+    #
+
     image: ghcr.io/confirm/tino
 
+    #
+    # 🌍 Environment
+    #
+    # TINO is configured via environment variables.
+    #
+    # See the configuration reference for the full list of TINO_* environment variables:
+    # https://docs.tinotype.com/operations/configuration.html
+    #
+
     environment:
+
+      # Public URL TINO is served on (used for OIDC redirects and, if enabled, MCP).
       TINO_BASE_URL: https://tino.example.com
+
+      # Your OIDC provider's discovery endpoint.
       TINO_OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration
+
+      # OIDC client secret — replace this.
+      #
+      # ⚠️ Keep secrets out of version control, inject it instead. E.g.:
+      #
+      #   - Via an .env file
+      #   - Via a secrets manager
+      #   - Via CI variables
+      #
       TINO_OIDC_CLIENT_SECRET: change-me
+
+    #
+    # 🔗 Network
+    #
+    # TINO listens on port 5000 inside the container, which is mapped from the
+    # host to the container.
+    #
+    # ⚠️ Typically a TLS-terminating reverse proxy sits in front of it.
+    #
+    # When it does, do one of the following:
+    #
+    #   - Either bind to localhost ('127.0.0.1:5000:5000'),
+    #   - or drop the port mapping and share an internal network.
+    #
 
     ports:
       - '5000:5000'
 
+    #
+    # 🚀 Deployment
+    #
+    # The deployment resource constraints are optional, but it's recommended as
+    # they limit the resources TINO can use.
+    #
+    # Feel free to adapt them to your requirements.
+    #
+    # For the system requriements, check out:
+    # https://docs.tinotype.com/operations/deployment.html#system-requirements
+    #
+
+    deploy:
+      resources:
+        limits:          # hard ceiling enforced by the runtime
+          cpus: '1'
+          memory: '256M'
+        reservations:    # minimum guaranteed for scheduling
+          cpus: '0.1'
+          memory: '128M'
+
+    #
+    # 🔒 Security
+    #
+    # TINO runs without defining the security-related options below.
+    #
+    # However, it's recommended to use them, as they harden the container,
+    # resp. runtime environemnt in case anything goes wrong.
+    #
+
+    # Prevent the process and its children from gaining new privileges
+    # (e.g. via setuid binaries).
+    security_opt:
+      - no-new-privileges:true
+
+    # Drop all Linux capabilities — TINO runs as a non-root user and binds a
+    # high port (5000), so it needs none of them.
+    cap_drop:
+      - ALL
+
+    # Run with a read-only root filesystem...
     read_only: true
 
+    #
+    # 📁 Filesystem
+    #
+    # TINO requires 2 writable filesystems:
+    #
+    #   1. The data directory for the persisted user data (buckets, fonts and local packages)
+    #   2. The tmp directory (Typst cache, Gunicorn worker files).
+    #
+
+    # Add tmpfs (required when `read_only: true` is set).
     tmpfs:
       - /tmp
 
+    # Persisten data volume.
     volumes:
       - data:/data
 
+    #
+    # 🔄 Restart
+    #
+
+    # Restart the container automatically unless it was explicitly stopped.
     restart: unless-stopped
+
+
+#
+# 💾 Volume
+#
+# Named volume backing TINO_DATA_DIR (mounted at /data in the container).
+#
+# ⚠️ Don't forget to backup this volume!
+#
 
 volumes:
   data:
