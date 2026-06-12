@@ -23,18 +23,6 @@
         <span class="material-symbols-outlined">search</span>
         Search
       </button>
-      <button class="toolbar-btn" id="btn-new" title="New file">
-        <span class="material-symbols-outlined">note_add</span>
-        File
-      </button>
-      <button class="toolbar-btn" id="btn-new-folder" title="New folder">
-        <span class="material-symbols-outlined">create_new_folder</span>
-        Folder
-      </button>
-      <button class="toolbar-btn" id="btn-template" title="New from template">
-        <span class="material-symbols-outlined">dashboard</span>
-        Template
-      </button>
       <button class="toolbar-btn" id="btn-save" title="Save (Ctrl+S)">
         <span class="material-symbols-outlined">save</span>
         Save
@@ -86,6 +74,22 @@
     <aside class="panel file-explorer" id="file-explorer">
       <div class="panel-header">
         <input class="form-input file-search-input" id="file-search" type="text" placeholder="Filter files…">
+        <div class="tree-new" id="tree-new">
+          <button class="icon-btn" id="btn-tree-new" title="New…" aria-haspopup="true" aria-expanded="false">
+            <span class="material-symbols-outlined">add</span>
+          </button>
+          <ul class="tree-new-menu hidden" id="tree-new-menu">
+            <li class="tree-new-item" data-action="file">
+              <span class="material-symbols-outlined">note_add</span>File
+            </li>
+            <li class="tree-new-item" data-action="folder">
+              <span class="material-symbols-outlined">create_new_folder</span>Folder
+            </li>
+            <li class="tree-new-item" data-action="template">
+              <span class="material-symbols-outlined">dashboard</span>From template
+            </li>
+          </ul>
+        </div>
       </div>
       <ul class="file-tree" id="file-tree"></ul>
     </aside>

@@ -11,18 +11,6 @@ const bindBucketSelect = app => {
 }
 
 const bindFileButtons = app => {
-  document.getElementById('btn-new')
-    .addEventListener('click', () => {
-      app.editor.createNewFile()
-    })
-  document.getElementById('btn-new-folder')
-    .addEventListener('click', () => {
-      app.fileTree.actions.createFolder()
-    })
-  document.getElementById('btn-template')
-    .addEventListener('click', () => {
-      app.templatePicker.open()
-    })
   document.getElementById('btn-save')
     .addEventListener('click', () => {
       app.editor.saveCurrentFile()

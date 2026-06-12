@@ -119,6 +119,7 @@ class TinoApp {
     this.fileTree.bindUploadDrop()
     this.fileTree.bindBucketPicker()
     this.fileTree.bindSearch()
+    this.fileTree.bindNewMenu()
   }
 
   _bindWindowEvents() {
@@ -211,10 +212,8 @@ class TinoApp {
       'btn-download': canView,
       'btn-history': canView,
       'btn-history-restore': canEdit,
-      'btn-new': canEdit,
-      'btn-new-folder': canEdit,
       'btn-save': canEdit,
-      'btn-template': canEdit,
+      'tree-new': canEdit,
     }))
       document.getElementById(id).classList.toggle('hidden', !visible)
   }
