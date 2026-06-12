@@ -28,6 +28,7 @@ class TinoApp {
     this.bucket = null
     this.bucketRole = null
     this.currentFile = null
+    this.pinnedPreview = null
     this.isAdmin = false
     this.openTabs = []
     this.fileBuffers = {}

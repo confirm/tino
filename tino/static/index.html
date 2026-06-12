@@ -158,7 +158,14 @@
 
     <section class="panel preview-panel" id="preview-panel">
       <div class="panel-header">
-        <span>Preview</span>
+        <div class="preview-title">
+          <span>Preview</span>
+          <button class="icon-btn hidden" id="btn-pin-preview"
+            title="Pin preview to this file">
+            <span class="material-symbols-outlined">push_pin</span>
+          </button>
+          <span class="preview-pin-label hidden" id="preview-pin-label"></span>
+        </div>
         <button class="btn-pdf hidden" id="btn-pdf" title="Download PDF">
           <span class="material-symbols-outlined">download</span>
           Generate PDF
