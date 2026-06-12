@@ -239,6 +239,8 @@ export class EditorManager {
   /** Close tabs for files that no longer exist on disk. */
 
   reconcileTabs(existingPaths) {
+    if (this.app.pinnedPreview && !existingPaths.has(this.app.pinnedPreview))
+      this.app.pinnedPreview = null
     const stale = this.app.openTabs.filter(tp => !existingPaths.has(tp))
     if (!stale.length)
       return
@@ -270,6 +272,7 @@ export class EditorManager {
   resetState() {
     this.collab.disconnect()
     this.toolbar.hide()
+    this.app.pinnedPreview = null
     this._clearOpenState()
     this._showTextEditor('')
     this.app.els.editor.setEditable(false)

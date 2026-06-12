@@ -11,18 +11,6 @@ const bindBucketSelect = app => {
 }
 
 const bindFileButtons = app => {
-  document.getElementById('btn-new')
-    .addEventListener('click', () => {
-      app.editor.createNewFile()
-    })
-  document.getElementById('btn-new-folder')
-    .addEventListener('click', () => {
-      app.fileTree.actions.createFolder()
-    })
-  document.getElementById('btn-template')
-    .addEventListener('click', () => {
-      app.templatePicker.open()
-    })
   document.getElementById('btn-save')
     .addEventListener('click', () => {
       app.editor.saveCurrentFile()
@@ -35,6 +23,18 @@ const bindFileButtons = app => {
     .addEventListener('click', () => {
       app.apiKeyManager.open()
     })
+}
+
+const bindSearch = app => {
+  document.getElementById('btn-search')
+    .addEventListener('click', () => app.searchModal.open())
+  window.addEventListener('keydown', evt => {
+    if ((evt.ctrlKey || evt.metaKey) && evt.shiftKey
+      && evt.key.toLowerCase() === 'f') {
+      evt.preventDefault()
+      app.searchModal.open()
+    }
+  })
 }
 
 const bindDownloadButton = app => {
@@ -139,6 +139,7 @@ const bindPanelResize = app => {
 
 export const bindToolbar = app => {
   bindBucketSelect(app)
+  bindSearch(app)
   bindFileButtons(app)
   bindDownloadButton(app)
   bindGitButtons(app)

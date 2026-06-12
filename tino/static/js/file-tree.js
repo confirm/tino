@@ -11,6 +11,7 @@ import { BucketPicker } from './bucket-picker.js'
 import { TreeActions } from './tree-actions.js'
 import { TreeBuilder } from './tree-builder.js'
 import { TreeDrag } from './tree-drag.js'
+import { TreeNewMenu } from './tree-new-menu.js'
 
 /**
  * Manages the file explorer tree and bucket loading.
@@ -25,6 +26,7 @@ export class FileTree {
     this.actions = new TreeActions(app)
     this.bucketPicker = new BucketPicker(app)
     this.drag = new TreeDrag(app)
+    this.newMenu = new TreeNewMenu(app)
     this.filePaths = new Set()
     this._nodes = []
   }
@@ -231,6 +233,12 @@ export class FileTree {
     this.app.els.fileSearch.addEventListener(
       'input', () => this._renderTree(),
     )
+  }
+
+  /** Bind the "New" menu in the explorer header (file / folder / template). */
+
+  bindNewMenu() {
+    this.newMenu.bind()
   }
 
   /** Bind click events on the file tree. */
