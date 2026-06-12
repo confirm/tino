@@ -37,6 +37,18 @@ const bindFileButtons = app => {
     })
 }
 
+const bindSearch = app => {
+  document.getElementById('btn-search')
+    .addEventListener('click', () => app.searchModal.open())
+  window.addEventListener('keydown', evt => {
+    if ((evt.ctrlKey || evt.metaKey) && evt.shiftKey
+      && evt.key.toLowerCase() === 'f') {
+      evt.preventDefault()
+      app.searchModal.open()
+    }
+  })
+}
+
 const bindDownloadButton = app => {
   document.getElementById('btn-download')
     .addEventListener('click', () => {
@@ -139,6 +151,7 @@ const bindPanelResize = app => {
 
 export const bindToolbar = app => {
   bindBucketSelect(app)
+  bindSearch(app)
   bindFileButtons(app)
   bindDownloadButton(app)
   bindGitButtons(app)

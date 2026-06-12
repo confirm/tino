@@ -30,7 +30,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 from .. import config
 from ..auth import ROLE_HIERARCHY, resolve_role
 from ..dependencies import get_bucket_service, get_collab_manager, get_compiler_service, \
-    get_file_service, get_git_service, get_notifier
+    get_file_service, get_git_service, get_notifier, get_search_service
 from ..models import User
 from .instructions import server_instructions
 
@@ -42,6 +42,12 @@ _current_user: ContextVar[User | None] = ContextVar('mcp_user', default=None)
 _DISCOVERY_SUFFIX = '/.well-known/openid-configuration'
 
 _INSTRUCTIONS = server_instructions()
+
+#: Search queries shorter than this are ignored (the tool returns an empty list).
+MCP_MIN_QUERY_LEN = 2
+
+#: Maximum number of file results the ``search`` tool returns across all buckets.
+MCP_MAX_RESULTS = 50
 
 
 def _issuer_url(discovery_url: str) -> str:
@@ -344,6 +350,44 @@ def list_files(bucket: str) -> list[dict]:
     logger.debug('MCP list_files called: bucket=%s', bucket)
     _require(bucket, 'viewer')
     return [entry.model_dump() for entry in get_file_service().list(bucket)]
+
+
+@mcp.tool()
+def search(query: str, bucket: str | None = None) -> list[dict]:
+    '''Search file names and contents across the buckets you can access.
+
+    Pass *bucket* to limit the search to a single bucket, or omit it to search
+    every accessible bucket. Each result is a file with ``name_match`` and any
+    matching content ``snippets`` (line number + text). Prefer this over listing
+    every bucket and reading files one by one when locating a document.
+    '''
+    user = _current_user.get()
+    if user is None:
+        raise PermissionError('Not authenticated')
+
+    needle = query.strip()
+    if len(needle) < MCP_MIN_QUERY_LEN:
+        return []
+
+    if bucket is not None:
+        _require(bucket, 'viewer')
+        slugs = [bucket]
+    else:
+        slugs = [b.slug for b in get_bucket_service().list()
+                 if resolve_role(user, b.access, b.slug) is not None]
+
+    logger.debug('MCP search %r over %d bucket(s) (user: %s)',
+                 needle, len(slugs), user.username)
+
+    results: list[dict] = []
+    for slug in slugs:
+        remaining = MCP_MAX_RESULTS - len(results)
+        if remaining <= 0:
+            break
+        hits = get_search_service().search_bucket(slug, needle, limit=remaining)
+        results.extend(r.model_dump() for r in hits)
+
+    return results
 
 
 @mcp.tool()

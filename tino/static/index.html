@@ -19,6 +19,10 @@
         <span class="material-symbols-outlined">database</span>
         <span id="bucket-label">Select bucket...</span>
       </button>
+      <button class="toolbar-btn" id="btn-search" title="Search (Ctrl+Shift+F)">
+        <span class="material-symbols-outlined">search</span>
+        Search
+      </button>
       <button class="toolbar-btn" id="btn-new" title="New file">
         <span class="material-symbols-outlined">note_add</span>
         File
@@ -218,6 +222,27 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="search-dialog">
+    <div class="dialog dialog-search">
+      <div class="dialog-header">
+        <span>Search</span>
+        <button class="icon-btn" id="btn-search-close" title="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="search-bar">
+        <input class="form-input search-input" id="search-input" type="text" placeholder="Search file names and content…">
+        <div class="search-scope">
+          <button class="search-scope-btn active" id="search-scope-bucket" data-scope="bucket">This bucket</button>
+          <button class="search-scope-btn" id="search-scope-all" data-scope="all">All buckets</button>
+        </div>
+      </div>
+      <ul class="search-results" id="search-results">
+        <li class="search-empty">Type at least 2 characters to search.</li>
+      </ul>
     </div>
   </div>
 

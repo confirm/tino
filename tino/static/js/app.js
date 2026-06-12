@@ -8,6 +8,7 @@ import { FontManager } from './font-manager.js'
 import { GitManager } from './git-manager.js'
 import { PanelResize } from './panel-resize.js'
 import { PreviewManager } from './preview-manager.js'
+import { SearchModal } from './search-modal.js'
 import { TemplatePicker } from './template-picker.js'
 import { TinoAPI } from './api.js'
 import { Toast } from './toast.js'
@@ -75,9 +76,14 @@ class TinoApp {
     this.git = new GitManager(this)
     this.panelResize = new PanelResize()
     this.preview = new PreviewManager(this)
+    this._initDialogs()
+  }
+
+  _initDialogs() {
     this.fontManager = new FontManager(this)
     this.apiKeyManager = new ApiKeyManager(this)
     this.templatePicker = new TemplatePicker(this)
+    this.searchModal = new SearchModal(this)
   }
 
   /** Initialize the app: bind events and load buckets. */
@@ -103,6 +109,7 @@ class TinoApp {
     this.fontManager.bind()
     this.apiKeyManager.bind()
     this.templatePicker.bind()
+    this.searchModal.bind()
     this.preview.bindZoom()
   }
 

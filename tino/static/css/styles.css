@@ -1803,6 +1803,144 @@ html, body {
   font-size: 13px;
 }
 
+/* ── Search modal ── */
+
+.dialog-search {
+  width: min(92vw, 760px);
+  height: min(80vh, 640px);
+  max-height: 80vh;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-input {
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.search-scope {
+  display: flex;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.search-scope-btn {
+  padding: 6px 10px;
+  border: none;
+  background: var(--bg-tertiary);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.search-scope-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.search-scope-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search-scope-btn + .search-scope-btn {
+  border-left: 1px solid var(--border);
+}
+
+.search-results {
+  list-style: none;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.search-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.search-result {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-result-path {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.search-result-path:hover {
+  color: var(--accent);
+}
+
+.search-result-path .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.search-bucket-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.search-snippet {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 0 22px;
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.search-snippet:hover {
+  background: var(--bg-hover);
+}
+
+.search-snippet-line {
+  flex-shrink: 0;
+  min-width: 28px;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.search-snippet-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-results mark {
+  border-radius: 2px;
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
 /* ── Font manager ── */
 
 .font-toolbar {
