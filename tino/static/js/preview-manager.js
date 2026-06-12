@@ -12,20 +12,62 @@ export class PreviewManager {
     this.app = app
   }
 
+  /** The file the preview renders: the pinned file, else the active file. */
+
+  get target() {
+    return this.app.pinnedPreview || this.app.currentFile
+  }
+
   /**
-   * Compile the current .typ file and render SVG pages
-   * in the preview pane.
+   * Compile the preview target (the pinned file when one is pinned, otherwise
+   * the current file) and render its SVG pages in the preview pane.
    */
 
   async update() {
-    const isTyp = this.app.currentFile
-      && this.app.currentFile.endsWith('.typ')
+    const isTyp = this.target && this.target.endsWith('.typ')
+    this._renderPinControls()
     document.getElementById('btn-pdf')
       .classList.toggle('hidden', !isTyp)
     if (isTyp)
       await this.compile()
     else
       this.clear()
+  }
+
+  /** Pin the preview to the current .typ file, or unpin if already pinned. */
+
+  togglePin() {
+    if (this.app.pinnedPreview)
+      this.app.pinnedPreview = null
+    else if (this.app.currentFile && this.app.currentFile.endsWith('.typ'))
+      this.app.pinnedPreview = this.app.currentFile
+    this.update()
+  }
+
+  /** Sync the pin button and pinned-file label with the current pin state. */
+
+  _renderPinControls() {
+    const pinned = this.app.pinnedPreview
+    const cur = this.app.currentFile
+    const canPin = Boolean(pinned) || Boolean(cur && cur.endsWith('.typ'))
+    const btn = document.getElementById('btn-pin-preview')
+    btn.classList.toggle('hidden', !canPin)
+    btn.classList.toggle('active', Boolean(pinned))
+    btn.title = PreviewManager._pinTitle(pinned)
+    PreviewManager._renderPinLabel(pinned)
+  }
+
+  static _pinTitle(pinned) {
+    if (pinned)
+      return `Preview pinned to ${pinned} — click to unpin`
+    return 'Pin preview to this file'
+  }
+
+  static _renderPinLabel(pinned) {
+    const label = document.getElementById('preview-pin-label')
+    label.classList.toggle('hidden', !pinned)
+    if (pinned)
+      label.textContent = pinned
   }
 
   /** Show a placeholder when the current file has no preview. */
@@ -38,13 +80,13 @@ export class PreviewManager {
   /** Compile the current .typ file via the API and render SVG pages. */
 
   async compile() {
-    if (!this.app.bucket || !this.app.currentFile)
+    if (!this.app.bucket || !this.target)
       return
     const preview = this.app.els.previewPage
     try {
       const result = await this.app.api.compile(
         this.app.bucket,
-        this.app.currentFile,
+        this.target,
       )
       preview.innerHTML = ''
       result.pages.forEach(svg => {
@@ -63,10 +105,10 @@ export class PreviewManager {
   /** Download the current .typ file as a compiled PDF. */
 
   downloadPdf() {
-    if (!this.app.bucket || !this.app.currentFile)
+    if (!this.app.bucket || !this.target)
       return
     const slug = encodeURIComponent(this.app.bucket)
-    const path = this.app.currentFile
+    const path = this.target
     const url = `/api/buckets/${slug}/compile/pdf/${path}`
     const link = document.createElement('a')
     link.href = url
@@ -101,6 +143,9 @@ export class PreviewManager {
 
     document.getElementById('btn-pdf')
       .addEventListener('click', () => this.downloadPdf())
+
+    document.getElementById('btn-pin-preview')
+      .addEventListener('click', () => this.togglePin())
   }
 
 }

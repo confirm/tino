@@ -262,6 +262,25 @@ export class CodeMirrorEditor {
     this._view.focus()
   }
 
+  /**
+   * Move the caret to the start of a 1-based line and scroll it into view.
+   * Clamped to the document bounds, so out-of-range lines are safe.
+   * @param {number} lineNumber - 1-based line to jump to.
+   */
+
+  goToLine(lineNumber) {
+    const { doc } = this._view.state
+    const clamped = Math.max(SINGLE_ITEM, Math.min(lineNumber, doc.lines))
+    const line = doc.line(clamped)
+    // eslint-disable-next-line id-length -- CodeMirror's scrollIntoView axis key
+    const scroll = EditorView.scrollIntoView(line.from, { y: 'center' })
+    this._view.dispatch({
+      effects: scroll,
+      selection: { anchor: line.from },
+    })
+    this._view.focus()
+  }
+
   // ── change notifications ──
 
   /** @param {Function} fn - Called on each user (non-programmatic) edit. */

@@ -19,17 +19,9 @@
         <span class="material-symbols-outlined">database</span>
         <span id="bucket-label">Select bucket...</span>
       </button>
-      <button class="toolbar-btn" id="btn-new" title="New file">
-        <span class="material-symbols-outlined">note_add</span>
-        File
-      </button>
-      <button class="toolbar-btn" id="btn-new-folder" title="New folder">
-        <span class="material-symbols-outlined">create_new_folder</span>
-        Folder
-      </button>
-      <button class="toolbar-btn" id="btn-template" title="New from template">
-        <span class="material-symbols-outlined">dashboard</span>
-        Template
+      <button class="toolbar-btn" id="btn-search" title="Search (Ctrl+Shift+F)">
+        <span class="material-symbols-outlined">search</span>
+        Search
       </button>
       <button class="toolbar-btn" id="btn-save" title="Save (Ctrl+S)">
         <span class="material-symbols-outlined">save</span>
@@ -82,6 +74,22 @@
     <aside class="panel file-explorer" id="file-explorer">
       <div class="panel-header">
         <input class="form-input file-search-input" id="file-search" type="text" placeholder="Filter files…">
+        <div class="tree-new" id="tree-new">
+          <button class="icon-btn" id="btn-tree-new" title="New…" aria-haspopup="true" aria-expanded="false">
+            <span class="material-symbols-outlined">add</span>
+          </button>
+          <ul class="tree-new-menu hidden" id="tree-new-menu">
+            <li class="tree-new-item" data-action="file">
+              <span class="material-symbols-outlined">note_add</span>File
+            </li>
+            <li class="tree-new-item" data-action="folder">
+              <span class="material-symbols-outlined">create_new_folder</span>Folder
+            </li>
+            <li class="tree-new-item" data-action="template">
+              <span class="material-symbols-outlined">dashboard</span>From template
+            </li>
+          </ul>
+        </div>
       </div>
       <ul class="file-tree" id="file-tree"></ul>
     </aside>
@@ -150,7 +158,14 @@
 
     <section class="panel preview-panel" id="preview-panel">
       <div class="panel-header">
-        <span>Preview</span>
+        <div class="preview-title">
+          <span>Preview</span>
+          <button class="icon-btn hidden" id="btn-pin-preview"
+            title="Pin preview to this file">
+            <span class="material-symbols-outlined">push_pin</span>
+          </button>
+          <span class="preview-pin-label hidden" id="preview-pin-label"></span>
+        </div>
         <button class="btn-pdf hidden" id="btn-pdf" title="Download PDF">
           <span class="material-symbols-outlined">download</span>
           Generate PDF
@@ -182,7 +197,7 @@
         </button>
       </div>
 
-      <div id="bucket-view-list">
+      <div id="bucket-view-list" class="dialog-view">
         <ul class="bucket-list" id="bucket-picker-list"></ul>
         <div class="dialog-actions">
           <button class="btn btn-secondary" id="btn-picker-close">Close</button>
@@ -218,6 +233,27 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="search-dialog">
+    <div class="dialog dialog-search">
+      <div class="dialog-header">
+        <span>Search</span>
+        <button class="icon-btn" id="btn-search-close" title="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="search-bar">
+        <input class="form-input search-input" id="search-input" type="text" placeholder="Search file names and content…">
+        <div class="search-scope">
+          <button class="search-scope-btn active" id="search-scope-bucket" data-scope="bucket">This bucket</button>
+          <button class="search-scope-btn" id="search-scope-all" data-scope="all">All buckets</button>
+        </div>
+      </div>
+      <ul class="search-results" id="search-results">
+        <li class="search-empty">Type at least 2 characters to search.</li>
+      </ul>
     </div>
   </div>
 
@@ -316,7 +352,7 @@
         </button>
       </div>
 
-      <div id="apikey-view-list">
+      <div id="apikey-view-list" class="dialog-view">
         <ul class="apikey-list" id="apikey-list"></ul>
         <div class="dialog-actions">
           <button class="btn btn-secondary" id="btn-apikey-close">Close</button>

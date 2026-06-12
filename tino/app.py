@@ -17,7 +17,7 @@ from .mcp.server import mcp_asgi_app
 from .middleware import register_middleware
 from .routers import api_keys, buckets, collab
 from .routers import compile as compile_router
-from .routers import events, files, fonts, git, misc, templates
+from .routers import events, files, fonts, git, misc, search, templates
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +90,7 @@ def create_app() -> FastAPI:
     app.include_router(files.router)
     app.include_router(fonts.router)
     app.include_router(git.router)
+    app.include_router(search.router)
     app.include_router(templates.router)
 
     register_middleware(app)

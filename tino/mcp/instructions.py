@@ -9,11 +9,14 @@ from .. import config
 
 #: Built-in instructions describing TINO and how an agent should use the tools.
 BASE_INSTRUCTIONS = '''\
-TINO is a collaborative Typst document platform. Documents live in *buckets*
-(git repositories). Use these tools to list, read, write, compile, and commit
-Typst source files. Always compile after editing to verify the document is valid.
-Each bucket may have specific instructions. Always list buckets first and follow
-any per-bucket guidance.
+TINO is a collaborative Typst document platform.
+Documents live in *buckets* (git repositories).
+Use these tools to list, read, write, compile, and commit Typst source files.
+Always compile after editing to verify the document is valid.
+Each bucket may have specific instructions.
+Always list buckets first and follow any per-bucket guidance.
+To locate a document by file name or content, use the ``search`` tool instead of
+listing and reading every file.
 '''
 
 

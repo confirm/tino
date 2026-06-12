@@ -14,6 +14,7 @@ from .services.compiler import CompilerService
 from .services.file import FileService
 from .services.font import FontService
 from .services.git import GitService
+from .services.search import SearchService
 from .services.template import TemplateService
 
 
@@ -59,6 +60,12 @@ def get_bucket_service() -> BucketService:
 def get_git_service() -> GitService:
     '''Singleton GitService bound to the configured bucket directory.'''
     return GitService(config.TINO_BUCKET_DIR)
+
+
+@lru_cache
+def get_search_service() -> SearchService:
+    '''Singleton SearchService composing the shared FileService.'''
+    return SearchService(get_file_service())
 
 
 @lru_cache
