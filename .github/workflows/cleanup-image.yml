@@ -1,0 +1,54 @@
+name: Cleanup images
+
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '0 3 * * 0'  # weekly sweep, Sunday 03:00 UTC
+
+jobs:
+
+  # ──────────────────────────────────────────────
+  # 🧹 Delete the branch image when a PR is merged
+  # ──────────────────────────────────────────────
+
+  cleanup-branch:
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      # Mirror docker/metadata-action's branch slug: '/' → '-', lowercased.
+      - name: Derive image tag from branch name
+        id: tag
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          slug="${HEAD_REF//\//-}"
+          echo "tag=${slug,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          owner: confirm
+          package: tino
+          tags: ${{ steps.tag.outputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # ──────────────────────────────────────────────
+  # 🧹 Weekly sweep of untagged / stale branch images
+  # ──────────────────────────────────────────────
+
+  cleanup-stale:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          owner: confirm
+          package: tino
+          delete-untagged: true
+          exclude-tags: latest,main
+          older-than: 4 weeks
+          token: ${{ secrets.GITHUB_TOKEN }}
