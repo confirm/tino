@@ -151,6 +151,22 @@ export class TinoAPI extends GitAPI {
     )
   }
 
+  // ── Search ──
+
+  /**
+   * Search file names and content across accessible buckets.
+   * @param {string} query - Search query.
+   * @param {string} [bucket] - Limit to one bucket; omit to search all.
+   */
+
+  search(query, bucket) {
+    const params = new URLSearchParams()
+    params.set('q', query)
+    if (bucket)
+      params.set('bucket', bucket)
+    return this._fetch(`/api/search?${params}`)
+  }
+
   // ── Compile ──
 
   compile(slug, path) {

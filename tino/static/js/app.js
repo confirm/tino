@@ -8,6 +8,7 @@ import { FontManager } from './font-manager.js'
 import { GitManager } from './git-manager.js'
 import { PanelResize } from './panel-resize.js'
 import { PreviewManager } from './preview-manager.js'
+import { SearchModal } from './search-modal.js'
 import { TemplatePicker } from './template-picker.js'
 import { TinoAPI } from './api.js'
 import { Toast } from './toast.js'
@@ -27,6 +28,7 @@ class TinoApp {
     this.bucket = null
     this.bucketRole = null
     this.currentFile = null
+    this.pinnedPreview = null
     this.isAdmin = false
     this.openTabs = []
     this.fileBuffers = {}
@@ -75,9 +77,14 @@ class TinoApp {
     this.git = new GitManager(this)
     this.panelResize = new PanelResize()
     this.preview = new PreviewManager(this)
+    this._initDialogs()
+  }
+
+  _initDialogs() {
     this.fontManager = new FontManager(this)
     this.apiKeyManager = new ApiKeyManager(this)
     this.templatePicker = new TemplatePicker(this)
+    this.searchModal = new SearchModal(this)
   }
 
   /** Initialize the app: bind events and load buckets. */
@@ -103,6 +110,7 @@ class TinoApp {
     this.fontManager.bind()
     this.apiKeyManager.bind()
     this.templatePicker.bind()
+    this.searchModal.bind()
     this.preview.bindZoom()
   }
 
@@ -112,6 +120,7 @@ class TinoApp {
     this.fileTree.bindUploadDrop()
     this.fileTree.bindBucketPicker()
     this.fileTree.bindSearch()
+    this.fileTree.bindNewMenu()
   }
 
   _bindWindowEvents() {
@@ -204,10 +213,8 @@ class TinoApp {
       'btn-download': canView,
       'btn-history': canView,
       'btn-history-restore': canEdit,
-      'btn-new': canEdit,
-      'btn-new-folder': canEdit,
       'btn-save': canEdit,
-      'btn-template': canEdit,
+      'tree-new': canEdit,
     }))
       document.getElementById(id).classList.toggle('hidden', !visible)
   }
