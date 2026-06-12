@@ -1214,10 +1214,21 @@ html, body {
 
 /* ── Bucket admin dialog ── */
 
+/* List-view body inside a dialog: fills the dialog and scrolls only when the
+   dialog reaches its max-height, keeping the action buttons pinned below. */
+.dialog-view {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .bucket-list {
   list-style: none;
+  flex: 1;
+  min-height: 0;
   padding: 8px 0;
-  max-height: 260px;
   overflow-y: auto;
 }
 
@@ -2047,9 +2058,10 @@ html, body {
 
 .apikey-list {
   list-style: none;
+  flex: 1;
+  min-height: 0;
   padding: 0;
   margin: 0;
-  max-height: 400px;
   overflow-y: auto;
 }
 
