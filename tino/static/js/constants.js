@@ -34,6 +34,14 @@ export const PANEL_MAX_WIDTH = 500
 
 export const INDEX_NOT_FOUND = -1
 
+/** Minimum query length before the global search runs. */
+
+export const SEARCH_MIN_CHARS = 2
+
+/** Debounce delay (ms) for the global search input. */
+
+export const SEARCH_DEBOUNCE_MS = 200
+
 /** Length argument for single-item splice operations. */
 
 export const SINGLE_ITEM = 1

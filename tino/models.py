@@ -71,6 +71,23 @@ class FileEntry(BaseModel):
     type: str  # file | directory
 
 
+# ── Search ──
+
+
+class SearchSnippet(BaseModel):
+    '''A single content line that matched a search query.'''
+    line: int
+    text: str
+
+
+class SearchResult(BaseModel):
+    '''A file whose name and/or content matched a search query.'''
+    bucket: str
+    path: str
+    name_match: bool = False
+    snippets: list[SearchSnippet] = []
+
+
 # ── Git ──
 
 
