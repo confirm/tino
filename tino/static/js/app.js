@@ -95,11 +95,24 @@ class TinoApp {
     this._bindAll()
     this._applyRoleVisibility()
     this.config = await this.api.config()
-    if (this.config.version)
-      this.els.logo.title = `TINO v${this.config.version}`
+    this._setLogoVersionTooltip()
     await this._loadUser()
     await this.fileTree.loadBuckets()
     await this._applyRoute(route, true)
+  }
+
+  /** Show the app version on hover over the header logo. */
+
+  _setLogoVersionTooltip() {
+    if (!this.config.version)
+      return
+
+    // Inline SVG ignores the HTML `title` attribute for tooltips; it needs a
+    // <title> child element instead.
+    const ns = 'http://www.w3.org/2000/svg'
+    const title = document.createElementNS(ns, 'title')
+    title.textContent = `TINO v${this.config.version}`
+    this.els.logo.replaceChildren(title, ...this.els.logo.childNodes)
   }
 
   _bindAll() {
