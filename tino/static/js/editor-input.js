@@ -61,6 +61,8 @@ export class EditorInput {
   updateCursorPos() {
     const { col, line } = this.app.els.editor.getCursorPosition()
     this.app.els.cursorPos.textContent = `Ln ${line}, Col ${col}`
+    if (this.app.currentFile)
+      this.app.tabPositions[this.app.currentFile] = { col, line }
   }
 
   /** Show the file's last-modified timestamp in the status bar. */

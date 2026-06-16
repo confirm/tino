@@ -179,13 +179,17 @@ export class CodeMirrorEditor {
   }
 
   _onUpdate(update) {
-    if (update.selectionSet || update.docChanged)
+    const programmatic =
+      update.transactions.some(tr => tr.annotation(_programmatic) === true)
+
+    /* Suppress the cursor callback for programmatic content swaps (loading a
+       file), otherwise the caret reset to line 1 is recorded against the
+       outgoing file's tab before the switch completes. setCursor is not
+       annotated programmatic, so genuine caret moves still report. */
+
+    if ((update.selectionSet || update.docChanged) && !programmatic)
       this._onCursor()
-    if (!update.docChanged)
-      return
-    const programmatic = update.transactions
-      .some(tr => tr.annotation(_programmatic) === true)
-    if (!programmatic)
+    if (update.docChanged && !programmatic)
       this._onChange()
   }
 
@@ -232,9 +236,8 @@ export class CodeMirrorEditor {
   /** @param {boolean} editable - Whether the user can edit the document. */
 
   setEditable(editable) {
-    this._view.dispatch({
-      effects: this._editable.reconfigure(EditorView.editable.of(editable)),
-    })
+    const editableState = EditorView.editable.of(editable)
+    this._view.dispatch({ effects: this._editable.reconfigure(editableState) })
   }
 
   /** @param {string} text - Placeholder shown when the document is empty. */
@@ -262,21 +265,21 @@ export class CodeMirrorEditor {
   }
 
   /**
-   * Move the caret to the start of a 1-based line and scroll it into view.
-   * Clamped to the document bounds, so out-of-range lines are safe.
+   * Move the caret to a 1-based line/column and scroll it into view. Both are
+   * clamped to the document bounds, so out-of-range positions are safe (a
+   * now-shorter file lands on its last line, a short line on its end).
    * @param {number} lineNumber - 1-based line to jump to.
+   * @param {number} [col=1] - 1-based column within the line.
    */
 
-  goToLine(lineNumber) {
+  setCursor(lineNumber, col = SINGLE_ITEM) {
     const { doc } = this._view.state
     const clamped = Math.max(SINGLE_ITEM, Math.min(lineNumber, doc.lines))
     const line = doc.line(clamped)
+    const pos = Math.min(line.from + col - SINGLE_ITEM, line.to)
     // eslint-disable-next-line id-length -- CodeMirror's scrollIntoView axis key
-    const scroll = EditorView.scrollIntoView(line.from, { y: 'center' })
-    this._view.dispatch({
-      effects: scroll,
-      selection: { anchor: line.from },
-    })
+    const scroll = EditorView.scrollIntoView(pos, { y: 'center' })
+    this._view.dispatch({ effects: scroll, selection: { anchor: pos } })
     this._view.focus()
   }
 

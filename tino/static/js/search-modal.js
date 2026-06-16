@@ -190,7 +190,7 @@ export class SearchModal {
     }
     await this.app.editor.openFile(path)
     if (line)
-      this.app.els.editor.goToLine(line)
+      this.app.els.editor.setCursor(line)
   }
 
 }

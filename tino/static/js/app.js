@@ -30,7 +30,7 @@ class TinoApp {
     this.currentFile = null
     this.pinnedPreview = null
     this.isAdmin = false
-    this.openTabs = []
+    Object.assign(this, { openTabs: [], tabPositions: {} })
     this.fileBuffers = {}
     this.fileMtimes = {}
     this.gitStatuses = {}

@@ -44,7 +44,7 @@ export class EditorManager {
 
     this.collab.disconnect()
     this._applyLoaded(path, loaded)
-    this._activateTab(path)
+    this._activateTab(path, loaded)
     await this.app.preview.update()
   }
 
@@ -56,13 +56,22 @@ export class EditorManager {
     }
   }
 
-  _activateTab(path) {
+  _activateTab(path, loaded) {
     this.app.currentFile = path
     this.app.els.editor.setPlaceholder('')
     if (this.app.openTabs.indexOf(path) === INDEX_NOT_FOUND)
       this.app.openTabs.push(path)
-    this._refreshEditorUi()
     this.collab.connect(path)
+
+    /* Restore the remembered caret BEFORE the UI refresh records the cursor;
+       otherwise updateCursorPos overwrites the saved position (the freshly
+       loaded doc sits at line 1) and _persistOpenState then wipes it. setCursor
+       clamps past the file end, so a now-shorter file lands on its last line. */
+
+    const pos = this.app.tabPositions[path]
+    if (loaded.kind === 'text' && pos)
+      this.app.els.editor.setCursor(pos.line, pos.col)
+    this._refreshEditorUi()
     this._persistOpenState(path)
   }
 
@@ -100,15 +109,11 @@ export class EditorManager {
   _showTextEditor(content) {
     this.app.els.binaryPreview.classList.add('hidden')
     this.app.els.binaryPreview.innerHTML = ''
-    const role = this.app.bucketRole
-    const canEdit = role === 'editor' || role === 'committer'
+    const canEdit = ['editor', 'committer'].includes(this.app.bucketRole)
     this.app.els.editor.setContent(content)
     this.app.els.editor.setEditable(canEdit)
     this.app.els.editor.setHidden(false)
-    if (canEdit)
-      this.toolbar.show()
-    else
-      this.toolbar.hide()
+    this.toolbar[canEdit ? 'show' : 'hide']()
   }
 
   _refreshEditorUi() {
@@ -128,9 +133,7 @@ export class EditorManager {
     if (!(path in this.app.fileBuffers))
       return
     const content = this.app.fileBuffers[path]
-    const result = await this.app.api.saveFile(
-      this.app.bucket, path, content,
-    )
+    const result = await this.app.api.saveFile(this.app.bucket, path, content)
     this.app.fileMtimes[path] = result.modified
     this.app.dirty.delete(path)
     await this._refreshAfterSave()
@@ -158,9 +161,7 @@ export class EditorManager {
       await this.openFile(name)
     }
     catch (err) {
-      this.app.toast.error(
-        `Could not create file: ${err.message}`,
-      )
+      this.app.toast.error(`Could not create file: ${err.message}`)
     }
   }
 
@@ -194,8 +195,7 @@ export class EditorManager {
 
   _switchAfterClose(idx) {
     if (this.app.openTabs.length > 0) {
-      const next =
-        this.app.openTabs[Math.max(0, idx - SINGLE_ITEM)]
+      const next = this.app.openTabs[Math.max(0, idx - SINGLE_ITEM)]
       this.openFile(next)
       return
     }
@@ -216,7 +216,7 @@ export class EditorManager {
 
   saveTabs() {
     if (this.app.bucket)
-      persistTabs(this.app.bucket, this.app.openTabs)
+      persistTabs(this.app.bucket, this.app.openTabs, this.app.tabPositions)
   }
 
   /** Restore saved tabs from localStorage, filtering stale paths. */
@@ -224,9 +224,11 @@ export class EditorManager {
   restoreTabs() {
     if (!this.app.bucket)
       return
-    const valid = loadSavedTabs(this.app.bucket, this.app.fileTree.filePaths)
-    if (valid.length > 0) {
-      this.app.openTabs = valid
+    const { tabs, positions } =
+      loadSavedTabs(this.app.bucket, this.app.fileTree.filePaths)
+    if (tabs.length > 0) {
+      this.app.openTabs = tabs
+      this.app.tabPositions = positions
       this.input.renderTabs()
     }
   }
@@ -259,8 +261,7 @@ export class EditorManager {
   }
 
   debounceSave() {
-    const cfg = this.app.config
-    const delay = cfg && cfg.saveDebounceMs
+    const delay = this.app.config && this.app.config.saveDebounceMs
     if (!delay)
       return
     clearTimeout(this._saveTimer)
@@ -282,6 +283,7 @@ export class EditorManager {
 
   _clearOpenState() {
     this.app.openTabs = []
+    this.app.tabPositions = {}
     this.app.currentFile = null
     this.app.fileBuffers = {}
     this.app.fileMtimes = {}
