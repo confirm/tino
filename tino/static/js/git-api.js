@@ -66,6 +66,14 @@ export class GitAPI extends HttpClient {
     )
   }
 
+  /** List the file paths changed in a specific commit. */
+
+  gitChanged(slug, ref) {
+    return this._fetch(
+      `${bucketPath(slug)}/git/changed/${encodeURIComponent(ref)}`,
+    )
+  }
+
   /** Retrieve a file's content at a specific commit. */
 
   gitShow(slug, ref, path) {

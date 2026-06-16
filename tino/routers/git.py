@@ -113,6 +113,24 @@ async def git_tree(
         raise HTTPException(404, 'Commit not found') from exc
 
 
+@router.get('/changed/{ref}')
+async def git_changed(
+    slug: str, ref: str,
+    user=Depends(require_viewer),
+    svc: GitService = Depends(get_git_service),
+):
+    '''List the files changed in a specific commit.'''
+    try:
+        return svc.changed_files(slug, ref)
+
+    except Exception as exc:
+        logger.warning(
+            'git changed failed for %s at %s (user: %s): %s',
+            slug, ref, user.username, exc,
+        )
+        raise HTTPException(404, 'Commit not found') from exc
+
+
 @router.get('/show/{ref}/content/{path:path}')
 async def git_show(
     slug: str, ref: str, path: str,

@@ -164,6 +164,26 @@ class GitService:
                 if blob.type == 'blob' and not blob.path.startswith('.')
             )
 
+    def changed_files(self, slug: str, ref: str) -> list[str]:
+        '''List file paths changed in a commit (vs its first parent).
+
+        For the initial commit (no parents) every tracked file counts as added.
+        Renames and deletions contribute both their old and new paths so the
+        history view can surface a removed file for restore.
+        '''
+        with self._open(slug) as repo:
+            commit = repo.commit(ref)
+            if not commit.parents:
+                paths = {
+                    blob.path for blob in commit.tree.traverse()
+                    if blob.type == 'blob'
+                }
+            else:
+                paths = set()
+                for diff in commit.parents[0].diff(commit):
+                    paths.update(p for p in (diff.a_path, diff.b_path) if p)
+            return sorted(p for p in paths if not p.startswith('.'))
+
     def show(self, slug: str, ref: str, path: str) -> dict | None:
         '''Return a file's content at a specific commit ref, or None if not found.'''
         with self._open(slug) as repo:

@@ -190,7 +190,7 @@ export class GitHistory {
     const files = document.getElementById('history-files')
     const preview = document.getElementById('history-preview')
     try {
-      const tree = await this.app.api.gitTree(this.app.bucket, sha)
+      const tree = await this.app.api.gitChanged(this.app.bucket, sha)
       files.innerHTML = tree.map(path =>
         `<li class="history-file-item" data-path="${escapeHtml(path)}">`
           + '<span class="material-symbols-outlined">description</span>'
