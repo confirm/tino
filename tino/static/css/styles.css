@@ -1350,8 +1350,11 @@ html, body {
 .bucket-form {
   padding: 12px 16px;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .form-label {
@@ -1376,6 +1379,12 @@ html, body {
 
 .form-input:focus {
   border-color: var(--accent);
+}
+
+/* Let the description / MCP-instruction textareas grow vertically. */
+textarea.form-input {
+  min-height: 3rem;
+  resize: vertical;
 }
 
 .form-input:read-only {

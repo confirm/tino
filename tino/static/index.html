@@ -205,13 +205,13 @@
         </div>
       </div>
 
-      <div id="bucket-view-form" class="hidden">
+      <div id="bucket-view-form" class="dialog-view hidden">
         <div class="bucket-form">
           <label class="form-label">Slug</label>
           <input class="form-input" id="bucket-form-slug" type="text" placeholder="my-bucket" pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="64">
 
           <label class="form-label">Description</label>
-          <textarea class="form-input" id="bucket-form-desc" rows="2" placeholder="Optional description..."></textarea>
+          <textarea class="form-input" id="bucket-form-desc" rows="3" placeholder="Optional description..."></textarea>
 
           <label class="form-label">MCP Instructions</label>
           <details class="mcp-global" id="bucket-mcp-global" hidden>
@@ -219,7 +219,7 @@
             <p class="mcp-global-note">Sent to every bucket, before the instructions below.</p>
             <pre class="mcp-global-text" id="bucket-mcp-global-text"></pre>
           </details>
-          <textarea class="form-input" id="bucket-form-mcp" rows="3" placeholder="Optional instructions for AI agents..."></textarea>
+          <textarea class="form-input" id="bucket-form-mcp" rows="6" placeholder="Optional instructions for AI agents..."></textarea>
 
           <label class="form-label">Access Control</label>
           <div id="bucket-access-list"></div>
@@ -360,7 +360,7 @@
         </div>
       </div>
 
-      <div id="apikey-view-form" class="hidden">
+      <div id="apikey-view-form" class="dialog-view hidden">
         <div class="bucket-form">
           <label class="form-label">Label</label>
           <input class="form-input" id="apikey-form-label" type="text" placeholder="e.g. Claude Desktop MCP">
