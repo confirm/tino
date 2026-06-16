@@ -174,18 +174,27 @@ class TinoApp {
    * @param {string} slug - Bucket identifier.
    */
 
-  async selectBucket(slug, role) {
+  async selectBucket(slug, role, restoreTabs = true) {
     if (!slug)
       return
     this.editor.saveTabs()
-    this.bucket = slug
-    this.bucketRole = role || null
+    Object.assign(this, { bucket: slug, bucketRole: role || null })
     this.editor.resetState()
     this._applyRoleVisibility()
     this.bucketEvents.connect(slug)
     writeRoute(slug, null)
     await this.git.loadStatus()
     await this.fileTree.loadFiles()
+    if (restoreTabs)
+      await this._restoreBucketTabs()
+  }
+
+  /** Reopen the tabs saved for the active bucket and show the first one. */
+
+  async _restoreBucketTabs() {
+    this.editor.restoreTabs()
+    if (this.openTabs.length > 0)
+      await this.editor.openFile(this.openTabs[0])
   }
 
   /** Resolve a bucket slug to its display name (the name if set, else slug). */
@@ -226,10 +235,8 @@ class TinoApp {
       if (!bkt)
         return
       this.els.bucketLabel.textContent = bkt.name || bkt.slug
-      await this.selectBucket(bkt.slug, bkt.role)
+      await this.selectBucket(bkt.slug, bkt.role, restoreTabs)
     }
-    if (restoreTabs)
-      this.editor.restoreTabs()
     const target =
       route.path || (restoreTabs && this.openTabs[0]) || null
     if (target && target !== this.currentFile)
