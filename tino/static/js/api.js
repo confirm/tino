@@ -42,15 +42,8 @@ export class TinoAPI extends GitAPI {
 
   /** Create a new bucket. */
 
-  createBucket(slug, description, access, mcpInstructions) {
-    const body = {
-      access: access || [],
-      description: description || '',
-      slug,
-    }
-    if (mcpInstructions)
-      body.mcp_instructions = mcpInstructions
-    return this._json('POST', '/api/buckets', body)
+  createBucket(slug, data) {
+    return this._json('POST', '/api/buckets', { slug, ...data })
   }
 
   /** Delete a bucket and its git repo. */

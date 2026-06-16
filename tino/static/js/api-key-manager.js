@@ -135,9 +135,10 @@ export class ApiKeyManager {
     }
     this._list.innerHTML = keys.map(key => {
       const entries = Object.entries(key.access || {})
-      const chips = entries.map(([slug, role]) =>
-        `<span class="apikey-access-chip">${escapeHtml(slug)} → ${escapeHtml(role)}</span>`,
-      ).join('')
+      const chips = entries.map(([slug, role]) => {
+        const label = escapeHtml(this.app.bucketDisplayName(slug))
+        return `<span class="apikey-access-chip">${label} → ${escapeHtml(role)}</span>`
+      }).join('')
       const noAccess = '<span class="apikey-no-access">no bucket access</span>'
       const accessHtml = entries.length ? chips : noAccess
       return '<li class="apikey-item">' +
@@ -177,7 +178,7 @@ export class ApiKeyManager {
     const options = this._buckets
       .map(bkt =>
         `<option value="${escapeHtml(bkt.slug)}"${bkt.slug === slug ? ' selected' : ''}>` +
-        `${escapeHtml(bkt.slug)}</option>`,
+        `${escapeHtml(bkt.name || bkt.slug)}</option>`,
       )
       .join('')
     row.innerHTML =

@@ -60,6 +60,7 @@ class BucketService:
 
         return BucketInfo(
             slug=slug,
+            name=meta.get('name', ''),
             description=meta.get('description', ''),
             access=[AccessEntry(**a) for a in meta.get('access', [])],
             mcp_instructions=meta.get('mcp_instructions', ''),
@@ -91,6 +92,7 @@ class BucketService:
     def create(  # pylint: disable=too-many-arguments
         self, slug: str, description: str = '',
         access: list[AccessEntry] | None = None, *,
+        name: str = '',
         mcp_instructions: str = '',
         user: User | None = None,
     ) -> BucketInfo:
@@ -103,6 +105,8 @@ class BucketService:
         path.mkdir(parents=True, exist_ok=True)
 
         meta = {'description': description}
+        if name:
+            meta['name'] = name
         if access:
             meta['access'] = [a.model_dump() for a in access]
         if mcp_instructions:
@@ -124,6 +128,7 @@ class BucketService:
     def update(  # pylint: disable=too-many-arguments
         self, slug: str, description: str | None = None,
         access: list[AccessEntry] | None = None, *,
+        name: str | None = None,
         mcp_instructions: str | None = None,
         user: User | None = None,
     ) -> BucketInfo | None:
@@ -138,6 +143,11 @@ class BucketService:
                 return None
 
             meta = self._read_meta(path)
+            if name is not None:
+                if name:
+                    meta['name'] = name
+                else:
+                    meta.pop('name', None)
             if description is not None:
                 meta['description'] = description
             if access is not None:

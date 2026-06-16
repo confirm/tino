@@ -57,7 +57,7 @@ async def create_bucket(
     try:
         result = svc.create(
             body.slug, body.description, body.access,
-            mcp_instructions=body.mcp_instructions, user=user,
+            name=body.name, mcp_instructions=body.mcp_instructions, user=user,
         )
         logger.info('Bucket created: %s (user: %s)', body.slug, user.username)
         return result
@@ -78,7 +78,7 @@ async def update_bucket(
     '''Update a bucket's description or access rules.'''
     bucket = svc.update(
         slug, body.description, body.access,
-        mcp_instructions=body.mcp_instructions, user=user,
+        name=body.name, mcp_instructions=body.mcp_instructions, user=user,
     )
 
     if not bucket:

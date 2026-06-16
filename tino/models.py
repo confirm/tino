@@ -25,12 +25,13 @@ class AccessEntry(BaseModel):
     role: str  # viewer | editor
 
 
-Slug = Annotated[str, Field(pattern=r'^[a-z0-9]+(?:-[a-z0-9]+)*$', min_length=1, max_length=64)]
+Slug = Annotated[str, Field(pattern=r'^[a-z0-9]+(?:-[a-z0-9]+)*$', min_length=1, max_length=50)]
 
 
 class BucketCreate(BaseModel):
     '''Request body for creating a new bucket.'''
     slug: Slug
+    name: str = Field('', max_length=50)
     description: str = ''
     access: list[AccessEntry] = []
     mcp_instructions: str = ''
@@ -38,6 +39,7 @@ class BucketCreate(BaseModel):
 
 class BucketUpdate(BaseModel):
     '''Request body for updating bucket metadata. Omitted fields are unchanged.'''
+    name: str | None = Field(None, max_length=50)
     description: str | None = None
     access: list[AccessEntry] | None = None
     mcp_instructions: str | None = None
@@ -46,6 +48,7 @@ class BucketUpdate(BaseModel):
 class BucketInfo(BaseModel):
     '''Bucket metadata returned by the API.'''
     slug: str
+    name: str = ''
     description: str
     access: list[AccessEntry]
     mcp_instructions: str = ''

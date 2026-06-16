@@ -337,6 +337,8 @@ def list_buckets() -> list[dict]:
                 'description': bucket.description,
                 'role': role,
             }
+            if bucket.name:
+                entry['name'] = bucket.name
             if bucket.mcp_instructions:
                 entry['instructions'] = bucket.mcp_instructions
             results.append(entry)

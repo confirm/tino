@@ -94,20 +94,21 @@ export class SearchModal {
     this._results.innerHTML = ''
     const showBucket = this._scope === 'all'
     results.forEach(result => {
+      const label = this.app.bucketDisplayName(result.bucket)
       this._results.appendChild(
-        SearchModal._renderItem(result, query, showBucket),
+        SearchModal._renderItem(result, query, showBucket, label),
       )
     })
   }
 
-  static _renderItem(result, query, showBucket) {
+  static _renderItem(result, query, showBucket, bucketLabel) {
     const li = document.createElement('li')
     li.className = 'search-result'
     li.dataset.bucket = result.bucket
     li.dataset.path = result.path
     let badge = ''
     if (showBucket)
-      badge = `<span class="search-bucket-badge">${escapeHtml(result.bucket)}</span>`
+      badge = `<span class="search-bucket-badge">${escapeHtml(bucketLabel)}</span>`
     const name = SearchModal._highlight(result.path, query)
     const snippets = result.snippets
       .map(snippet => SearchModal._renderSnippet(snippet, query)).join('')
@@ -184,7 +185,7 @@ export class SearchModal {
     this.close()
     if (bucket !== this.app.bucket) {
       const info = this.app.fileTree._buckets.find(bkt => bkt.slug === bucket)
-      this.app.els.bucketLabel.textContent = bucket
+      this.app.els.bucketLabel.textContent = (info && info.name) || bucket
       await this.app.selectBucket(bucket, info ? info.role : null)
     }
     await this.app.editor.openFile(path)

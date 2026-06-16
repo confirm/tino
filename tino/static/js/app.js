@@ -44,6 +44,7 @@ class TinoApp {
       bucketDialogTitle: document.getElementById('bucket-dialog-title'),
       bucketFormDesc: document.getElementById('bucket-form-desc'),
       bucketFormMcp: document.getElementById('bucket-form-mcp'),
+      bucketFormName: document.getElementById('bucket-form-name'),
       bucketFormSlug: document.getElementById('bucket-form-slug'),
       bucketLabel: document.getElementById('bucket-label'),
       bucketPicker: document.getElementById('bucket-picker'),
@@ -174,6 +175,34 @@ class TinoApp {
     await this.fileTree.loadFiles()
   }
 
+  /** Resolve a bucket slug to its display name (the name if set, else slug). */
+
+  bucketDisplayName(slug) {
+    const list = this.fileTree._buckets || []
+    const bkt = list.find(item => item.slug === slug)
+    return (bkt && bkt.name) || slug
+  }
+
+  /** Toolbar label for the active bucket, or a placeholder when none selected. */
+
+  currentBucketLabel() {
+    return this.bucket ? this.bucketDisplayName(this.bucket) : 'Select bucket...'
+  }
+
+  /** Return to the no-bucket state, e.g. after deleting the active bucket. */
+
+  clearBucket() {
+    this.bucketEvents.disconnect()
+    this.bucket = null
+    this.bucketRole = null
+    this.gitStatuses = {}
+    this.editor.resetState()
+    this._applyRoleVisibility()
+    this.fileTree.clear()
+    this.preview.update()
+    writeRoute(null, null)
+  }
+
   async _applyRoute(route, restoreTabs) {
     if (!route.slug)
       return
@@ -183,7 +212,7 @@ class TinoApp {
       )
       if (!bkt)
         return
-      this.els.bucketLabel.textContent = bkt.slug
+      this.els.bucketLabel.textContent = bkt.name || bkt.slug
       await this.selectBucket(bkt.slug, bkt.role)
     }
     if (restoreTabs)

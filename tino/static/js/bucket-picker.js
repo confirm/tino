@@ -60,7 +60,7 @@ export class BucketPicker {
         '<span class="material-symbols-outlined">' +
         'database</span>' +
         '<span class="bucket-pick-name">' +
-        `${escapeHtml(bkt.slug)}</span>${adminBtns}` +
+        `${escapeHtml(bkt.name || bkt.slug)}</span>${adminBtns}` +
         `</div>${desc}`
       list.appendChild(li)
     })
@@ -84,7 +84,7 @@ export class BucketPicker {
 
   _selectFromPicker(slug) {
     const bkt = this._buckets.find(item => item.slug === slug)
-    this.app.els.bucketLabel.textContent = slug
+    this.app.els.bucketLabel.textContent = (bkt && bkt.name) || slug
     this.close()
     this.app.selectBucket(slug, bkt ? bkt.role : null)
   }
@@ -123,7 +123,7 @@ export class BucketPicker {
     const isNew = !bucket
     this.app.els.bucketDialogTitle
       .querySelector('span').textContent =
-      isNew ? 'New Bucket' : `Edit: ${bucket.slug}`
+      isNew ? 'New Bucket' : `Edit: ${bucket.name || bucket.slug}`
     document.getElementById('bucket-view-list')
       .classList.add('hidden')
     document.getElementById('bucket-view-form')
@@ -155,6 +155,7 @@ export class BucketPicker {
     const slugInput = this.app.els.bucketFormSlug
     slugInput.value = isNew ? '' : bucket.slug
     slugInput.readOnly = !isNew
+    this.app.els.bucketFormName.value = isNew ? '' : bucket.name || ''
     this.app.els.bucketFormDesc.value =
       isNew ? '' : bucket.description || ''
     this.app.els.bucketFormMcp.value =
@@ -220,19 +221,25 @@ export class BucketPicker {
 
   async _saveBucket() {
     const slug = this.app.els.bucketFormSlug.value.trim()
-    const description = this.app.els.bucketFormDesc.value.trim()
-    const mcpInstructions = this.app.els.bucketFormMcp.value.trim()
-    const access = BucketPicker._collectAccessEntries()
     if (!this._validateSlug(slug))
       return
-    const update = { access, description, mcp_instructions: mcpInstructions }
+    const data = this._collectForm()
     if (this._editingSlug)
-      await this.app.api.updateBucket(this._editingSlug, update)
+      await this.app.api.updateBucket(this._editingSlug, data)
     else
-      await this.app.api.createBucket(slug, description, access, mcpInstructions)
+      await this.app.api.createBucket(slug, data)
     await this.app.fileTree.loadBuckets()
     this._showListView()
     await this._renderList()
+  }
+
+  _collectForm() {
+    return {
+      access: BucketPicker._collectAccessEntries(),
+      description: this.app.els.bucketFormDesc.value.trim(),
+      mcp_instructions: this.app.els.bucketFormMcp.value.trim(),
+      name: this.app.els.bucketFormName.value.trim(),
+    }
   }
 
   async _deleteBucket(slug) {
@@ -240,10 +247,8 @@ export class BucketPicker {
     if (!confirm(`Delete bucket "${slug}"?`))
       return
     await this.app.api.deleteBucket(slug)
-    if (this.app.bucket === slug) {
-      this.app.bucket = null
-      this.app.editor.resetState()
-    }
+    if (this.app.bucket === slug)
+      this.app.clearBucket()
     await this._renderList()
     await this.app.fileTree.loadBuckets()
   }

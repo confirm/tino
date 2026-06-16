@@ -35,20 +35,21 @@ export class FileTree {
 
   async loadBuckets() {
     this._buckets = await this.app.api.listBuckets()
-    if (this.app.bucket) {
-      this.app.els.bucketLabel.textContent =
-        this.app.bucket
-    }
-    else {
-      this.app.els.bucketLabel.textContent =
-        'Select bucket...'
-    }
+    this.app.els.bucketLabel.textContent = this.app.currentBucketLabel()
 
     if (this._buckets.length === SINGLE_ITEM) {
       const [only] = this._buckets
-      this.app.els.bucketLabel.textContent = only.slug
+      this.app.els.bucketLabel.textContent = only.name || only.slug
       await this.app.selectBucket(only.slug, only.role)
     }
+  }
+
+  /** Empty the file tree (called when no bucket is selected). */
+
+  clear() {
+    this.filePaths = new Set()
+    this._nodes = []
+    this.app.els.fileTree.innerHTML = ''
   }
 
   /** Open the bucket picker dialog. */
