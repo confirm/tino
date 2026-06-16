@@ -69,8 +69,18 @@ export class EditorToolbar {
       case 'codeblock': this._wrapBlock(); break
       case 'math': this._wrap('$'); break
       case 'table': this._insertTable(); break
+      case 'wrap': this._toggleWrap(); break
       default: break
     }
+  }
+
+  /** Toggle editor word wrap and reflect the new state on the button. */
+
+  _toggleWrap() {
+    const on = this.app.els.editor.toggleLineWrap()
+    this._bar.querySelector('[data-action="wrap"]')
+      .classList.toggle('active', on)
+    this.app.els.editor.focus()
   }
 
   /**

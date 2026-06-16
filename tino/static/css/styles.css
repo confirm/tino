@@ -653,6 +653,11 @@ html, body {
   color: var(--text-primary);
 }
 
+.fmt-btn.active {
+  color: var(--accent);
+  background: var(--bg-hover);
+}
+
 .fmt-sep {
   width: 1px;
   height: 16px;

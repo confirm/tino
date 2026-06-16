@@ -36,12 +36,6 @@ import { SINGLE_ITEM } from './constants.js'
  * collab reconcile).
  */
 
-/*
- * Annotation marking content set programmatically (setContent), so the update
- * listener can tell programmatic replacements from user edits and only emit
- * change notifications for the latter.
- */
-
 const _programmatic = Annotation.define()
 
 const _noop = () => null
@@ -65,6 +59,7 @@ export class CodeMirrorEditor {
     this._placeholder = new Compartment()
     this._collab = new Compartment()
     this._vim = new Compartment()
+    this._wrap = new Compartment()
     this._view = new EditorView({
       parent,
       state: this._buildState(''),
@@ -85,9 +80,7 @@ export class CodeMirrorEditor {
    */
 
   setCollab(ext) {
-    this._view.dispatch({
-      effects: this._collab.reconfigure(ext || []),
-    })
+    this._view.dispatch({ effects: this._collab.reconfigure(ext || []) })
   }
 
   /**
@@ -96,9 +89,20 @@ export class CodeMirrorEditor {
    */
 
   setVim(enabled) {
+    this._view.dispatch({ effects: this._vim.reconfigure(enabled ? vim({ status: true }) : []) })
+  }
+
+  /**
+   * Toggle soft line wrapping (default on).
+   * @returns {boolean} The new wrap state — true when wrapping is enabled.
+   */
+
+  toggleLineWrap() {
+    this._wrapOn = this._wrapOn === false
     this._view.dispatch({
-      effects: this._vim.reconfigure(enabled ? vim({ status: true }) : []),
+      effects: this._wrap.reconfigure(this._wrapOn ? EditorView.lineWrapping : []),
     })
+    return this._wrapOn
   }
 
   /** @returns {EditorView} The underlying CodeMirror view. */
@@ -112,6 +116,7 @@ export class CodeMirrorEditor {
       doc,
       extensions: [
         this._vim.of([]),
+        this._wrap.of(EditorView.lineWrapping),
         lineNumbers(),
         drawSelection(),
         foldGutter(),
@@ -153,11 +158,7 @@ export class CodeMirrorEditor {
   }
 
   static _gotoLineBinding() {
-    return {
-      key: 'Mod-g',
-      preventDefault: true,
-      run: view => gotoLine(view),
-    }
+    return { key: 'Mod-g', preventDefault: true, run: view => gotoLine(view) }
   }
 
   /*
@@ -239,9 +240,7 @@ export class CodeMirrorEditor {
   /** @param {string} text - Placeholder shown when the document is empty. */
 
   setPlaceholder(text) {
-    this._view.dispatch({
-      effects: this._placeholder.reconfigure(placeholder(text || '')),
-    })
+    this._view.dispatch({ effects: this._placeholder.reconfigure(placeholder(text || '')) })
   }
 
   /** @param {boolean} hidden - Toggle the host element's `hidden` class. */
