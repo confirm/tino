@@ -6,6 +6,7 @@ import secrets
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from . import config
@@ -111,3 +112,6 @@ def register_middleware(app: FastAPI) -> None:
     secret_key = config.TINO_SECRET_KEY or secrets.token_hex(32)
     app.add_middleware(SessionMiddleware, secret_key=secret_key)
     app.add_middleware(_TrailingSlashMiddleware)
+    # Compress responses — the SVG preview ships as verbose text and shrinks
+    # ~5-10x over the wire, which dominates load time on slow connections.
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
