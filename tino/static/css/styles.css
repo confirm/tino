@@ -1735,14 +1735,45 @@ textarea.form-input {
   overflow: hidden;
 }
 
-.commit-file-list.commit-side {
+.commit-side {
+  display: flex;
+  flex-direction: column;
   width: 320px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.commit-side .commit-file-list {
   max-height: none;
   padding: 4px 0;
   margin: 0;
-  border-right: 1px solid var(--border);
-  flex-shrink: 0;
+  flex: 1;
   overflow-y: auto;
+}
+
+.commit-select-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.commit-select-btn {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.commit-select-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
 }
 
 .commit-file-item.active {

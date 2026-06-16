@@ -84,6 +84,16 @@ export class GitManager {
     })
   }
 
+  /** Check or uncheck every file in the commit dialog. */
+
+  selectAll(checked) {
+    this.app.els.commitFiles
+      .querySelectorAll('input[type="checkbox"]')
+      .forEach(cb => {
+        cb.checked = checked
+      })
+  }
+
   /** Load and render the diff for a single file in the preview pane. */
 
   async showDiffFor(filePath) {

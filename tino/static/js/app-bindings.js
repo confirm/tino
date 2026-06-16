@@ -67,6 +67,14 @@ const bindGitButtons = app => {
     if (evt.target === app.els.commitDialog)
       app.git.closeDialog()
   })
+  document.getElementById('btn-commit-all')
+    .addEventListener('click', () => {
+      app.git.selectAll(true)
+    })
+  document.getElementById('btn-commit-none')
+    .addEventListener('click', () => {
+      app.git.selectAll(false)
+    })
   app.els.commitFiles.addEventListener('click', evt => {
     const name = evt.target.closest('.commit-file-name')
     if (!name)

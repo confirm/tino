@@ -268,7 +268,13 @@
     <div class="dialog dialog-commit">
       <div class="dialog-header">Commit Changes</div>
       <div class="commit-layout">
-        <ul class="commit-file-list commit-side" id="commit-files"></ul>
+        <div class="commit-side">
+          <div class="commit-select-actions">
+            <button class="commit-select-btn" id="btn-commit-none">Select none</button>
+            <button class="commit-select-btn" id="btn-commit-all">Select all</button>
+          </div>
+          <ul class="commit-file-list" id="commit-files"></ul>
+        </div>
         <div class="commit-diff-pane" id="commit-diff">
           <p class="preview-empty">Select a file to view its diff.</p>
         </div>
