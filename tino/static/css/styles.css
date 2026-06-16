@@ -1089,6 +1089,11 @@ html, body {
   box-shadow: var(--shadow);
   border-radius: 2px;
   margin-bottom: 16px;
+
+  /* Skip layout/paint for pages scrolled out of view so re-rendering the
+     preview while typing doesn't block the main thread on every page. */
+  content-visibility: auto;
+  contain-intrinsic-size: 595px 842px;
 }
 
 .preview-svg-page svg {

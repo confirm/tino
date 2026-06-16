@@ -1,4 +1,4 @@
-import { ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, escapeHtml } from './constants.js'
+import { SINGLE_ITEM, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, escapeHtml } from './constants.js'
 
 /**
  * Manages preview rendering and zoom controls.
@@ -82,24 +82,33 @@ export class PreviewManager {
   async compile() {
     if (!this.app.bucket || !this.target)
       return
+    this._renderGen = (this._renderGen || 0) + SINGLE_ITEM
+    const gen = this._renderGen
     const preview = this.app.els.previewPage
     try {
-      const result = await this.app.api.compile(
-        this.app.bucket,
-        this.target,
-      )
-      preview.innerHTML = ''
-      result.pages.forEach(svg => {
-        const page = document.createElement('div')
-        page.className = 'preview-svg-page'
-        page.innerHTML = svg
-        preview.appendChild(page)
-      })
+      const result = await this.app.api.compile(this.app.bucket, this.target)
+      if (gen === this._renderGen)
+        PreviewManager._renderPages(preview, result.pages)
     }
     catch (err) {
-      preview.innerHTML =
-        `<pre class="preview-error">${escapeHtml(err.message)}</pre>`
+      if (gen === this._renderGen) {
+        preview.innerHTML =
+          `<pre class="preview-error">${escapeHtml(err.message)}</pre>`
+      }
     }
+  }
+
+  /** Build all SVG pages off-DOM and swap them in with a single reflow. */
+
+  static _renderPages(preview, pages) {
+    const fragment = document.createDocumentFragment()
+    pages.forEach(svg => {
+      const page = document.createElement('div')
+      page.className = 'preview-svg-page'
+      page.innerHTML = svg
+      fragment.appendChild(page)
+    })
+    preview.replaceChildren(fragment)
   }
 
   /** Download the current .typ file as a compiled PDF. */
