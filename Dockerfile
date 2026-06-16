@@ -1,7 +1,7 @@
 FROM python:3.14-slim
 
 # renovate: github-releases depName=typst/typst
-ARG TYPST_VERSION=0.14.2
+ARG TYPST_VERSION=0.15.0
 
 # Populated automatically by BuildKit/buildx from the target platform.
 ARG TARGETARCH
