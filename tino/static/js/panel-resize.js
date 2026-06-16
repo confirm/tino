@@ -1,4 +1,8 @@
-import { PANEL_MAX_WIDTH, PANEL_MIN_WIDTH } from './constants.js'
+import {
+  PANEL_MAX_WIDTH,
+  PANEL_MIN_WIDTH_LEFT,
+  PANEL_MIN_WIDTH_RIGHT,
+} from './constants.js'
 
 const STORAGE_KEY = 'tino:panel-widths'
 
@@ -58,10 +62,11 @@ export class PanelResize {
     const isLeft = dir === 'left'
     const HALF = 2
     const maxWidth = isLeft ? PANEL_MAX_WIDTH : window.innerWidth / HALF
+    const minWidth = isLeft ? PANEL_MIN_WIDTH_LEFT : PANEL_MIN_WIDTH_RIGHT
     const move = moveEvt => {
       const dx = moveEvt.clientX - startX
       const nw = isLeft ? startWidth + dx : startWidth - dx
-      if (nw >= PANEL_MIN_WIDTH && nw <= maxWidth) {
+      if (nw >= minWidth && nw <= maxWidth) {
         target.style.width = `${nw}px`
         target.style.flex = 'none'
       }

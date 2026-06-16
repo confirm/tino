@@ -22,9 +22,13 @@ export const ZOOM_MIN = 50
 
 export const ZOOM_MAX = 200
 
-/** Minimum drag width in px for resizable panels. */
+/** Minimum drag width in px for the left (file tree) panel. */
 
-export const PANEL_MIN_WIDTH = 120
+export const PANEL_MIN_WIDTH_LEFT = 200
+
+/** Minimum drag width in px for the right (preview) panel. */
+
+export const PANEL_MIN_WIDTH_RIGHT = 350
 
 /** Maximum drag width in px for resizable panels. */
 
