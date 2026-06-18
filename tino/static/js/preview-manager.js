@@ -66,8 +66,11 @@ export class PreviewManager {
   static _renderPinLabel(pinned) {
     const label = document.getElementById('preview-pin-label')
     label.classList.toggle('hidden', !pinned)
-    if (pinned)
-      label.textContent = pinned
+    if (pinned) {
+      // Show only the filename; the full path lives in the hover tooltip.
+      label.textContent = pinned.split('/').pop()
+      label.title = pinned
+    }
   }
 
   /** Show a placeholder when the current file has no preview. */
