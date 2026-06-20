@@ -560,7 +560,6 @@ def git_log(bucket: str, path: str | None = None, max_count: int = 20) -> list[d
     return [c.model_dump() for c in commits]
 
 
-@mcp.tool()
 async def commit(bucket: str, message: str, files: list[str] | None = None) -> dict:
     '''Commit changes in a bucket. Requires the committer role.
 
@@ -580,6 +579,12 @@ async def commit(bucket: str, message: str, files: list[str] | None = None) -> d
     logger.info('MCP committed %s: %r (user: %s)', bucket, message, user.username)
     await get_notifier().notify(bucket)
     return result.model_dump()
+
+
+# Register the commit tool only when enabled, so deployments can offer a
+# read/write-but-no-commit MCP surface (agents edit, humans commit).
+if config.TINO_MCP_COMMIT_ENABLED:
+    mcp.tool()(commit)
 
 
 # Build the ASGI app once. In dev (auth disabled) an admin user is injected;

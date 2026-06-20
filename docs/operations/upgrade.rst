@@ -13,6 +13,17 @@ It is not a full changelog; only changes that ask something of you are recorded 
   Review this page before upgrading.
   Some releases add **required** settings that TINO refuses to start without, so an upgrade can otherwise fail at boot.
 
+1.20.0
+------
+
+MCP ``commit`` disabled by default
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`MCP server <MCP server>` no longer exposes the ``commit`` tool unless you opt in via the new :attr:`TINO_MCP_COMMIT_ENABLED <tino.config.TINO_MCP_COMMIT_ENABLED>` variable.
+
+- By default agents can edit and compile files but **cannot commit** — humans review and commit via the UI.
+- If you relied on agents committing over MCP, set ``TINO_MCP_COMMIT_ENABLED=true`` to restore the previous behaviour.
+
 1.13.0
 ------
 

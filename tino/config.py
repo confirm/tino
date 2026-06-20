@@ -17,6 +17,7 @@ __all__ = (
     'TINO_DEFAULT_ROLE',
     'TINO_FONT_DIR',
     'TINO_LOG_LEVEL',
+    'TINO_MCP_COMMIT_ENABLED',
     'TINO_MCP_ENABLED',
     'TINO_MCP_INSTRUCTIONS',
     'TINO_OIDC_CLIENT_ID',
@@ -149,6 +150,11 @@ TINO_MCP_ENABLED = environ.get('TINO_MCP_ENABLED', '').lower() in _TRUEISH
 #: Use this to provide global context to AI agents connecting via MCP
 #: (e.g. house style, terminology, or organisational policies).
 TINO_MCP_INSTRUCTIONS = environ.get('TINO_MCP_INSTRUCTIONS') or None
+
+#: When set to ``true``, the MCP ``commit`` tool is registered. Disabled by
+#: default, so agents can edit and compile files but never commit — humans
+#: review and commit via the UI.
+TINO_MCP_COMMIT_ENABLED = environ.get('TINO_MCP_COMMIT_ENABLED', '').lower() in _TRUEISH
 
 
 # ----- ⚙️ Application settings -----
