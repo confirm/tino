@@ -21,7 +21,7 @@ The answer was obvious: treat documents the same way we treat everything else. I
 
 No existing tool ticked all the boxes. The first question was which document format to build on. `Markdown <https://en.wikipedia.org/wiki/Markdown>`_ and `reStructuredText <https://en.wikipedia.org/wiki/ReStructuredText>`_ lack the typographic control needed for polished deliverables. `LaTeX <https://en.wikipedia.org/wiki/LaTeX>`_ offers that control, but the learning curve makes it impractical for non-technical contributors.
 
-`Typst <https://typst.app/>`_ struck the right balance — expressive enough for professional output, approachable enough for the whole team. Typst's own editor comes close to a complete solution and even offers a self-hosted variant — but while the compiler is open source, the web editor is a closed-source commercial product. We needed something we could fully control: open source, deeply integrated with our identity provider and git workflows, and extensible to our use cases.
+`Typst <https://typst.app/>`_ struck the right balance: expressive enough for professional output, approachable enough for the whole team. Typst's own editor comes close to a complete solution and even offers a self-hosted variant — but while the compiler is open source, the web editor is a closed-source commercial product. We needed something we could fully control: open source, deeply integrated with our identity provider and git workflows, and extensible to our use cases.
 
 So we built TINO: a collaborative, self-hosted editing platform around `Typst`_.
 
