@@ -8,7 +8,7 @@
 🤷🏻‍♂️ Rationale
 -----------------
 
-Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully automated — infrastructure as code, CI/CD pipelines, reproducible deployments. About 99% of our work is treated as code: auditable, versioned, and automatable. Document production was the last holdout. We used Apple Pages for a while — more usable than O365, but still impossible to automate in any meaningful way.
+Most of our business processes at `confirm IT <https://confirm.ch/>`_ are fully automated — infrastructure as code, CI/CD pipelines, reproducible deployments. Nearly everything we do is treated as code: auditable, versioned, and automatable. Document production was the last holdout. We used Apple Pages for a while — more usable than O365, but still impossible to automate in any meaningful way.
 
 The answer was obvious: treat documents the same way we treat everything else. In practice, that meant:
 
