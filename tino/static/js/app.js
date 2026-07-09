@@ -8,6 +8,7 @@ import { FontManager } from './font-manager.js'
 import { GitManager } from './git-manager.js'
 import { PanelResize } from './panel-resize.js'
 import { PreviewManager } from './preview-manager.js'
+import { ReviewManager } from './review-manager.js'
 import { SearchModal } from './search-modal.js'
 import { TemplatePicker } from './template-picker.js'
 import { TinoAPI } from './api.js'
@@ -76,6 +77,8 @@ class TinoApp {
     this.editor = new EditorManager(this)
     this.fileTree = new FileTree(this)
     this.git = new GitManager(this)
+    this.review = new ReviewManager(this)
+    this.review.bind()
     this.panelResize = new PanelResize()
     this.preview = new PreviewManager(this)
     this._initDialogs()
@@ -221,6 +224,7 @@ class TinoApp {
     this.editor.resetState()
     this._applyRoleVisibility()
     this.fileTree.clear()
+    this.review.clear()
     this.preview.update()
     writeRoute(null, null)
   }
@@ -247,6 +251,7 @@ class TinoApp {
     await this.git.loadStatus()
     await this.fileTree.loadFiles()
     this.editor.reconcileTabs(this.fileTree.filePaths)
+    await this.review.loadForCurrentFile()
   }
 
   /** Show or hide editor actions based on the user's role in the current bucket. */
@@ -262,6 +267,7 @@ class TinoApp {
       'btn-download': canView,
       'btn-history': canView,
       'btn-history-restore': canEdit,
+      'btn-review': canView,
       'btn-save': canEdit,
       'tree-new': canEdit,
     }))
