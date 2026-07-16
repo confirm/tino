@@ -21,7 +21,7 @@ dynamic = [
 requires-python = '>=3.14'
 
 dependencies = [
-    'anyio==4.14.1',
+    'anyio==4.14.2',
     'authlib==1.7.2',
     'fastapi==0.139.0',
     'mcp>=1.28.1',
