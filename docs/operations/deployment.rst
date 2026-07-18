@@ -202,7 +202,7 @@ Register a new client (application) with your OIDC provider:
 
        https://tino.example.com/login
 
-4. Ensure the following **scopes** are enabled: ``openid``, ``email``, ``profile``.
+4. Ensure the following **scopes** are enabled: ``openid``, ``email``, ``groups``, ``profile``.
 5. Make sure the **ID token** includes a claim with the user's group memberships
    (see :attr:`TINO_OIDC_GROUPS_CLAIM <tino.config.TINO_OIDC_GROUPS_CLAIM>`).
 6. Make sure a user matches an admin group (see :attr:`TINO_ADMIN_GROUPS <tino.config.TINO_ADMIN_GROUPS>`)
