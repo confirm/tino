@@ -118,7 +118,7 @@ async def oauth_protected_resource():
     payload = {
         'resource': config.TINO_BASE_URL,
         'authorization_servers': [config.TINO_BASE_URL],
-        'scopes_supported': ['openid', 'profile', 'email'],
+        'scopes_supported': ['openid', 'profile', 'email', 'groups'],
         'bearer_methods_supported': ['header'],
     }
     logger.info('Protected resource metadata: resource=%s, AS=self',

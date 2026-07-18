@@ -40,7 +40,7 @@ async def setup_oauth():
         client_id=config.TINO_OIDC_CLIENT_ID,
         client_secret=config.TINO_OIDC_CLIENT_SECRET,
         server_metadata_url=config.TINO_OIDC_DISCOVERY_URL,
-        client_kwargs={'scope': 'openid email profile'},
+        client_kwargs={'scope': 'openid email profile groups'},
     )
     await oauth.oidc.load_server_metadata()
     logger.info('OIDC provider ready (client_id=%s)', config.TINO_OIDC_CLIENT_ID)
@@ -147,7 +147,7 @@ async def login(request: Request):
 async def callback(request: Request):
     '''Handle the OIDC callback, exchange code for tokens, and create a session.'''
     token    = await oauth.oidc.authorize_access_token(request)
-    userinfo = token.get('userinfo', {})
+    userinfo = await oauth.oidc.userinfo(token=token)
 
     if not userinfo:
         raise HTTPException(400, 'No user info in token response')
