@@ -70,6 +70,7 @@ export class EditorToolbar {
       case 'math': this._wrap('$'); break
       case 'table': this._insertTable(); break
       case 'wrap': this._toggleWrap(); break
+      case 'comment': this.app.review.openComposerFromSelection(); break
       default: break
     }
   }
