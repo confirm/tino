@@ -14,7 +14,7 @@ Decision
 
 TINO delegates authentication entirely to an external `OpenID Connect <https://openid.net/developers/how-connect-works/>`_ provider (e.g. `Keycloak <https://www.keycloak.org/>`_).
 The OIDC callback establishes a signed server-side session cookie.
-Group claims from the ID token drive :ref:`bucket-level access control <Buckets>`.
+Group claims from the ID token or the UserInfo endpoint drive :ref:`bucket-level access control <Buckets>`.
 
 Authentication can be disabled entirely via ``TINO_AUTH_DISABLED`` for local development or trusted internal deployments.
 
