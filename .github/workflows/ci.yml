@@ -149,6 +149,8 @@ jobs:
           path: build/*.whl
 
   docker-image:
+    # Only publish images for main and tags — not for feature branches.
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     needs: [package]
     runs-on: ubuntu-latest
     permissions:
