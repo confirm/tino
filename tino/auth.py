@@ -146,8 +146,21 @@ async def login(request: Request):
 @router.get('/oidc/callback', include_in_schema=False)
 async def callback(request: Request):
     '''Handle the OIDC callback, exchange code for tokens, and create a session.'''
-    token    = await oauth.oidc.authorize_access_token(request)
-    userinfo = await oauth.oidc.userinfo(token=token)
+    token = await oauth.oidc.authorize_access_token(request)
+
+    # Start from the ID-token claims, then enrich from the UserInfo endpoint
+    # when the provider exposes one (it is only RECOMMENDED by OIDC Discovery).
+    # Merging both keeps working whether the groups claim lands in the ID token
+    # (e.g. Keycloak mapper set to "add to ID token") or only at UserInfo
+    # (e.g. strict providers like Authelia) — reading just one drops the other.
+    userinfo = dict(token.get('userinfo') or {})
+    if oauth.oidc.server_metadata.get('userinfo_endpoint'):
+        try:
+            userinfo.update(await oauth.oidc.userinfo(token=token))
+        except Exception:  # pylint: disable=broad-exception-caught
+            # A missing/failing UserInfo endpoint must not break login when the
+            # ID token already carries the claims — degrade, don't 500.
+            logger.warning('UserInfo fetch failed; using ID-token claims', exc_info=True)
 
     if not userinfo:
         raise HTTPException(400, 'No user info in token response')
