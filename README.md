@@ -31,7 +31,7 @@ Full documentation is available at **[docs.tinotype.com](https://docs.tinotype.c
 
 ## Deployment
 
-For the deployment via Docker, check out the **[deployment docs](https://docs.tinotype.com/deployment.html)**.
+For the deployment via Docker, check out the **[deployment docs](https://docs.tinotype.com/operations/deployment.html)**.
 
 ## License
 
