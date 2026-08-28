@@ -27,7 +27,7 @@ dependencies = [
     # Capped below 2.0: the SDK's v2 renamed FastMCP to MCPServer and removed
     # the mcp.server.fastmcp import path — migration tracked separately.
     'mcp>=1.28.1,<2',
-    'gitpython==3.1.57',
+    'gitpython==3.1.58',
     'gunicorn==26.0.0',
     'httpx==0.28.1',
     'itsdangerous==2.2.0',
