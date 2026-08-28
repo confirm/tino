@@ -29,11 +29,11 @@ dependencies = [
     'gunicorn==26.0.0',
     'httpx==0.28.1',
     'itsdangerous==2.2.0',
-    'pycrdt==0.14.2',
+    'pycrdt==0.14.4',
     'pycrdt-websocket==0.16.4',
     'python-multipart==0.0.32',
     'pyyaml==6.0.3',
-    'uvicorn[standard]==0.52.1',
+    'uvicorn[standard]==0.52.4',
 ]
 
 
