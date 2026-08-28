@@ -24,7 +24,7 @@ import httpx
 import jwt
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 from mcp.server.auth.settings import AuthSettings
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
 
 from .. import config
@@ -231,7 +231,7 @@ class _DevAdminMiddleware:  # pylint: disable=too-few-public-methods
 
 
 def _build_auth_kwargs() -> dict:
-    '''Return the FastMCP auth kwargs, or an empty dict when auth is disabled.'''
+    '''Return the MCPServer auth kwargs, or an empty dict when auth is disabled.'''
     if config.TINO_AUTH_DISABLED:
         logger.info('MCP auth disabled (TINO_AUTH_DISABLED)')
         return {}
@@ -264,18 +264,15 @@ _transport_security = TransportSecuritySettings(
     allowed_hosts=_allowed_hosts,
 )
 
-mcp = FastMCP(
+# Transport options (stateless_http, json_response, path, transport security)
+# moved from the constructor to streamable_http_app() in mcp SDK 2.x.
+mcp = MCPServer(
     'TINO',
     instructions=_INSTRUCTIONS,
-    stateless_http=True,
-    json_response=True,
-    # The handler sits at the sub-app root; the app mounts it under /mcp.
-    streamable_http_path='/',
-    transport_security=_transport_security,
     **_auth_kwargs,
 )
 logger.info(
-    'FastMCP instance created: stateless_http=True, auth_configured=%s',
+    'MCPServer instance created: stateless_http=True, auth_configured=%s',
     'token_verifier' in _auth_kwargs,
 )
 
@@ -589,7 +586,13 @@ if config.TINO_MCP_COMMIT_ENABLED:
 
 # Build the ASGI app once. In dev (auth disabled) an admin user is injected;
 # otherwise the OAuth resource-server machinery enforces authentication.
-_base_app = mcp.streamable_http_app()
+_base_app = mcp.streamable_http_app(
+    stateless_http=True,
+    json_response=True,
+    # The handler sits at the sub-app root; the app mounts it under /mcp.
+    streamable_http_path='/',
+    transport_security=_transport_security,
+)
 if config.TINO_AUTH_DISABLED:
     mcp_asgi_app = _DevAdminMiddleware(_base_app)
     logger.info('MCP ASGI app built with DevAdminMiddleware (auth disabled)')
