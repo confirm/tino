@@ -160,6 +160,48 @@ export class TinoAPI extends GitAPI {
     return this._fetch(`/api/search?${params}`)
   }
 
+  // ── Review comments ──
+
+  /** List review comment threads. */
+
+  listComments(slug, path, status) {
+    const params = new URLSearchParams()
+    if (path)
+      params.set('path', path)
+    if (status)
+      params.set('status', status)
+    const qs = params.size ? `?${params}` : ''
+    return this._fetch(`${bucketPath(slug)}/comments${qs}`)
+  }
+
+  /** Create a source-anchored review comment thread. */
+
+  createComment(slug, path, anchor, body) {
+    return this._json(
+      'POST', `${bucketPath(slug)}/comments`, { anchor, body, path },
+    )
+  }
+
+  /** Reply to an existing review comment thread. */
+
+  replyToComment(slug, threadId, body) {
+    return this._json(
+      'POST',
+      `${bucketPath(slug)}/comments/${encodeURIComponent(threadId)}/replies`,
+      { body },
+    )
+  }
+
+  /** Resolve or reopen a review comment thread. */
+
+  updateComment(slug, threadId, status) {
+    return this._json(
+      'PATCH',
+      `${bucketPath(slug)}/comments/${encodeURIComponent(threadId)}`,
+      { status },
+    )
+  }
+
   // ── Compile ──
 
   compile(slug, path) {

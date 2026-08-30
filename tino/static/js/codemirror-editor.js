@@ -25,6 +25,7 @@ import {
 } from './vendor/codemirror.js'
 import { typst, typstKeymap } from './codemirror-typst.js'
 import { SINGLE_ITEM } from './constants.js'
+import { reviewExtensions } from './codemirror-review.js'
 
 /**
  * Editor controller around a CodeMirror 6 EditorView. Owns the view, its
@@ -37,9 +38,7 @@ import { SINGLE_ITEM } from './constants.js'
  */
 
 const _programmatic = Annotation.define()
-
 const _noop = () => null
-
 export class CodeMirrorEditor {
 
   /**
@@ -141,6 +140,7 @@ export class CodeMirrorEditor {
         ]),
         this._editable.of(EditorView.editable.of(true)),
         this._placeholder.of(placeholder('')),
+        reviewExtensions,
         EditorView.updateListener.of(update => this._onUpdate(update)),
       ],
     })
