@@ -17,6 +17,7 @@ __all__ = (
     'TINO_DEFAULT_ROLE',
     'TINO_FONT_DIR',
     'TINO_LOG_LEVEL',
+    'TINO_LOCAL_GROUPS',
     'TINO_MCP_COMMIT_ENABLED',
     'TINO_MCP_ENABLED',
     'TINO_MCP_INSTRUCTIONS',
@@ -137,6 +138,9 @@ TINO_OIDC_CLIENT_SECRET = environ.get('TINO_OIDC_CLIENT_SECRET')
 #: ⭕ The OIDC token claim that contains the user's group memberships.
 TINO_OIDC_GROUPS_CLAIM = environ.get('TINO_OIDC_GROUPS_CLAIM', 'groups')
 
+#: Resolve user group memberships from a local ".groups.yml" file.
+#: See :ref:`Groups <usage/authentication:Groups>` for details.
+TINO_LOCAL_GROUPS = environ.get('TINO_LOCAL_GROUPS', '').lower() in _TRUEISH
 
 # ----- 🤖 MCP -----
 
