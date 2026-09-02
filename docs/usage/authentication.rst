@@ -17,6 +17,39 @@ To sign out, click the **Logout** button in the top-right corner of the toolbar.
 
     Also have a look at the :ref:`Access control <usage/buckets:Access control>`, and :ref:`OIDC integration <operations/deployment:oidc>`.
 
+
+Groups
+------
+
+TINO uses user groups to drive :ref:`usage/buckets:Access control`. 
+
+Group membership is not standardized by OpenID Connect (OIDC). Identity providers may expose groups through custom claims, provide them through the UserInfo response, or omit them entirely.
+
+TINO combines claims from the ID token and the UserInfo endpoint. If your OIDC provider exposes group membership under a non-standard name, you can configure TINO to read it using :attr:`TINO_OIDC_GROUPS_CLAIM <tino.config.TINO_OIDC_GROUPS_CLAIM>`.
+
+If your OIDC provider does not provide group membership, TINO can resolve groups locally instead.
+
+Set :attr:`TINO_LOCAL_GROUPS <tino.config.TINO_LOCAL_GROUPS>` to ``true`` in the environment to bypass OIDC group resolution and use a ``.groups.yml`` file in the data directory.
+
+The mapping supports exact email addresses, domain wildcards, and a global fallback. Matching entries are combined, so a user can inherit groups from multiple mappings:
+
+.. code-block:: yaml
+    
+    # $DATA_DIR/.groups.yml
+    # maps an email to a set of groups, supports wildcards
+    '*':
+      - all-users
+
+    '*@acme.org':
+      - employees
+
+    wile.e.coyote@acme.org:
+      - admins
+
+    # Mr. Coyote is a member of 'all-users', 'employees', and 'admins'.
+
+Local group resolution is intended for smaller deployments. For larger or enterprise deployments, we recommend using an identity broker such as Keycloak or Dex to normalize group membership and provide the required group claims to TINO.
+
 API keys
 --------
 

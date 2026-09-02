@@ -3,6 +3,7 @@
 from logging import getLogger
 from pathlib import Path
 
+import yaml
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse
@@ -40,11 +41,35 @@ async def setup_oauth():
         client_id=config.TINO_OIDC_CLIENT_ID,
         client_secret=config.TINO_OIDC_CLIENT_SECRET,
         server_metadata_url=config.TINO_OIDC_DISCOVERY_URL,
-        client_kwargs={'scope': 'openid email profile groups'},
+        client_kwargs={},
     )
-    await oauth.oidc.load_server_metadata()
-    logger.info('OIDC provider ready (client_id=%s)', config.TINO_OIDC_CLIENT_ID)
+    scopes = ['openid', 'email', 'profile']
 
+    await oauth.oidc.load_server_metadata()
+    metadata = oauth.oidc.server_metadata
+
+    if config.TINO_LOCAL_GROUPS:
+        logger.info(
+            'TINO_LOCAL_GROUPS is enabled. '
+            'Relying on YAML for groups, and omitting OIDC groups scope.')
+    else:
+        # Some providers omit 'scopes_supported' entirely, so we check if the key exists first
+        supported_scopes = metadata.get('scopes_supported')
+
+        if supported_scopes is not None and 'groups' not in supported_scopes:
+            error_msg = (
+                "Your OIDC provider does not support the 'groups' scope, which TINO "
+                "requires for group-based access control. Set TINO_LOCAL_GROUPS=true and map "
+                "user emails to groups in .groups.yml."
+            )
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
+
+        scopes.append('groups')
+
+    oauth.oidc.client_kwargs['scope'] = ' '.join(scopes)
+
+    logger.info('OIDC provider ready (client_id=%s)', config.TINO_OIDC_CLIENT_ID)
 
 _NOAUTH_USER = User(
     username='tino',
@@ -126,6 +151,53 @@ def check_access(user: User, access: list[AccessEntry], min_role: str,
     if ROLE_HIERARCHY.get(role, 0) < ROLE_HIERARCHY.get(min_role, 0):
         raise HTTPException(403, f'{min_role} role required')
 
+# ── Local Groups ──
+
+
+def get_local_groups(email: str) -> list[str]:
+    '''Load groups for an email from the .groups.yml file in the data dir.'''
+    if not email:
+        return []
+
+    local_path = config.TINO_DATA_DIR / '.groups.yml'
+    if not local_path.is_file():
+        logger.warning('Local groups enabled, but file %s not found', local_path)
+        return []
+
+    try:
+        with open(local_path, 'r', encoding='utf-8') as f:
+            group_map = yaml.safe_load(f) or {}
+    except (OSError, yaml.YAMLError) as e:
+        logger.error('Failed to read or parse local groups from %s: %s', local_path, e)
+        return []
+
+    if not isinstance(group_map, dict):
+        logger.error('Invalid format: %s must contain a dictionary mapping', local_path)
+        return []
+
+    # Build the list of lookup keys
+    lookup_keys = ['*', email]
+    if '@' in email:
+        domain = email.split('@')[1]
+        lookup_keys.append(f'*@{domain}')
+
+    user_groups = set()
+
+    # Process all keys in a single loop
+    for key in lookup_keys:
+        mapped_val = group_map.get(key)
+
+        if not mapped_val:
+            continue
+
+        if isinstance(mapped_val, list):
+            user_groups.update(mapped_val)
+        else:
+            logger.error('Invalid mapping for "%s" in %s: must be a list', key, local_path)
+
+    logger.info('Local groups for "%s": %s', email, list(user_groups))
+
+    return list(user_groups)
 
 # ── Routes ──
 
@@ -165,12 +237,29 @@ async def callback(request: Request):
     if not userinfo:
         raise HTTPException(400, 'No user info in token response')
 
-    groups_claim = config.TINO_OIDC_GROUPS_CLAIM
+    email = userinfo.get('email', '')
+
+    if config.TINO_LOCAL_GROUPS:
+        # Resolve groups locally when TINO_LOCAL_GROUPS is enabled.
+        groups = get_local_groups(email)
+        if groups:
+            logger.info('Loaded %d local groups for %s', len(groups), email)
+    else:
+        # Resolve groups using OIDC claims
+        groups_claim = config.TINO_OIDC_GROUPS_CLAIM
+        groups = userinfo.get(groups_claim, [])
+
+    username = (
+        userinfo.get('preferred_username')
+        or userinfo.get('name')
+        or userinfo.get('sub')
+        or ''
+    )
 
     request.session['user'] = {
-        'username': userinfo.get('preferred_username', userinfo.get('sub', '')),
-        'email': userinfo.get('email', ''),
-        'groups': userinfo.get(groups_claim, []),
+        'username': username,
+        'email': email,
+        'groups': groups,
     }
 
     if token.get('id_token'):
