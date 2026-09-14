@@ -1,4 +1,4 @@
-import { SINGLE_ITEM, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, escapeHtml } from './constants.js'
+import { SINGLE_ITEM, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants.js'
 
 /**
  * Manages preview rendering and zoom controls.
@@ -94,11 +94,75 @@ export class PreviewManager {
         PreviewManager._renderPages(preview, result.pages)
     }
     catch (err) {
-      if (gen === this._renderGen) {
-        preview.innerHTML =
-          `<pre class="preview-error">${escapeHtml(err.message)}</pre>`
-      }
+      if (gen === this._renderGen)
+        this._renderError(preview, err)
     }
+  }
+
+  /** Render the diagnostics, or the raw error text if there are none. */
+
+  _renderError(preview, err) {
+    const diagnostics = err.diagnostics || []
+    if (diagnostics.length)
+      preview.replaceChildren(this._renderDiagnostics(diagnostics))
+    else
+      preview.replaceChildren(PreviewManager._renderRawError(err.message))
+  }
+
+  /** Build the list of diagnostics. */
+
+  _renderDiagnostics(diagnostics) {
+    const list = document.createElement('div')
+    list.className = 'preview-errors'
+    diagnostics.forEach(diag => list.appendChild(this._renderDiagnostic(diag)))
+    return list
+  }
+
+  /** Build one diagnostic entry clickable only when it has a location. */
+
+  _renderDiagnostic(diag) {
+    const item = document.createElement(diag.file ? 'button' : 'div')
+    item.className = `preview-error-item preview-error-${diag.severity}`
+    item.appendChild(PreviewManager._span('preview-error-message', diag.message))
+    if (diag.file)
+      this._makeClickable(item, diag)
+    return item
+  }
+
+  /** Wire the entry to jump to its location on click. */
+
+  _makeClickable(item, diag) {
+    const loc = `${diag.file}:${diag.line}:${diag.column}`
+    item.appendChild(PreviewManager._span('preview-error-loc', loc))
+    item.type = 'button'
+    item.addEventListener('click', () => this._jumpToDiagnostic(diag))
+  }
+
+  /** Open the diagnostic's file and move the caret to its position. */
+
+  async _jumpToDiagnostic(diag) {
+    await this.app.editor.openFile(diag.file)
+
+    // Typst can report column 0; setCursor is 1-based.
+    this.app.els.editor.setCursor(diag.line, Math.max(SINGLE_ITEM, diag.column))
+  }
+
+  /** Create a span with a class and text content. */
+
+  static _span(className, text) {
+    const span = document.createElement('span')
+    span.className = className
+    span.textContent = text
+    return span
+  }
+
+  /** Fallback when there are no structured diagnostics. */
+
+  static _renderRawError(message) {
+    const pre = document.createElement('pre')
+    pre.className = 'preview-error'
+    pre.textContent = message
+    return pre
   }
 
   /** Build all SVG pages off-DOM and swap them in with a single reflow. */
