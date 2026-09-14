@@ -7,11 +7,19 @@ from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
 from ..dependencies import get_compiler_service, require_viewer
-from ..services.compiler import CompilerService
+from ..services.compiler import CompileError, CompilerService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/api/buckets/{slug}/compile', tags=['compile'])
+
+
+def _compile_failed(exc: CompileError) -> HTTPException:
+    '''Build the 422 response for a failed compile.'''
+    return HTTPException(422, detail={
+        'message': str(exc),
+        'diagnostics': exc.diagnostics,
+    })
 
 
 @router.get('/pdf/{path:path}')
@@ -36,6 +44,9 @@ async def compile_pdf(
     except FileNotFoundError as exc:
         raise HTTPException(404, 'File not found') from exc
 
+    except CompileError as exc:
+        raise _compile_failed(exc) from exc
+
     except RuntimeError as exc:
         raise HTTPException(422, str(exc)) from exc
 
@@ -54,6 +65,9 @@ async def compile_svg(
 
     except FileNotFoundError as exc:
         raise HTTPException(404, 'File not found') from exc
+
+    except CompileError as exc:
+        raise _compile_failed(exc) from exc
 
     except RuntimeError as exc:
         raise HTTPException(422, str(exc)) from exc

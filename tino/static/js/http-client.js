@@ -25,20 +25,28 @@ export class HttpClient {
       throw new Error('Session expired')
     }
     if (!res.ok)
-      throw new Error(await HttpClient._parseError(res))
+      throw HttpClient._error(await res.text())
     if (res.status === HTTP_NO_CONTENT)
       return null
     return res.json()
   }
 
-  static async _parseError(res) {
-    const body = await res.text()
+  /** Build an Error, carrying `detail.diagnostics` when the body has them. */
+
+  static _error(body) {
+    let detail = body
     try {
-      return JSON.parse(body).detail || body
+      detail = JSON.parse(body).detail || body
     }
     catch {
-      return body
+      // Not JSON keep the raw body.
     }
+    if (detail && typeof detail === 'object') {
+      const err = new Error(detail.message || body)
+      err.diagnostics = detail.diagnostics || []
+      return err
+    }
+    return new Error(detail)
   }
 
   /** Send a JSON-body request (POST/PUT). */

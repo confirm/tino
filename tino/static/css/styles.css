@@ -1119,6 +1119,46 @@ html, body {
   margin: 0;
 }
 
+.preview-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.preview-error-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cd-red-50);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.preview-error-warning {
+  border-left-color: var(--cd-yellow-60);
+}
+
+/* Only diagnostics with a location are buttons. */
+button.preview-error-item {
+  cursor: pointer;
+}
+
+button.preview-error-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+}
+
+.preview-error-loc {
+  color: var(--text-muted);
+}
+
 /* ── Dialog / Modal ── */
 
 .dialog-overlay {
