@@ -1,6 +1,7 @@
 '''Typst compiler service. Shells out to the system `typst` binary to produce SVG or PDF output.'''
 
 import logging
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -8,6 +9,52 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 _COMPILE_TIMEOUT = 30
+
+# Typst error/warning header and its `  ┌─ file:line:col` location line.
+_SEVERITY_RE = re.compile(r'^(error|warning): ?(.*)$')
+_HELP_RE     = re.compile(r'^help:')
+_LOCATION_RE = re.compile(r'^\s*┌─\s+(.*):(\d+):(\d+)\s*$')
+
+
+class CompileError(RuntimeError):
+    '''Failed Typst compilation holding its diagnostics and raw stderr.'''
+
+    def __init__(self, stderr: str, diagnostics: list[dict]):
+        super().__init__(stderr or 'Compilation failed')
+        self.diagnostics = diagnostics
+
+
+def parse_diagnostics(stderr: str) -> list[dict]:
+    '''Pull the individual errors out of Typst's stderr.
+
+    File, line and column are None when Typst gives no position.
+    '''
+    diagnostics: list[dict] = []
+    current: dict | None = None
+
+    for raw_line in stderr.splitlines():
+        severity = _SEVERITY_RE.match(raw_line)
+        if severity:
+            current = {
+                'severity': severity.group(1),
+                'message': severity.group(2).strip(),
+                'file': None, 'line': None, 'column': None,
+            }
+            diagnostics.append(current)
+            continue
+
+        # Skip help blocks, but let them close the current error.
+        if _HELP_RE.match(raw_line):
+            current = None
+            continue
+
+        location = _LOCATION_RE.match(raw_line)
+        if location and current and current['file'] is None:
+            current['file']   = location.group(1)
+            current['line']   = int(location.group(2))
+            current['column'] = int(location.group(3))
+
+    return diagnostics
 
 
 class CompilerService:
@@ -98,8 +145,16 @@ class CompilerService:
         )
 
         if result.returncode != 0:
-            logger.warning('Compilation failed for %s: %s', source, result.stderr.strip())
-            raise RuntimeError(result.stderr.strip() or 'Compilation failed')
+            stderr = self._strip_paths(result.stderr.strip(), root)
+            logger.warning('Compilation failed for %s: %s', source, stderr)
+            raise CompileError(stderr, parse_diagnostics(stderr))
+
+    def _strip_paths(self, text, root):
+        '''Strip absolute paths so only bucket-relative ones reach the client.'''
+        for base in (root, self.data_dir):
+            text = text.replace(f'{base}/', '').replace(str(base), '')
+
+        return text
 
     def _build_cmd(self, source, output, root, fmt=None):
         '''Assemble the typst compile argument list.'''
