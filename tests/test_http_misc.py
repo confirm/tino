@@ -177,13 +177,25 @@ def test_compile_missing_is_404(login, doc, fake_typst):  # pylint: disable=unus
     assert client.get('/api/buckets/proj/compile/pdf/ghost.typ').status_code == 404
 
 
-def test_compile_error_is_422(login, doc, fake_typst):  # pylint: disable=unused-argument
-    fake_typst.update(returncode=1, stderr='error: unknown variable')
+def test_compile_error_is_422_with_diagnostics(login, doc, fake_typst):  # pylint: disable=unused-argument
+    bucket_dir = (config.TINO_BUCKET_DIR / 'proj').resolve()
+    fake_typst.update(returncode=1, stderr=(
+        'error: unknown variable: foo\n'
+        f'  ┌─ {bucket_dir}/sub/doc.typ:3:2\n'
+        '  │\n'
+        '3 │ #foo\n'
+    ))
     client = login(VIEWER)
     for fmt in ('svg', 'pdf'):
         resp = client.get(f'/api/buckets/proj/compile/{fmt}/sub/doc.typ')
         assert resp.status_code == 422
-        assert 'unknown variable' in resp.json()['detail']
+        detail = resp.json()['detail']
+        assert 'unknown variable' in detail['message']
+        assert str(bucket_dir) not in detail['message']
+        assert detail['diagnostics'] == [{
+            'severity': 'error', 'message': 'unknown variable: foo',
+            'file': 'sub/doc.typ', 'line': 3, 'column': 2,
+        }]
 
 
 def test_compile_forbidden(login, doc):  # pylint: disable=unused-argument
