@@ -133,6 +133,81 @@ async def test_reconnect_cancels_ttl(data_dir, files, bucket):
     await mgr.shutdown()
 
 
+def _edit_transform(*pairs):
+    from tino.models import FileEdit  # pylint: disable=import-outside-toplevel
+    from tino.services.edit import apply_edits  # pylint: disable=import-outside-toplevel
+    edits = [FileEdit(old_string=old, new_string=new) for old, new in pairs]
+    return lambda text: apply_edits(text, edits)
+
+
+async def test_edit_file_without_room_edits_disk(manager, files, bucket):
+    files.write(bucket, 'a.typ', 'hello world')
+    modified = await manager.edit_file(bucket, 'a.typ', _edit_transform(('world', 'TINO')))
+    assert modified
+    assert files.read(bucket, 'a.typ')['content'] == 'hello TINO'
+
+
+async def test_edit_file_merges_into_live_room(manager, files, bucket):
+    files.write(bucket, 'a.typ', 'intro\nbody\noutro')
+    await manager._get_or_create_room(bucket, 'a.typ')  # pylint: disable=protected-access
+    ytext = manager._rooms[(bucket, 'a.typ')].ydoc.get('content', type=Text)  # pylint: disable=protected-access
+    ytext += '\nunsaved by a collaborator'
+
+    await manager.edit_file(bucket, 'a.typ', _edit_transform(('body', 'BODY')))
+
+    expected = 'intro\nBODY\noutro\nunsaved by a collaborator'
+    assert manager.get_content(bucket, 'a.typ') == expected
+    assert files.read(bucket, 'a.typ')['content'] == expected
+
+
+async def test_edit_file_live_room_multibyte_offsets(manager, files, bucket):
+    files.write(bucket, 'a.typ', 'Grüsse 🦄 aus Zürich 🦄!')
+    await manager._get_or_create_room(bucket, 'a.typ')  # pylint: disable=protected-access
+
+    await manager.edit_file(bucket, 'a.typ', _edit_transform(('Zürich', 'Bern'), ('!', '?')))
+
+    assert manager.get_content(bucket, 'a.typ') == 'Grüsse 🦄 aus Bern 🦄?'
+
+
+async def test_edit_file_live_room_is_one_update(manager, files, bucket):
+    files.write(bucket, 'a.typ', 'a b c')
+    await manager._get_or_create_room(bucket, 'a.typ')  # pylint: disable=protected-access
+    doc = manager._rooms[(bucket, 'a.typ')].ydoc  # pylint: disable=protected-access
+    updates = []
+    subscription = doc.observe(updates.append)
+
+    await manager.edit_file(bucket, 'a.typ', _edit_transform(('a', 'x'), ('c', 'z')))
+
+    doc.unobserve(subscription)
+    assert len(updates) == 1
+
+
+async def test_edit_file_failure_changes_nothing(manager, files, bucket):
+    files.write(bucket, 'a.typ', 'keep me')
+    await manager._get_or_create_room(bucket, 'a.typ')  # pylint: disable=protected-access
+
+    with pytest.raises(ValueError, match='not found'):
+        await manager.edit_file(bucket, 'a.typ', _edit_transform(('keep', 'x'), ('nope', 'y')))
+
+    assert manager.get_content(bucket, 'a.typ') == 'keep me'
+    assert files.read(bucket, 'a.typ')['content'] == 'keep me'
+
+
+async def test_edit_file_missing_and_binary(manager, files, bucket):
+    files.upload(bucket, 'img.bin', b'\xff\xfe')
+    with pytest.raises(FileNotFoundError):
+        await manager.edit_file(bucket, 'ghost.typ', _edit_transform(('a', 'b')))
+    with pytest.raises(ValueError, match='binary'):
+        await manager.edit_file(bucket, 'img.bin', _edit_transform(('a', 'b')))
+
+
+async def test_edit_file_rejects_traversal(manager, bucket, data_dir):
+    (data_dir / 'outside.typ').write_text('secret')
+    with pytest.raises(FileNotFoundError):
+        await manager.edit_file(bucket, '../outside.typ', _edit_transform(('secret', 'x')))
+    assert (data_dir / 'outside.typ').read_text() == 'secret'
+
+
 async def test_shutdown_flushes_open_rooms(manager, files, bucket):
     files.write(bucket, 'a.typ', 'disk')
     await manager._get_or_create_room(bucket, 'a.typ')  # pylint: disable=protected-access

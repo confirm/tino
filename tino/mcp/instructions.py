@@ -12,6 +12,8 @@ BASE_INSTRUCTIONS = '''\
 TINO is a collaborative Typst document platform.
 Documents live in *buckets* (git repositories).
 Use these tools to list, read, write, compile, and commit Typst source files.
+To change part of an existing file, use ``edit_file`` instead of rewriting the
+whole file with ``write_file``; read large files in ranges with ``read_file``.
 Always compile after editing to verify the document is valid.
 Each bucket may have specific instructions.
 Always list buckets first and follow any per-bucket guidance.

@@ -231,6 +231,58 @@ class CollabManager:
         if new_content:
             ytext += new_content
 
+    async def edit_file(self, slug: str, file_path: str, transform) -> str:
+        '''Atomically transform a file's current content and save it to disk.
+
+        ``transform(text)`` returns ``(new_text, splices)`` (see
+        :func:`~tino.services.edit.apply_edits`). When the file is open in a
+        room, the transform runs against the live document and the splices are
+        applied to its YText as incremental edits in one transaction, so they
+        merge with collaborators' (unsaved) changes instead of replacing them.
+        Otherwise the file is read from disk. Holding the per-path lock keeps a
+        room from being created or flushed in between.
+
+        Returns the new ISO mtime. Raises ``FileNotFoundError`` if the file does
+        not exist and ``ValueError`` if it is binary; errors raised by
+        *transform* propagate before anything is changed.
+        '''
+        async with self._get_lock((slug, file_path)):
+            room = self._rooms.get((slug, file_path))
+
+            if room is None:
+                result = self.file_service.read(slug, file_path)
+                if result is None:
+                    raise FileNotFoundError(f'File not found: {slug}/{file_path}')
+                if result.get('binary'):
+                    raise ValueError(f'File is binary and cannot be edited: {slug}/{file_path}')
+                new_text, _ = transform(result['content'])
+            else:
+                ytext = room.ydoc.get('content', type=Text)
+                current = str(ytext)
+                new_text, splices = transform(current)
+                with room.ydoc.transaction():
+                    CollabManager._apply_splices(ytext, current, splices)
+                logger.info('Applied %d edit(s) to room %s/%s', len(splices), slug, file_path)
+
+            return self.file_service.write(slug, file_path, new_text)
+
+    @staticmethod
+    def _apply_splices(ytext, current: str, splices) -> None:
+        '''Apply character-offset splices to a YText in order.
+
+        pycrdt indexes YText by UTF-8 byte offset (an index inside a multi-byte
+        character is silently clamped), so each character offset is converted
+        against the text as it is when that splice applies.
+        '''
+        for splice in splices:
+            start = len(current[:splice.start].encode('utf-8'))
+            end   = start + len(current[splice.start:splice.end].encode('utf-8'))
+            if end > start:
+                del ytext[start:end]
+            if splice.insert:
+                ytext.insert(start, splice.insert)
+            current = current[:splice.start] + splice.insert + current[splice.end:]
+
     def get_content(self, slug: str, file_path: str) -> str | None:
         '''Return the live YText content if a room exists, else None.'''
         room = self._rooms.get((slug, file_path))
