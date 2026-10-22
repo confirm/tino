@@ -8,7 +8,7 @@ import {
   TOGGLE_ICON,
   escapeHtml,
 } from './constants.js'
-import { loadCollapsedPaths, saveCollapsedPaths } from './tree-state.js'
+import { loadCollapsedPaths, pruneCollapsedPaths, saveCollapsedPaths } from './tree-state.js'
 import { BucketPicker } from './bucket-picker.js'
 import { TreeActions } from './tree-actions.js'
 import { TreeBuilder } from './tree-builder.js'
@@ -77,6 +77,7 @@ export class FileTree {
     this._nodes = TreeBuilder.build(
       files, this.app.gitStatuses, this._canEdit(),
     )
+    this.collapsedPaths = pruneCollapsedPaths(this._nodes, this.collapsedPaths)
     this._renderTree()
   }
 
