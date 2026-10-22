@@ -45,6 +45,8 @@ develop = [
     'isort',
     'pycodestyle',
     'pylint',
+    'pytest',
+    'pytest-cov',
     'Sphinx',
     'sphinx-autobuild',
     'sphinxcontrib-mermaid',
@@ -82,3 +84,18 @@ exclude = [
 ]
 
 [tool.setuptools_scm]
+
+
+[tool.pytest.ini_options]
+
+testpaths = ['tests']
+addopts = '--strict-markers'
+markers = [
+    'typst: requires the typst CLI on the PATH (skipped otherwise)',
+]
+
+
+[tool.coverage.run]
+
+source = ['tino']
+branch = true

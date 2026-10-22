@@ -96,7 +96,10 @@ test-stylelint:
 	curl -sSfLo .stylelintrc.yml $(LINTER_CONFIGS)/stylelintrc.yml
 	npx stylelint $(SOURCE_DIRS)/static/css/*.css
 
-test: test-commits test-isort test-pycodestyle test-pylint test-eslint test-stylelint
+test-pytest:
+	pytest --cov=$(SOURCE_DIRS) --cov-report=term-missing
+
+test: test-commits test-isort test-pycodestyle test-pylint test-pytest test-eslint test-stylelint
 
 #
 # Build
