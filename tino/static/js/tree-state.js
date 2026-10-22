@@ -14,6 +14,23 @@ export const loadCollapsedPaths = bucket => {
   }
 }
 
+const collectDirs = (nodes, dirs) => {
+  nodes.forEach(node => {
+    if (node.type === 'directory') {
+      dirs.add(node.path)
+      collectDirs(node.children, dirs)
+    }
+  })
+}
+
+/** Drop collapsed paths whose directories no longer exist in the tree. */
+
+export const pruneCollapsedPaths = (nodes, paths) => {
+  const dirs = new Set()
+  collectDirs(nodes, dirs)
+  return new Set([...paths].filter(path => dirs.has(path)))
+}
+
 /** Persist the collapsed paths, ignoring blocked storage. */
 
 export const saveCollapsedPaths = (bucket, paths) => {
