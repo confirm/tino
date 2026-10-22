@@ -6,10 +6,12 @@ from types import SimpleNamespace
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
+from pycrdt import Text
 
 from tino import config, dependencies
 from tino.mcp import instructions
 from tino.mcp import server as mcp
+from tino.models import FileEdit
 
 from .conftest import ADMIN, COMMIT, EDITOR, NOBODY, VIEWER
 
@@ -128,6 +130,42 @@ def test_read_file_missing_and_binary(as_user, proj):
         mcp.read_file(proj, 'img.png')
 
 
+@pytest.fixture
+def long_file(proj):
+    dependencies.get_file_service().write(proj, 'long.typ', '\n'.join(f'line {n}' for n in range(1, 11)))
+    return 'long.typ'
+
+
+def test_read_file_range(as_user, proj, long_file):
+    as_user(VIEWER)
+    assert mcp.read_file(proj, long_file, offset=3, limit=2) == '     3\tline 3\n     4\tline 4'
+
+
+def test_read_file_offset_only_and_limit_only(as_user, proj, long_file):
+    as_user(VIEWER)
+    assert mcp.read_file(proj, long_file, offset=10) == '    10\tline 10'
+    assert mcp.read_file(proj, long_file, limit=1) == '     1\tline 1'
+    assert mcp.read_file(proj, long_file, offset=9, limit=50).count('\n') == 1
+
+
+def test_read_file_range_matches_search_line_numbers(as_user, proj, long_file):
+    as_user(VIEWER)
+    [hit] = mcp.search('line 7', bucket=proj)
+    line = hit['snippets'][0]['line']
+    assert mcp.read_file(proj, long_file, offset=line, limit=1).endswith('\tline 7')
+
+
+@pytest.mark.parametrize('offset, limit, message', [
+    (0, None, 'offset must be 1'),
+    (None, 0, 'limit must be 1'),
+    (11, None, r'past the end of the file \(10 lines\)'),
+])
+def test_read_file_invalid_range(as_user, proj, long_file, offset, limit, message):
+    as_user(VIEWER)
+    with pytest.raises(ValueError, match=message):
+        mcp.read_file(proj, long_file, offset=offset, limit=limit)
+
+
 def test_search(as_user, proj, app_buckets):
     app_buckets.create('hidden')
     dependencies.get_file_service().write('hidden', 'x.typ', 'needle')
@@ -199,6 +237,70 @@ async def test_write_file(as_user, proj):
         await mcp.write_file(proj, '../evil.typ', 'x')
 
 
+def _edits(*pairs, replace_all=False):
+    return [FileEdit(old_string=old, new_string=new, replace_all=replace_all)
+            for old, new in pairs]
+
+
+@pytest.mark.anyio
+async def test_edit_file(as_user, proj):
+    as_user(EDITOR)
+    result = await mcp.edit_file(proj, 'main.typ', _edits(('Hello', 'Hallo'), ('needle', 'pin')))
+    assert result['replacements'] == 2
+    assert result['modified']
+    assert mcp.read_file(proj, 'main.typ') == '= Hallo\npin'
+
+
+@pytest.mark.anyio
+async def test_edit_file_is_atomic(as_user, proj):
+    as_user(EDITOR)
+    with pytest.raises(ValueError, match='Edit 2'):
+        await mcp.edit_file(proj, 'main.typ', _edits(('Hello', 'Hallo'), ('missing', 'x')))
+    assert mcp.read_file(proj, 'main.typ') == '= Hello\nneedle'
+
+
+@pytest.mark.anyio
+async def test_edit_file_errors(as_user, proj):
+    as_user(EDITOR)
+    with pytest.raises(ValueError, match='No edits'):
+        await mcp.edit_file(proj, 'main.typ', [])
+    with pytest.raises(FileNotFoundError):
+        await mcp.edit_file(proj, 'ghost.typ', _edits(('a', 'b')))
+    as_user(VIEWER)
+    with pytest.raises(PermissionError):
+        await mcp.edit_file(proj, 'main.typ', _edits(('Hello', 'x')))
+
+
+@pytest.mark.anyio
+async def test_edit_file_merges_into_open_room(as_user, proj):
+    collab = dependencies.get_collab_manager()
+    await collab._get_or_create_room(proj, 'main.typ')  # pylint: disable=protected-access
+    try:
+        room = collab._rooms[(proj, 'main.typ')]  # pylint: disable=protected-access
+        room.ydoc.get('content', type=Text).insert(0, '// live\n')
+
+        as_user(EDITOR)
+        await mcp.edit_file(proj, 'main.typ', _edits(('needle', 'pin')))
+
+        assert mcp.read_file(proj, 'main.typ') == '// live\n= Hello\npin'
+        assert dependencies.get_file_service().read(proj, 'main.typ')['content'] == \
+            '// live\n= Hello\npin'
+    finally:
+        for task in collab._room_tasks.values():  # pylint: disable=protected-access
+            task.cancel()
+
+
+@pytest.mark.anyio
+async def test_edit_file_through_mcp_layer(as_user, proj):
+    '''Arguments arrive as JSON, so they must validate into FileEdit models.'''
+    as_user(EDITOR)
+    await mcp.mcp.call_tool('edit_file', {
+        'bucket': proj, 'path': 'main.typ',
+        'edits': [{'old_string': 'e', 'new_string': 'E', 'replace_all': True}],
+    })
+    assert mcp.read_file(proj, 'main.typ') == '= HEllo\nnEEdlE'
+
+
 @pytest.mark.anyio
 async def test_delete_file(as_user, proj):
     as_user(EDITOR)
@@ -252,7 +354,8 @@ async def test_commit(as_user, proj):
 def test_commit_tool_registration_follows_config():
     names = {tool.name for tool in mcp.mcp._tool_manager.list_tools()}  # pylint: disable=protected-access
     assert ('commit' in names) is config.TINO_MCP_COMMIT_ENABLED
-    assert {'list_buckets', 'read_file', 'write_file', 'search', 'compile_typst'} <= names
+    assert {'list_buckets', 'read_file', 'write_file', 'edit_file', 'search',
+            'compile_typst'} <= names
 
 
 # ── OIDCTokenVerifier ──

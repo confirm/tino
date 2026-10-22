@@ -65,9 +65,12 @@ Each tool enforces the minimum :ref:`role <usage/buckets:Access control>` the us
    * - ``list_files``
      - Viewer
      - List files and directories in a bucket.
+   * - ``search``
+     - Viewer
+     - Search file names and contents across the accessible buckets.
    * - ``read_file``
      - Viewer
-     - Read a file's text content.
+     - Read a file's text content, optionally only a range of lines.
    * - ``compile_typst``
      - Viewer
      - Compile a file and report success or the compiler error.
@@ -80,6 +83,9 @@ Each tool enforces the minimum :ref:`role <usage/buckets:Access control>` the us
    * - ``write_file``
      - Editor
      - Create or overwrite a text file.
+   * - ``edit_file``
+     - Editor
+     - Change parts of a text file by exact string replacement (merged into the live document when the file is open in the editor).
    * - ``delete_file``
      - Editor
      - Delete a file.

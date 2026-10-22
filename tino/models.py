@@ -74,6 +74,17 @@ class FileEntry(BaseModel):
     type: str  # file | directory
 
 
+class FileEdit(BaseModel):
+    '''A single exact-string replacement, as used by the MCP ``edit_file`` tool.'''
+    old_string: str = Field(
+        description='Exact text to replace, including whitespace and indentation.',
+    )
+    new_string: str = Field(description='Replacement text.')
+    replace_all: bool = Field(
+        False, description='Replace every occurrence instead of requiring a unique match.',
+    )
+
+
 # ── Search ──
 
 

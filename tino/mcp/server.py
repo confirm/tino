@@ -31,7 +31,8 @@ from .. import config
 from ..auth import ROLE_HIERARCHY, resolve_role
 from ..dependencies import get_bucket_service, get_collab_manager, get_compiler_service, \
     get_file_service, get_git_service, get_notifier, get_search_service
-from ..models import User
+from ..models import FileEdit, User
+from ..services.edit import apply_edits
 from .instructions import server_instructions
 
 logger = logging.getLogger(__name__)
@@ -390,24 +391,57 @@ def search(query: str, bucket: str | None = None) -> list[dict]:
 
 
 @mcp.tool()
-def read_file(bucket: str, path: str) -> str:
-    '''Read the text content of a file in a bucket.'''
-    logger.debug('MCP read_file called: bucket=%s, path=%s', bucket, path)
+def read_file(bucket: str, path: str, offset: int | None = None,
+              limit: int | None = None) -> str:
+    '''Read the text content of a file in a bucket.
+
+    Without *offset* and *limit* the whole file is returned as-is. For large
+    files, pass *offset* (1-based first line) and/or *limit* (maximum number of
+    lines), e.g. to read around a ``search`` hit. The selected lines are then
+    prefixed with their line number and a tab; leave that prefix out when using
+    the text as ``old_string`` in ``edit_file``.
+    '''
+    logger.debug('MCP read_file called: bucket=%s, path=%s, offset=%s, limit=%s',
+                 bucket, path, offset, limit)
     _require(bucket, 'viewer')
 
     # If the file is open in the web UI, return the live collab-room content so
     # reads reflect unsaved edits rather than the (older) on-disk copy.
-    live = get_collab_manager().get_content(bucket, path)
-    if live is not None:
-        return live
+    content = get_collab_manager().get_content(bucket, path)
 
-    result = get_file_service().read(bucket, path)
-    if result is None:
-        raise FileNotFoundError(f'File not found: {bucket}/{path}')
-    if result.get('binary'):
-        raise ValueError(f'File is binary and cannot be read as text: {bucket}/{path}')
+    if content is None:
+        result = get_file_service().read(bucket, path)
+        if result is None:
+            raise FileNotFoundError(f'File not found: {bucket}/{path}')
+        if result.get('binary'):
+            raise ValueError(f'File is binary and cannot be read as text: {bucket}/{path}')
+        content = result['content']
 
-    return result['content']
+    if offset is None and limit is None:
+        return content
+
+    return _numbered_lines(content, 1 if offset is None else offset, limit)
+
+
+def _numbered_lines(content: str, offset: int, limit: int | None) -> str:
+    '''Return lines ``offset`` .. ``offset + limit - 1`` prefixed with their number.
+
+    Lines are split like the search tool does, so its line numbers match.
+    '''
+    if offset < 1:
+        raise ValueError('offset must be 1 or greater')
+    if limit is not None and limit < 1:
+        raise ValueError('limit must be 1 or greater')
+
+    lines = content.splitlines()
+    if offset > len(lines):
+        raise ValueError(f'offset {offset} is past the end of the file ({len(lines)} lines)')
+
+    end = len(lines) if limit is None else offset - 1 + limit
+    return '\n'.join(
+        f'{number:>6}\t{line}'
+        for number, line in enumerate(lines[offset - 1:end], start=offset)
+    )
 
 
 @mcp.tool()
@@ -425,6 +459,41 @@ async def write_file(bucket: str, path: str, content: str) -> dict:
     logger.info('MCP wrote %s/%s (user: %s)', bucket, path, user.username)
     await get_notifier().notify(bucket)
     return {'path': path, 'modified': modified}
+
+
+@mcp.tool()
+async def edit_file(bucket: str, path: str, edits: list[FileEdit]) -> dict:
+    '''Change part of an existing text file by exact string replacement. Requires the editor role.
+
+    Prefer this over ``write_file`` for changes to existing files: only the
+    changed snippets are sent. Each edit replaces ``old_string`` with
+    ``new_string``. ``old_string`` must match the file exactly (including
+    whitespace and indentation) and occur exactly once, unless ``replace_all``
+    is set; include enough surrounding lines to make it unique.
+
+    Edits apply in order, each to the result of the previous one, and
+    atomically: if any edit fails, the file is left unchanged. If the file is
+    open in the web editor, the edits are merged into the live document, so
+    collaborators' unsaved changes are kept.
+    '''
+    user = _require(bucket, 'editor')
+
+    if not edits:
+        raise ValueError('No edits given')
+
+    applied = []
+
+    def transform(text):
+        new_text, splices = apply_edits(text, edits)
+        applied.extend(splices)
+        return new_text, splices
+
+    modified = await get_collab_manager().edit_file(bucket, path, transform)
+
+    logger.info('MCP edited %s/%s: %d replacement(s) (user: %s)',
+                bucket, path, len(applied), user.username)
+    await get_notifier().notify(bucket)
+    return {'path': path, 'modified': modified, 'replacements': len(applied)}
 
 
 @mcp.tool()
