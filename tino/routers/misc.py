@@ -95,8 +95,13 @@ async def theme_css():
 
 
 @router.get('/.well-known/oauth-protected-resource')
+@router.get('/.well-known/oauth-protected-resource/{resource_path:path}')
 async def oauth_protected_resource():
     '''RFC 9728 Protected Resource Metadata for MCP OAuth discovery.
+
+    The path-suffixed variant (e.g. ``…/oauth-protected-resource/tino/mcp``)
+    is what clients request when TINO runs under a sub-path, since the
+    resource's path is inserted after the well-known name.
 
     ``authorization_servers`` points to TINO itself (not directly to Keycloak)
     so that MCP clients fetch the proxied AS metadata from
@@ -127,8 +132,13 @@ async def oauth_protected_resource():
 
 
 @router.get('/.well-known/oauth-authorization-server')
+@router.get('/.well-known/oauth-authorization-server/{issuer_path:path}')
 async def oauth_authorization_server(request: Request):
     '''RFC 8414 Authorization Server Metadata proxy for MCP CIMD support.
+
+    The path-suffixed variant (e.g. ``…/oauth-authorization-server/tino``) is
+    what clients request when TINO runs under a sub-path, since the issuer's
+    path is inserted after the well-known name.
 
     MCP clients such as Claude select
     `CIMD <https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/>`_

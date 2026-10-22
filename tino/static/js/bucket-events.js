@@ -1,3 +1,5 @@
+import { wsUrl } from './urls.js'
+
 const RECONNECT_MS = 3000
 const REFRESH_MS = 300
 
@@ -41,11 +43,8 @@ export class BucketEvents {
   _open() {
     if (!this._slug)
       return
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:'
     const encoded = encodeURIComponent(this._slug)
-    const url =
-      `${proto}//${location.host}/api/buckets/${encoded}/events`
-    this._ws = new WebSocket(url)
+    this._ws = new WebSocket(wsUrl(`api/buckets/${encoded}/events`))
     this._ws.onmessage = ev => this._onMessage(ev)
     this._ws.onclose = () => this._onClose()
   }

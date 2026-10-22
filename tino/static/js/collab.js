@@ -1,5 +1,6 @@
 import { Doc, WebsocketProvider, yCollab } from './vendor/codemirror.js'
 import { SINGLE_ITEM } from './constants.js'
+import { wsUrl } from './urls.js'
 
 /**
  * Manages a single Yjs collaboration session for one file.
@@ -41,8 +42,8 @@ export class CollabSession {
   connect() {
     this._doc = new Doc()
     this._ytext = this._doc.getText('content')
-    const wsUrl = CollabSession._buildWsUrl(this._slug)
-    this._provider = new WebsocketProvider(wsUrl, this._path, this._doc)
+    const serverUrl = CollabSession._buildWsUrl(this._slug)
+    this._provider = new WebsocketProvider(serverUrl, this._path, this._doc)
     if (this._user)
       this._provider.awareness.setLocalStateField('user', this._user)
     this._provider.on('sync', synced => this._onSync(synced))
@@ -70,9 +71,7 @@ export class CollabSession {
   // ── Internal ──
 
   static _buildWsUrl(slug) {
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const encoded = encodeURIComponent(slug)
-    return `${proto}//${location.host}/api/buckets/${encoded}/collab`
+    return wsUrl(`api/buckets/${encodeURIComponent(slug)}/collab`)
   }
 
   /**

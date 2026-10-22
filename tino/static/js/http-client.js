@@ -21,7 +21,7 @@ export class HttpClient {
   async _fetch(path, options) {
     const res = await fetch(this.baseUrl + path, options)
     if (res.status === HTTP_UNAUTHORIZED) {
-      window.location.href = '/login'
+      window.location.href = 'login'
       throw new Error('Session expired')
     }
     if (!res.ok)

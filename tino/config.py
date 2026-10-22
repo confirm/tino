@@ -26,6 +26,7 @@ __all__ = (
     'TINO_OIDC_GROUPS_CLAIM',
     'TINO_PACKAGE_DIR',
     'TINO_ROOM_TTL',
+    'TINO_ROOT_PATH',
     'TINO_SAVE_DEBOUNCE_MS',
     'TINO_SECRET_KEY',
 )
@@ -36,6 +37,7 @@ from os import environ
 from pathlib import Path
 from secrets import token_hex
 from sys import exit as sys_exit
+from urllib.parse import urlparse
 
 _TRUEISH = {'1', 'true', 'yes'}
 
@@ -96,9 +98,20 @@ TINO_FONT_DIR = Path(environ.get('TINO_FONT_DIR', _DEFAULT_FONT_DIR))
 
 # ----- 🔐 Security settings -----
 
-#: 🔴 TINO's public base URL (e.g. ``https://tino.example.com``), without a trailing path.
+#: 🔴 TINO's public base URL (e.g. ``https://tino.example.com``), without a trailing slash.
 #: The externally reachable address of this instance.
+#:
+#: .. hint::
+#:  To serve TINO under a sub-path, include it in the URL
+#:  (e.g. ``https://example.com/tino``), see :attr:`TINO_ROOT_PATH`.
 TINO_BASE_URL = (environ.get('TINO_BASE_URL') or '').rstrip('/') or None
+
+#: The path prefix TINO is served under, derived from the path of :attr:`TINO_BASE_URL`
+#: (e.g. ``/tino`` for ``https://example.com/tino``, empty when served at the root).
+#:
+#: .. hint::
+#:  The reverse proxy may forward requests with the prefix, or strip it; TINO accepts both.
+TINO_ROOT_PATH = urlparse(TINO_BASE_URL or '').path.rstrip('/')
 
 #: ⭕ Secret key for signing session cookies.
 #:

@@ -185,7 +185,7 @@ export class PreviewManager {
       return
     const slug = encodeURIComponent(this.app.bucket)
     const path = this.target
-    const url = `/api/buckets/${slug}/compile/pdf/${path}`
+    const url = `api/buckets/${slug}/compile/pdf/${path}`
     const link = document.createElement('a')
     link.href = url
     link.download = ''

@@ -181,6 +181,31 @@ TINO is typically deployed behind a reverse proxy (e.g. nginx, Traefik, Caddy) t
 Set :attr:`TINO_BASE_URL <tino.config.TINO_BASE_URL>` to the public ``https://`` URL the proxy serves TINO on.
 It is used to build OIDC redirect URLs and, when :ref:`MCP <MCP server>` is enabled, as the resource identifier in the OAuth discovery metadata.
 
+Sub-path
+^^^^^^^^
+
+To serve TINO under a sub-path instead of its own host name (e.g. ``https://example.com/tino``), include the path in :attr:`TINO_BASE_URL <tino.config.TINO_BASE_URL>`.
+TINO derives its :attr:`TINO_ROOT_PATH <tino.config.TINO_ROOT_PATH>` from it.
+The proxy may forward requests with the prefix (``/tino/login``) or strip it (``/login``); TINO accepts both.
+
+.. code-block:: nginx
+
+    location /tino/ {
+        proxy_pass http://tino:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+
+The OIDC redirect URIs then include the prefix as well (e.g. ``https://example.com/tino/oidc/callback``).
+
+.. note::
+
+    When :ref:`MCP <MCP server>` is enabled, OAuth clients look up the discovery metadata at the **host root** with the path appended
+    (e.g. ``https://example.com/.well-known/oauth-protected-resource/tino/mcp``).
+    Forward ``/.well-known/oauth-protected-resource/tino`` and ``/.well-known/oauth-authorization-server/tino`` to TINO as well.
+
 OIDC
 ~~~~
 
