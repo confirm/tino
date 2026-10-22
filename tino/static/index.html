@@ -35,6 +35,10 @@
         <span class="material-symbols-outlined">history</span>
         History
       </button>
+      <button class="toolbar-btn hidden" id="btn-review" title="Review comments">
+        <span class="material-symbols-outlined">rate_review</span>
+        Review
+      </button>
       <button class="toolbar-btn hidden" id="btn-download" title="Download bucket as ZIP">
         <span class="material-symbols-outlined">download</span>
         Download
@@ -144,10 +148,36 @@
         <button class="fmt-btn active" data-action="wrap" title="Word wrap">
           <span class="material-symbols-outlined">wrap_text</span>
         </button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-action="comment" title="Add comment">
+          <span class="material-symbols-outlined">add_comment</span>
+        </button>
       </div>
       <div class="editor-wrap">
         <div class="editor" id="editor"></div>
         <div class="binary-preview hidden" id="binary-preview"></div>
+        <aside class="review-panel hidden" id="review-panel">
+          <div class="review-header">
+            <span>Review</span>
+            <div class="review-header-actions">
+              <button class="icon-btn" id="btn-review-resolved" title="Show resolved comments">
+                <span class="material-symbols-outlined">done_all</span>
+              </button>
+              <button class="icon-btn" id="btn-review-close" title="Close review panel">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+          <div class="review-compose hidden" id="review-compose">
+            <div class="review-anchor-label" id="review-compose-anchor"></div>
+            <textarea class="form-input" id="review-compose-body" rows="4" placeholder="Write a comment..."></textarea>
+            <div class="review-compose-actions">
+              <button class="btn btn-secondary btn-small" id="btn-review-compose-cancel">Cancel</button>
+              <button class="btn btn-primary btn-small" id="btn-review-compose-submit">Comment</button>
+            </div>
+          </div>
+          <ul class="review-list" id="review-list"></ul>
+        </aside>
       </div>
       <div class="status-bar">
         <span id="cursor-pos">Ln 1, Col 1</span>

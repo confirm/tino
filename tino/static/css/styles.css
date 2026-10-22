@@ -711,6 +711,16 @@ html, body {
   border-right: 1px solid var(--border);
 }
 
+.editor .cm-review-mark {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  border-bottom: 1px solid var(--accent);
+  cursor: pointer;
+}
+
+.editor .cm-review-line {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
 /* stylelint-disable selector-class-pattern, no-descending-specificity -- upstream CodeMirror class names */
 
 .editor .cm-activeLine,
@@ -995,6 +1005,197 @@ html, body {
 
 .status-btn:hover {
   color: var(--accent);
+}
+
+/* ── Review comments ── */
+
+.review-panel {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  min-width: 260px;
+  max-width: 42%;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--panel-header-height);
+  padding: 0 10px 0 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.review-header-actions {
+  display: flex;
+  gap: 2px;
+}
+
+#btn-review-resolved.active {
+  color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.review-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.review-anchor-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-compose-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.review-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.review-empty {
+  padding: 20px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.review-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+}
+
+.review-thread:hover {
+  border-color: var(--border-light);
+}
+
+.review-resolved {
+  opacity: 0.72;
+}
+
+.review-thread-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-anchor {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.review-status {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.review-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.review-action-btn {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.review-action-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.review-quote {
+  margin: 0;
+  padding: 6px 8px;
+  border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.review-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-message-meta {
+  margin-bottom: 2px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.review-message-body {
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.review-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-reply-button {
+  align-self: flex-end;
 }
 
 /* ── Preview ── */

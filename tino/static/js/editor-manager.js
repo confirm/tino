@@ -47,7 +47,6 @@ export class EditorManager {
     this._activateTab(path, loaded)
     await this.app.preview.update()
   }
-
   _flushPendingSave() {
     if (this._saveTimer) {
       clearTimeout(this._saveTimer)
@@ -55,7 +54,6 @@ export class EditorManager {
       this.saveCurrentFile()
     }
   }
-
   _activateTab(path, loaded) {
     this.app.currentFile = path
     this.app.fileTree.reveal(path)
@@ -74,6 +72,7 @@ export class EditorManager {
       this.app.els.editor.setCursor(pos.line, pos.col)
     this._refreshEditorUi()
     this._persistOpenState(path)
+    this.app.review.loadForCurrentFile()
   }
 
   /**
@@ -116,7 +115,6 @@ export class EditorManager {
     this.app.els.editor.setHidden(false)
     this.toolbar[canEdit ? 'show' : 'hide']()
   }
-
   _refreshEditorUi() {
     this.input.renderTabs()
     this.input.highlightFileItem(this.app.currentFile)
@@ -208,6 +206,7 @@ export class EditorManager {
     this.app.els.editor.setEditable(false)
     this.app.els.editor.setPlaceholder(PLACEHOLDER)
     this.input.updateStatusBar()
+    this.app.review.clear()
     writeRoute(this.app.bucket, null)
   }
 
@@ -278,6 +277,7 @@ export class EditorManager {
     this.app.els.editor.setEditable(false)
     this.app.els.editor.setPlaceholder(PLACEHOLDER)
     this.app.els.tabBar.innerHTML = ''
+    this.app.review.clear()
   }
 
   _clearOpenState() {

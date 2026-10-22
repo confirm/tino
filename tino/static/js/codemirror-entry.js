@@ -8,8 +8,9 @@
  * the same module instances (a second copy would break facet/type identity).
  */
 
-export { Annotation, Compartment, EditorState } from '@codemirror/state'
+export { Annotation, Compartment, EditorState, StateEffect, StateField } from '@codemirror/state'
 export {
+  Decoration,
   EditorView,
   drawSelection,
   keymap,

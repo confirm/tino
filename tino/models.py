@@ -1,6 +1,6 @@
 '''Pydantic models for API request/response schemas.'''
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
@@ -125,6 +125,58 @@ class RestoreRequest(BaseModel):
     '''Request body for restoring files from a specific commit.'''
     ref: str
     paths: list[str]
+
+
+# ── Review comments ──
+
+
+class ReviewAnchor(BaseModel):
+    '''Source range a review thread is attached to.'''
+    from_offset: int = Field(ge=0)
+    to_offset: int = Field(ge=0)
+    line: int = Field(ge=1)
+    column: int = Field(ge=1)
+    end_line: int = Field(ge=1)
+    end_column: int = Field(ge=1)
+    quote: str = ''
+
+
+class ReviewMessage(BaseModel):
+    '''A single message in a review thread.'''
+    id: str
+    author: str
+    created_at: str
+    body: str
+
+
+class ReviewThread(BaseModel):
+    '''A source-anchored review thread.'''
+    id: str
+    path: str
+    anchor: ReviewAnchor
+    status: Literal['open', 'resolved'] = 'open'
+    created_by: str
+    created_at: str
+    resolved_by: str | None = None
+    resolved_at: str | None = None
+    messages: list[ReviewMessage]
+
+
+class ReviewThreadCreate(BaseModel):
+    '''Request body for creating a review thread.'''
+    path: str
+    anchor: ReviewAnchor
+    body: str = Field(min_length=1)
+
+
+class ReviewReplyCreate(BaseModel):
+    '''Request body for replying to a review thread.'''
+    body: str = Field(min_length=1)
+
+
+class ReviewThreadUpdate(BaseModel):
+    '''Request body for changing review thread state.'''
+    status: Literal['open', 'resolved']
 
 
 # ── Templates ──

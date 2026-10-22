@@ -44,6 +44,7 @@ develop = [
     'furo',
     'isort',
     'pycodestyle',
+    'pytest',
     'pylint',
     'Sphinx',
     'sphinx-autobuild',
