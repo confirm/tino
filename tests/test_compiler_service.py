@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from tino.services.compiler import CompilerService
+from tino.services.compiler import CompileError, CompilerService, parse_diagnostics
 
 needs_typst = pytest.mark.skipif(shutil.which('typst') is None, reason='typst CLI not installed')
 
@@ -118,6 +118,94 @@ def test_version(monkeypatch):
     assert CompilerService.version() == 'typst 0.15.1'
 
 
+# ── diagnostics ──
+
+TYPST_STDERR = '''\
+error: unknown variable: foo
+  ┌─ main.typ:3:2
+  │
+3 │ #foo
+  │  ^^^
+
+warning: unused import
+  ┌─ lib/util.typ:12:10
+  │
+12 │ #import "x.typ": y
+'''
+
+
+def test_parse_diagnostics_errors_and_warnings():
+    assert parse_diagnostics(TYPST_STDERR) == [
+        {'severity': 'error', 'message': 'unknown variable: foo',
+         'file': 'main.typ', 'line': 3, 'column': 2},
+        {'severity': 'warning', 'message': 'unused import',
+         'file': 'lib/util.typ', 'line': 12, 'column': 10},
+    ]
+
+
+def test_parse_diagnostics_without_location():
+    assert parse_diagnostics('error: failed to load file (access denied)') == [
+        {'severity': 'error', 'message': 'failed to load file (access denied)',
+         'file': None, 'line': None, 'column': None},
+    ]
+
+
+def test_parse_diagnostics_keeps_first_location():
+    stderr = 'error: boom\n  ┌─ a.typ:1:1\n  ┌─ b.typ:9:9\n'
+    [diag] = parse_diagnostics(stderr)
+    assert (diag['file'], diag['line']) == ('a.typ', 1)
+
+
+def test_parse_diagnostics_help_block_closes_error():
+    stderr = 'error: boom\nhelp: try this\n  ┌─ other.typ:5:5\n'
+    [diag] = parse_diagnostics(stderr)
+    assert diag['file'] is None
+
+
+def test_parse_diagnostics_ignores_location_before_header():
+    assert parse_diagnostics('  ┌─ stray.typ:1:1\nerror: x\n')[0]['file'] is None
+
+
+def test_parse_diagnostics_path_with_colon_and_spaces():
+    [diag] = parse_diagnostics('error: x\n  ┌─ my docs/a:b.typ:7:3\n')
+    assert (diag['file'], diag['line'], diag['column']) == ('my docs/a:b.typ', 7, 3)
+
+
+@pytest.mark.parametrize('stderr', ['', 'some random output', 'Error: not typst format'])
+def test_parse_diagnostics_nothing_to_parse(stderr):
+    assert parse_diagnostics(stderr) == []
+
+
+def test_compile_error_is_runtime_error():
+    exc = CompileError('', [])
+    assert isinstance(exc, RuntimeError)
+    assert str(exc) == 'Compilation failed'
+    assert exc.diagnostics == []
+
+
+def test_compile_error_strips_absolute_paths(compiler, files, bucket, monkeypatch):
+    files.write(bucket, 'sub/a.typ', 'x')
+    bucket_dir = (compiler.data_dir / bucket).resolve()
+    stderr = f'error: boom\n  ┌─ {bucket_dir}/sub/a.typ:2:4\n\nin {compiler.data_dir}\n'
+    monkeypatch.setattr(subprocess, 'run', _fake_run(returncode=1, stderr=stderr)[0])
+
+    with pytest.raises(CompileError) as exc:
+        compiler.compile_svg(bucket, 'sub/a.typ')
+
+    assert str(bucket_dir) not in str(exc.value)
+    assert str(compiler.data_dir) not in str(exc.value)
+    assert exc.value.diagnostics[0]['file'] == 'sub/a.typ'
+    assert exc.value.diagnostics[0]['line'] == 2
+
+
+def test_compile_pdf_error_has_diagnostics(compiler, files, bucket, monkeypatch):
+    files.write(bucket, 'a.typ', 'x')
+    monkeypatch.setattr(subprocess, 'run', _fake_run(returncode=1, stderr=TYPST_STDERR)[0])
+    with pytest.raises(CompileError) as exc:
+        compiler.compile_pdf(bucket, 'a.typ')
+    assert [d['severity'] for d in exc.value.diagnostics] == ['error', 'warning']
+
+
 # ── real typst ──
 
 @needs_typst
@@ -143,6 +231,9 @@ def test_real_compile_pdf(compiler, files, bucket):
 @needs_typst
 @pytest.mark.typst
 def test_real_compile_error(compiler, files, bucket):
-    files.write(bucket, 'a.typ', '#undefined-function()')
-    with pytest.raises(RuntimeError):
+    files.write(bucket, 'a.typ', 'ok\n#undefined-function()')
+    with pytest.raises(CompileError) as exc:
         compiler.compile_svg(bucket, 'a.typ')
+    [diag] = [d for d in exc.value.diagnostics if d['severity'] == 'error']
+    assert (diag['file'], diag['line']) == ('a.typ', 2)
+    assert str(compiler.data_dir) not in str(exc.value)
