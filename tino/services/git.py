@@ -193,7 +193,7 @@ class GitService:
                 return {'content': content, 'binary': False}
             except KeyError:
                 return {'content': None, 'binary': False, 'deleted': True}
-            except gitpython.GitCommandError:
+            except (gitpython.GitCommandError, gitpython.BadName):
                 return None
             except UnicodeDecodeError:
                 return {'content': None, 'binary': True}
@@ -204,7 +204,7 @@ class GitService:
             try:
                 blob = repo.commit(ref).tree / path
                 return blob.data_stream.read()
-            except (KeyError, gitpython.GitCommandError):
+            except (KeyError, gitpython.GitCommandError, gitpython.BadName):
                 return None
 
     def restore(self, slug: str, ref: str, paths: list[str]) -> list[str]:
@@ -222,7 +222,7 @@ class GitService:
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(data)
                     restored.append(p)
-                except (KeyError, gitpython.GitCommandError):
+                except (KeyError, gitpython.GitCommandError, gitpython.BadName):
                     pass
 
             if restored:
