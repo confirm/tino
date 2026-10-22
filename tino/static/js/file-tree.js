@@ -8,6 +8,7 @@ import {
   TOGGLE_ICON,
   escapeHtml,
 } from './constants.js'
+import { loadCollapsedPaths, saveCollapsedPaths } from './tree-state.js'
 import { BucketPicker } from './bucket-picker.js'
 import { TreeActions } from './tree-actions.js'
 import { TreeBuilder } from './tree-builder.js'
@@ -69,14 +70,8 @@ export class FileTree {
 
   /** Fetch file list and render the hierarchical tree. */
 
-  _getStorageKey() {
-    return this.app.bucket ? `tino_collapsed_${this.app.bucket}` : null
-  }
-
   async loadFiles() {
-    const saved = localStorage.getItem(this._getStorageKey())
-    this.collapsedPaths = new Set(saved ? JSON.parse(saved) : [])
-    
+    this.collapsedPaths = loadCollapsedPaths(this.app.bucket)
     const files = await this.app.api.listFiles(this.app.bucket)
     this.filePaths = new Set(files.map(fl => fl.path))
     this._nodes = TreeBuilder.build(
@@ -293,7 +288,7 @@ export class FileTree {
   }
 
   _saveCollapsedState() {
-    localStorage.setItem(this._getStorageKey(), JSON.stringify([...this.collapsedPaths]))
+    saveCollapsedPaths(this.app.bucket, this.collapsedPaths)
   }
 
 }
