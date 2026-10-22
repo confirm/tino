@@ -13,6 +13,43 @@ It is not a full changelog; only changes that ask something of you are recorded 
   Review this page before upgrading.
   Some releases add **required** settings that TINO refuses to start without, so an upgrade can otherwise fail at boot.
 
+1.21.0
+------
+
+New MCP tools require reconnecting clients
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`MCP server <MCP server>` gained new tools and options:
+
+- ``edit_file`` changes parts of a file by exact string replacement, instead of rewriting the whole file.
+- ``write_binary_file`` writes small binary files (e.g. images) from base64.
+- ``read_file`` accepts ``offset`` and ``limit`` to read large files in ranges.
+
+MCP clients fetch the tool list and the server instructions when they connect, and TINO does not notify connected clients about changes.
+**Reconnect your MCP clients** after upgrading (e.g. restart the client or reconnect the server in its MCP settings), otherwise agents keep using the old tools only.
+
+Compile errors are returned as structured diagnostics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a compilation fails, the compile endpoints (``GET /api/buckets/{slug}/compile/svg/…`` and ``…/compile/pdf/…``) still respond with ``422``, but the ``detail`` is now an **object** instead of a string:
+
+.. code-block:: json
+
+    {
+      "detail": {
+        "message": "error: unknown variable: foo\n  ┌─ main.typ:3:2\n…",
+        "diagnostics": [
+          {"severity": "error", "message": "unknown variable: foo", "file": "main.typ", "line": 3, "column": 2}
+        ]
+      }
+    }
+
+- ``message`` holds the compiler output; absolute server paths are stripped, so file paths are relative to the bucket.
+- ``diagnostics`` lists every error and warning. ``file``, ``line`` and ``column`` are ``null`` when Typst reports no position.
+
+The bundled web UI already handles the new format.
+If you call the compile endpoints from scripts or integrations (e.g. with an :ref:`API key <usage/authentication:API keys>`) and read ``detail`` as a string, use ``detail.message`` instead.
+
 1.20.0
 ------
 
