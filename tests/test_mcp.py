@@ -1,5 +1,6 @@
 '''Tests for the MCP server: tools, authorization and OIDC token verification.'''
 
+import base64
 import time
 from types import SimpleNamespace
 
@@ -217,6 +218,7 @@ async def test_write_tools_require_editor(as_user, proj):
     as_user(VIEWER)
     for call in (
         mcp.write_file(proj, 'x.typ', 'x'),
+        mcp.write_binary_file(proj, 'x.png', 'QUJD'),
         mcp.delete_file(proj, 'main.typ'),
         mcp.rename_file(proj, 'main.typ', 'x.typ'),
         mcp.create_dir(proj, 'd'),
@@ -301,6 +303,89 @@ async def test_edit_file_through_mcp_layer(as_user, proj):
     assert mcp.read_file(proj, 'main.typ') == '= HEllo\nnEEdlE'
 
 
+PNG = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\xff\xfe'
+
+
+@pytest.mark.anyio
+async def test_write_binary_file(as_user, proj):
+    as_user(EDITOR)
+    result = await mcp.write_binary_file(proj, 'img/logo.png', base64.b64encode(PNG).decode())
+    assert result == {'path': 'img/logo.png', 'size': len(PNG)}
+    target = dependencies.get_file_service().resolve(proj, 'img/logo.png')
+    assert target.read_bytes() == PNG
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize('wrap', [
+    lambda b64: '\n'.join(b64[i:i + 4] for i in range(0, len(b64), 4)) + '\n',
+    lambda b64: f'data:image/png;base64,{b64}',
+    lambda b64: f'  {b64}\r\n',
+])
+async def test_write_binary_file_tolerated_formats(as_user, proj, wrap):
+    as_user(EDITOR)
+    await mcp.write_binary_file(proj, 'logo.png', wrap(base64.b64encode(PNG).decode()))
+    assert dependencies.get_file_service().resolve(proj, 'logo.png').read_bytes() == PNG
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize('content', ['not base64!', 'QUJD=', 'QUJ', 'QU*D'])
+async def test_write_binary_file_rejects_invalid_base64(as_user, proj, content):
+    as_user(EDITOR)
+    with pytest.raises(ValueError, match='not valid base64'):
+        await mcp.write_binary_file(proj, 'x.bin', content)
+    assert dependencies.get_file_service().resolve(proj, 'x.bin') is None
+
+
+@pytest.mark.anyio
+async def test_write_binary_file_size_cap(as_user, proj, monkeypatch):
+    monkeypatch.setattr(mcp, 'MCP_MAX_BINARY_BYTES', 10)
+    as_user(EDITOR)
+
+    for size in (8, 9, 10):  # padding variants up to the exact limit
+        await mcp.write_binary_file(proj, 'ok.bin', base64.b64encode(b'x' * size).decode())
+
+    for size in (11, 1000):  # just over (exact check) and far over (pre-check)
+        with pytest.raises(ValueError, match='too large'):
+            await mcp.write_binary_file(proj, 'big.bin', base64.b64encode(b'x' * size).decode())
+    assert dependencies.get_file_service().resolve(proj, 'big.bin') is None
+
+
+@pytest.mark.anyio
+async def test_write_binary_file_errors(as_user, proj, data_dir):  # pylint: disable=unused-argument
+    as_user(EDITOR)
+    with pytest.raises(ValueError, match='Invalid path'):
+        await mcp.write_binary_file(proj, '../escape.bin', 'QUJD')
+    assert not (config.TINO_BUCKET_DIR / 'escape.bin').exists()
+
+    as_user(VIEWER)
+    with pytest.raises(PermissionError):
+        await mcp.write_binary_file(proj, 'x.bin', 'QUJD')
+
+
+@pytest.mark.anyio
+async def test_write_binary_file_evicts_open_room(as_user, proj):
+    collab = dependencies.get_collab_manager()
+    await collab._get_or_create_room(proj, 'main.typ')  # pylint: disable=protected-access
+    try:
+        as_user(EDITOR)
+        await mcp.write_binary_file(proj, 'main.typ', base64.b64encode(PNG).decode())
+        assert collab.get_content(proj, 'main.typ') is None
+        await collab.shutdown()  # a flush must not overwrite the binary content
+        assert dependencies.get_file_service().resolve(proj, 'main.typ').read_bytes() == PNG
+    finally:
+        for task in collab._room_tasks.values():  # pylint: disable=protected-access
+            task.cancel()
+
+
+@pytest.mark.anyio
+async def test_write_binary_file_through_mcp_layer(as_user, proj):
+    as_user(EDITOR)
+    await mcp.mcp.call_tool('write_binary_file', {
+        'bucket': proj, 'path': 'a.bin', 'content_base64': 'AAEC',
+    })
+    assert dependencies.get_file_service().resolve(proj, 'a.bin').read_bytes() == b'\x00\x01\x02'
+
+
 @pytest.mark.anyio
 async def test_delete_file(as_user, proj):
     as_user(EDITOR)
@@ -354,8 +439,8 @@ async def test_commit(as_user, proj):
 def test_commit_tool_registration_follows_config():
     names = {tool.name for tool in mcp.mcp._tool_manager.list_tools()}  # pylint: disable=protected-access
     assert ('commit' in names) is config.TINO_MCP_COMMIT_ENABLED
-    assert {'list_buckets', 'read_file', 'write_file', 'edit_file', 'search',
-            'compile_typst'} <= names
+    assert {'list_buckets', 'read_file', 'write_file', 'write_binary_file', 'edit_file',
+            'search', 'compile_typst'} <= names
 
 
 # ── OIDCTokenVerifier ──

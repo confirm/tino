@@ -15,7 +15,9 @@ Bearer token. TINO validates the token against the provider's JWKS and runs each
 tool as that user, with their real group memberships driving bucket access.
 '''
 
+import binascii
 import logging
+from base64 import b64decode
 from contextvars import ContextVar
 from urllib.parse import urlparse
 
@@ -49,6 +51,9 @@ MCP_MIN_QUERY_LEN = 2
 
 #: Maximum number of file results the ``search`` tool returns across all buckets.
 MCP_MAX_RESULTS = 50
+
+#: Maximum decoded size (bytes) of a file written via ``write_binary_file``.
+MCP_MAX_BINARY_BYTES = 1_000_000
 
 
 def _issuer_url(discovery_url: str) -> str:
@@ -494,6 +499,57 @@ async def edit_file(bucket: str, path: str, edits: list[FileEdit]) -> dict:
                 bucket, path, len(applied), user.username)
     await get_notifier().notify(bucket)
     return {'path': path, 'modified': modified, 'replacements': len(applied)}
+
+
+def _decode_base64(content: str) -> bytes:
+    '''Strictly decode base64, tolerating line breaks and a ``data:`` URL prefix.
+
+    Raises ``ValueError`` for invalid base64 or content over
+    :data:`MCP_MAX_BINARY_BYTES`. A grossly oversized payload is rejected from
+    its encoded length before decoding; the exact limit is checked afterwards.
+    '''
+    if content.startswith('data:') and ';base64,' in content:
+        content = content.split(';base64,', 1)[1]
+
+    content = ''.join(content.split())
+    too_large = ValueError(f'File too large (max. {MCP_MAX_BINARY_BYTES} bytes)')
+
+    # Each 4 base64 chars hold 3 bytes; padding makes this an upper bound.
+    if len(content) // 4 * 3 > MCP_MAX_BINARY_BYTES + 2:
+        raise too_large
+
+    try:
+        data = b64decode(content, validate=True)
+    except binascii.Error as exc:
+        raise ValueError(f'content_base64 is not valid base64: {exc}') from exc
+
+    if len(data) > MCP_MAX_BINARY_BYTES:
+        raise too_large
+
+    return data
+
+
+@mcp.tool()
+async def write_binary_file(bucket: str, path: str, content_base64: str) -> dict:
+    '''Create or overwrite a binary file (e.g. an image) from base64. Requires the editor role.
+
+    Only suited to small files: the content is limited to 1 MB after decoding.
+    Line breaks in the base64 and a ``data:...;base64,`` prefix are accepted.
+    For text files (including SVG) use ``write_file`` instead.
+    '''
+    user = _require(bucket, 'editor')
+    data = _decode_base64(content_base64)
+
+    # Evict any open collab room (without flushing), so a pending flush can't
+    # overwrite the binary content with a stale text buffer.
+    async with get_collab_manager().lock_path(bucket, path):
+        if not get_file_service().upload(bucket, path, data):
+            raise ValueError(f'Invalid path: {path}')
+
+    logger.info('MCP wrote binary %s/%s (%d bytes) (user: %s)',
+                bucket, path, len(data), user.username)
+    await get_notifier().notify(bucket)
+    return {'path': path, 'size': len(data)}
 
 
 @mcp.tool()

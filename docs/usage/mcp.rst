@@ -83,6 +83,9 @@ Each tool enforces the minimum :ref:`role <usage/buckets:Access control>` the us
    * - ``write_file``
      - Editor
      - Create or overwrite a text file.
+   * - ``write_binary_file``
+     - Editor
+     - Create or overwrite a small binary file (e.g. an image) from base64, up to 1 MB.
    * - ``edit_file``
      - Editor
      - Change parts of a text file by exact string replacement (merged into the live document when the file is open in the editor).
