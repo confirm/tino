@@ -177,7 +177,7 @@ async def callback(request: Request):
         request.session['id_token'] = token['id_token']
 
     logger.info('Authenticated via OIDC (user: %s)', request.session['user']['username'])
-    return RedirectResponse(url='/')
+    return RedirectResponse(url=f'{config.TINO_ROOT_PATH}/')
 
 
 @router.get('/logout', include_in_schema=False)
@@ -200,7 +200,7 @@ async def logout(request: Request):
             params += f'&id_token_hint={id_token}'
         return RedirectResponse(url=f'{end_session_url}?{params}')
 
-    return RedirectResponse(url='/login')
+    return RedirectResponse(url=f'{config.TINO_ROOT_PATH}/login')
 
 
 @router.get('/api/me')

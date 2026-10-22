@@ -33,7 +33,7 @@ export class BinaryPreview {
 
   _rawUrl(path) {
     const slug = encodeURIComponent(this.app.bucket)
-    return `/api/buckets/${slug}/files/raw/${path}`
+    return `api/buckets/${slug}/files/raw/${path}`
   }
 
   static _html(path, rawUrl, name) {

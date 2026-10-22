@@ -3,7 +3,7 @@ import { HttpClient } from './http-client.js'
 /** Encoded bucket API base path. Shared by the API client classes. */
 
 export const bucketPath = slug =>
-  `/api/buckets/${encodeURIComponent(slug)}`
+  `api/buckets/${encodeURIComponent(slug)}`
 
 /**
  * Git endpoints of the TINO REST API.

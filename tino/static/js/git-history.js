@@ -261,7 +261,7 @@ export class GitHistory {
   _imagePreviewHtml(sha, path) {
     const slug = encodeURIComponent(this.app.bucket)
     const ref = encodeURIComponent(sha)
-    const url = `/api/buckets/${slug}/git/show/${ref}/raw/${path}`
+    const url = `api/buckets/${slug}/git/show/${ref}/raw/${path}`
     return `<img class="history-image" src="${url}" alt="${escapeHtml(path)}">`
   }
 
