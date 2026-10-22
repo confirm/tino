@@ -99,8 +99,8 @@ export class FileTree {
       this._renderTree()
     }
     setTimeout(() => {
-      const safePath = filePath.replace(/"/gu, '\\"')
-      const el = this.app.els.fileTree.querySelector(`[data-file="${safePath}"]`)
+      const el = this.app.els.fileTree
+        .querySelector(`[data-file="${CSS.escape(filePath)}"]`)
       if (el)
         el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }, 0)
