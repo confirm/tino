@@ -8,7 +8,7 @@
  * the same module instances (a second copy would break facet/type identity).
  */
 
-export { Annotation, Compartment, EditorState } from '@codemirror/state'
+export { Annotation, Compartment, EditorState, Transaction } from '@codemirror/state'
 export {
   EditorView,
   drawSelection,
@@ -19,6 +19,13 @@ export {
 export { Doc } from 'yjs'
 export { WebsocketProvider } from 'y-websocket'
 export { yCollab } from 'y-codemirror.next'
+
+/*
+ * Not part of the package's public exports, so import the source file by path.
+ * It resolves to the same module yCollab uses, so the annotation is identical.
+ */
+
+export { ySyncAnnotation } from '../../../node_modules/y-codemirror.next/src/y-sync.js'
 export {
   defaultKeymap,
   history,

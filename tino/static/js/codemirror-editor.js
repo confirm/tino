@@ -11,8 +11,6 @@ import {
   foldKeymap,
   gotoLine,
   highlightSelectionMatches,
-  history,
-  historyKeymap,
   indentOnInput,
   indentUnit,
   indentWithTab,
@@ -23,6 +21,7 @@ import {
   selectNextOccurrence,
   vim,
 } from './vendor/codemirror.js'
+import { dispatchWithFreshHistory, undoHistory } from './codemirror-history.js'
 import { typst, typstKeymap } from './codemirror-typst.js'
 import { SINGLE_ITEM } from './constants.js'
 
@@ -64,12 +63,6 @@ export class CodeMirrorEditor {
       parent,
       state: this._buildState(''),
     })
-  }
-
-  /** Undo/redo history — always active, so Vim's `u`, Ctrl-r and Ctrl-Z agree. */
-
-  static _historyExt() {
-    return [history(), keymap.of(historyKeymap)]
   }
 
   /**
@@ -126,7 +119,7 @@ export class CodeMirrorEditor {
         indentUnit.of('  '),
         EditorState.allowMultipleSelections.of(true),
         indentOnInput(),
-        CodeMirrorEditor._historyExt(),
+        undoHistory(),
         this._collab.of([]),
         typst(),
         keymap.of([
@@ -204,13 +197,14 @@ export class CodeMirrorEditor {
   /**
    * Replace the whole document programmatically (e.g. loading a file or
    * adopting synced collab content). Does not emit a change notification;
-   * call signalChange() when such a replacement should be persisted.
+   * call signalChange() when such a replacement should be persisted. Starts a
+   * fresh undo history (see dispatchWithFreshHistory).
    * @param {string} text - The new document content.
    */
 
   setContent(text) {
     const { length } = this._view.state.doc
-    this._view.dispatch({
+    dispatchWithFreshHistory(this._view, {
       annotations: [_programmatic.of(true)],
       changes: { from: 0, insert: text, to: length },
     })
