@@ -1076,7 +1076,6 @@ html, body {
 .preview-page {
   width: 595px;
   transform-origin: top center;
-  transition: transform var(--transition);
   flex-shrink: 0;
 }
 

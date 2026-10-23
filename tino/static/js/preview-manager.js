@@ -1,5 +1,9 @@
 import { SINGLE_ITEM, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants.js'
 
+/** Divisor for the viewport's vertical centre. */
+
+const HALF = 2
+
 /**
  * Manages preview rendering and zoom controls.
  */
@@ -192,29 +196,42 @@ export class PreviewManager {
     link.click()
   }
 
+  /**
+   * Apply a zoom level, keeping the content at the viewport's vertical centre
+   * in place. The page scales from its top edge (transform-origin), so the
+   * distance from that edge to the centre grows by the zoom ratio; the scroll
+   * position is shifted by the same amount. The scale is applied without a
+   * transition: mid-animation the scrollable height would still be the old one
+   * and the browser would clamp the new scroll position.
+   * @param {number} zoom - New zoom percentage.
+   */
+
+  _setZoom(zoom) {
+    const { previewPage, zoomLabel } = this.app.els
+    const viewport = document.getElementById('preview-viewport')
+    const pageTop = previewPage.getBoundingClientRect().top
+      - viewport.getBoundingClientRect().top + viewport.scrollTop
+    const centre = Math.max(0, viewport.scrollTop + viewport.clientHeight / HALF - pageTop)
+
+    previewPage.style.transform = `scale(${zoom / 100})`
+    viewport.scrollTop += centre * (zoom / this.app.zoom - SINGLE_ITEM)
+    this.app.zoom = zoom
+    zoomLabel.textContent = `${zoom}%`
+  }
+
   /** Bind zoom in/out and PDF download buttons. */
 
   bindZoom() {
-    const {previewPage, zoomLabel} = this.app.els
-
     document.getElementById('btn-zoom-in')
       .addEventListener('click', () => {
-        if (this.app.zoom < ZOOM_MAX) {
-          this.app.zoom += ZOOM_STEP
-          previewPage.style.transform =
-            `scale(${this.app.zoom / 100})`
-          zoomLabel.textContent = `${this.app.zoom}%`
-        }
+        if (this.app.zoom < ZOOM_MAX)
+          this._setZoom(this.app.zoom + ZOOM_STEP)
       })
 
     document.getElementById('btn-zoom-out')
       .addEventListener('click', () => {
-        if (this.app.zoom > ZOOM_MIN) {
-          this.app.zoom -= ZOOM_STEP
-          previewPage.style.transform =
-            `scale(${this.app.zoom / 100})`
-          zoomLabel.textContent = `${this.app.zoom}%`
-        }
+        if (this.app.zoom > ZOOM_MIN)
+          this._setZoom(this.app.zoom - ZOOM_STEP)
       })
 
     document.getElementById('btn-pdf')
