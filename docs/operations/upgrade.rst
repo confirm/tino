@@ -3,8 +3,7 @@
 ⬆️ Upgrade
 ==========
 
-This page lists the **actions required** when upgrading TINO between versions —
-configuration changes, renamed variables, and anything that needs attention before or after pulling a new image.
+This page lists the **actions required** when upgrading TINO between versions — configuration changes, renamed variables, and anything that needs attention before or after pulling a new image.
 
 It is not a full changelog; only changes that ask something of you are recorded here.
 
@@ -45,7 +44,8 @@ When a compilation fails, the compile endpoints (``GET /api/buckets/{slug}/compi
     }
 
 - ``message`` holds the compiler output; absolute server paths are stripped, so file paths are relative to the bucket.
-- ``diagnostics`` lists every error and warning. ``file``, ``line`` and ``column`` are ``null`` when Typst reports no position.
+- ``diagnostics`` lists every error and warning.
+  ``file``, ``line`` and ``column`` are ``null`` when Typst reports no position.
 
 The bundled web UI already handles the new format.
 If you call the compile endpoints from scripts or integrations (e.g. with an :ref:`API key <usage/authentication:API keys>`) and read ``detail`` as a string, use ``detail.message`` instead.

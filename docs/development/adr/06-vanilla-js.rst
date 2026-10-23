@@ -13,8 +13,7 @@ Decision
 --------
 
 The TINO frontend is written in plain ES2022 JavaScript with no build step and no framework.
-The only significant runtime dependencies are `CodeMirror 6 <https://codemirror.net/>`_ (editor) and
-`Yjs <https://yjs.dev/>`_ (collaboration), both bundled as a single pre-built vendor file. 
+The only significant runtime dependencies are `CodeMirror 6 <https://codemirror.net/>`_ (editor) and `Yjs <https://yjs.dev/>`_ (collaboration), both bundled as a single pre-built vendor file.
 CSS is hand-written; no utility framework is used.
 
 Consequences

@@ -15,5 +15,5 @@ Interactive API documentation is built in and served by every TINO instance:
 Authentication
 ~~~~~~~~~~~~~~
 
-Browser-based clients use the OIDC session cookie. Non-interactive clients —
-scripts and CI — authenticate with an :ref:`API key <usage/authentication:API keys>` instead.
+Browser-based clients use the OIDC session cookie.
+Non-interactive clients — scripts and CI — authenticate with an :ref:`API key <usage/authentication:API keys>` instead.

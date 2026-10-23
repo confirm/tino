@@ -7,8 +7,7 @@
 
    The MCP server is **experimental**.
 
-   It depends on your OIDC provider acting as a :ref:`CIMD-capable authorisation server <usage/authentication:MCP>`,
-   and the surrounding ecosystem is still stabilising.
+   It depends on your OIDC provider acting as a :ref:`CIMD-capable authorisation server <usage/authentication:MCP>`, and the surrounding ecosystem is still stabilising.
 
    There are also 2 known issues ocurred during the development in combination with Keycloak:
 

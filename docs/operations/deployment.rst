@@ -111,12 +111,10 @@ Then bring the stack up with:
 .. warning::
 
    Running TINO without Docker is **not recommended and unsupported**.
-   You are responsible for managing Python, the Typst CLI, process
-   supervision, and upgrades yourself.  The Docker image is the only
-   officially supported deployment method.
+   You are responsible for managing Python, the Typst CLI, process supervision, and upgrades yourself.
+   The Docker image is the only officially supported deployment method.
 
-If you cannot use Docker, TINO can be installed as a regular Python package
-and run with Gunicorn.
+If you cannot use Docker, TINO can be installed as a regular Python package and run with Gunicorn.
 
 Prerequisites
 ~~~~~~~~~~~~~
@@ -142,8 +140,7 @@ Installing
 
     pip install build/tino-*.whl
 
-This installs TINO and all its Python dependencies (including Gunicorn and
-Uvicorn).
+This installs TINO and all its Python dependencies (including Gunicorn and Uvicorn).
 
 Running
 ~~~~~~~
@@ -166,8 +163,7 @@ This is the same command the Docker image runs internally.
 .. hint::
 
     See :ref:`Configuration` for the full list of environment variables.
-    Make sure :attr:`TINO_DATA_DIR <tino.config.TINO_DATA_DIR>` points to a
-    writable directory that is backed up regularly.
+    Make sure :attr:`TINO_DATA_DIR <tino.config.TINO_DATA_DIR>` points to a writable directory that is backed up regularly.
 
 .. _Integration:
 
@@ -203,8 +199,7 @@ The OIDC redirect URIs then include the prefix as well (e.g. ``https://example.c
 
 .. note::
 
-    When :ref:`MCP <MCP server>` is enabled, OAuth clients look up the discovery metadata at the **host root** with the path appended
-    (e.g. ``https://example.com/.well-known/oauth-protected-resource/tino/mcp``).
+    When :ref:`MCP <MCP server>` is enabled, OAuth clients look up the discovery metadata at the **host root** with the path appended (e.g. ``https://example.com/.well-known/oauth-protected-resource/tino/mcp``).
     Forward ``/.well-known/oauth-protected-resource/tino`` and ``/.well-known/oauth-authorization-server/tino`` to TINO as well.
 
 OIDC
@@ -229,9 +224,7 @@ Register a new client (application) with your OIDC provider:
        https://tino.example.com/login
 
 4. Ensure the following **scopes** are enabled: ``openid``, ``email``, ``groups``, ``profile``.
-5. Make sure the user's group memberships are exposed under a claim (see
-   :attr:`TINO_OIDC_GROUPS_CLAIM <tino.config.TINO_OIDC_GROUPS_CLAIM>`), either in
-   the **ID token** or from the **UserInfo endpoint** (TINO will merge them).
+5. Make sure the user's group memberships are exposed under a claim (see :attr:`TINO_OIDC_GROUPS_CLAIM <tino.config.TINO_OIDC_GROUPS_CLAIM>`), either in the **ID token** or from the **UserInfo endpoint** (TINO will merge them).
 6. Make sure a user matches an admin group (see :attr:`TINO_ADMIN_GROUPS <tino.config.TINO_ADMIN_GROUPS>`)
 7. Set the :attr:`TINO_OIDC_CLIENT_SECRET <tino.config.TINO_OIDC_CLIENT_SECRET>` to the **client secret**
 

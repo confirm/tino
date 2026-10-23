@@ -3,15 +3,13 @@
 🏗️ Architecture
 ================
 
-This document describes TINO's high-level architecture and links to the individual
-Architecture Decision Records (ADRs) that explain key design choices.
+This document describes TINO's high-level architecture and links to the individual Architecture Decision Records (ADRs) that explain key design choices.
 
 Components
 ----------
 
-TINO is a single Python process (FastAPI) that serves both the REST/WebSocket API
-and the static frontend. There is no separate frontend build step and no external
-runtime dependencies beyond a filesystem and an optional OIDC provider.
+TINO is a single Python process (FastAPI) that serves both the REST/WebSocket API and the static frontend.
+There is no separate frontend build step and no external runtime dependencies beyond a filesystem and an optional OIDC provider.
 
 .. mermaid::
 
