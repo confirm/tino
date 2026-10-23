@@ -59,6 +59,7 @@ async def health():
 async def frontend_config():
     '''Return frontend configuration values.'''
     return {
+        'docxExport': CompilerService.pandoc_available(),
         'saveDebounceMs': config.TINO_SAVE_DEBOUNCE_MS,
         'version': _APP_VERSION,
     }

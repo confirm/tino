@@ -29,6 +29,8 @@ export class PreviewManager {
     this._renderPinControls()
     document.getElementById('btn-pdf')
       .classList.toggle('hidden', !isTyp)
+    document.getElementById('btn-docx')
+      .classList.toggle('hidden', !isTyp || !this.app.config.docxExport)
     if (isTyp)
       await this.compile()
     else
@@ -179,27 +181,33 @@ export class PreviewManager {
     preview.replaceChildren(fragment)
   }
 
-  /** Download the current .typ file as a compiled PDF. */
+  /**
+   * Download the current .typ file compiled to a document format.
+   * @param {string} format - `pdf` or `docx`.
+   */
 
-  downloadPdf() {
+  download(format) {
     if (!this.app.bucket || !this.target)
       return
     const slug = encodeURIComponent(this.app.bucket)
     const path = this.target
-    const url = `api/buckets/${slug}/compile/pdf/${path}`
+    const url = `api/buckets/${slug}/compile/${format}/${path}`
     const link = document.createElement('a')
     link.href = url
     link.download = ''
     link.click()
   }
 
-  /** Bind zoom (buttons and Ctrl/⌘ + wheel), PDF download and pin buttons. */
+  /** Bind zoom (buttons and Ctrl/⌘ + wheel), PDF/DOCX download and pin buttons. */
 
   bindZoom() {
     new PreviewZoom(this.app).bind()
 
     document.getElementById('btn-pdf')
-      .addEventListener('click', () => this.downloadPdf())
+      .addEventListener('click', () => this.download('pdf'))
+
+    document.getElementById('btn-docx')
+      .addEventListener('click', () => this.download('docx'))
 
     document.getElementById('btn-pin-preview')
       .addEventListener('click', () => this.togglePin())

@@ -1,4 +1,4 @@
-'''REST endpoints for compiling Typst files to SVG or PDF.'''
+'''REST endpoints for compiling Typst files to SVG, PDF or DOCX.'''
 
 import logging
 
@@ -7,9 +7,11 @@ from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
 from ..dependencies import get_compiler_service, require_viewer
-from ..services.compiler import CompileError, CompilerService
+from ..services.compiler import CompileError, CompilerService, PandocMissing
 
 logger = logging.getLogger(__name__)
+
+DOCX_MEDIA_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
 router = APIRouter(prefix='/api/buckets/{slug}/compile', tags=['compile'])
 
@@ -43,6 +45,38 @@ async def compile_pdf(
 
     except FileNotFoundError as exc:
         raise HTTPException(404, 'File not found') from exc
+
+    except CompileError as exc:
+        raise _compile_failed(exc) from exc
+
+    except RuntimeError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@router.get('/docx/{path:path}')
+async def compile_docx(
+    slug: str, path: str,
+    user=Depends(require_viewer),
+    svc: CompilerService = Depends(get_compiler_service),
+):
+    '''Compile a .typ file and return a DOCX (via Typst's HTML export and pandoc).'''
+    logger.info('Compiling DOCX for %s/%s (user: %s)', slug, path, user.username)
+    try:
+        docx_path = svc.compile_docx(slug, path)
+        filename = path.rsplit('/', maxsplit=1)[-1].replace('.typ', '.docx')
+
+        return FileResponse(
+            docx_path,
+            filename=filename,
+            media_type=DOCX_MEDIA_TYPE,
+            background=BackgroundTask(docx_path.unlink, missing_ok=True),
+        )
+
+    except FileNotFoundError as exc:
+        raise HTTPException(404, 'File not found') from exc
+
+    except PandocMissing as exc:
+        raise HTTPException(501, str(exc)) from exc
 
     except CompileError as exc:
         raise _compile_failed(exc) from exc

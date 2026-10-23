@@ -1025,6 +1025,8 @@ html, body {
   font-weight: 600;
   cursor: pointer;
   transition: opacity var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-pdf:hover {
@@ -1033,6 +1035,7 @@ html, body {
 
 .btn-pdf .material-symbols-outlined {
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 .zoom-level {
@@ -1042,8 +1045,15 @@ html, body {
   color: var(--text-muted);
 }
 
+/* The title takes all free space, so the buttons stay packed against the zoom
+   controls and don't move when a pinned filename appears (it truncates). */
+.preview-panel .panel-header {
+  gap: 8px;
+}
+
 .preview-title {
   display: flex;
+  flex: 1;
   align-items: center;
   gap: 6px;
   min-width: 0;
