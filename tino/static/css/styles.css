@@ -1068,14 +1068,16 @@ html, body {
   flex: 1;
   overflow: auto;
   display: flex;
-  justify-content: center;
+
+  /* `safe`: a zoomed page wider than the viewport aligns to the start instead
+     of overflowing past the left edge, where it couldn't be scrolled to. */
+  justify-content: safe center;
   padding: 24px;
   background: var(--bg-tertiary);
 }
 
 .preview-page {
   width: 595px;
-  transform-origin: top center;
   flex-shrink: 0;
 }
 

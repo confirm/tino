@@ -108,6 +108,8 @@ Keyboard shortcuts
      - Go to line.
    * - :kbd:`Ctrl+D` / :kbd:`⌘D`
      - Select the next occurrence of the selection (multi-cursor).
+   * - :kbd:`Ctrl` / :kbd:`⌘` + scroll
+     - Zoom the preview around the mouse cursor.
 
 Folding and brackets
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -142,4 +144,5 @@ Preview
 The right-hand panel shows an SVG preview of the current ``.typ`` file.
 The preview is re-rendered automatically after each save.
 
-Use the **Zoom in** / **Zoom out** buttons (or the displayed percentage) to adjust the preview scale.
+Use the **Zoom in** / **Zoom out** buttons (or the displayed percentage) to adjust the preview scale; the content at the centre of the preview stays in place.
+To zoom around a specific spot, hold :kbd:`Ctrl` (or :kbd:`⌘`) and scroll with the mouse over it, or pinch on a trackpad.

@@ -22,6 +22,17 @@ export const ZOOM_MIN = 50
 
 export const ZOOM_MAX = 200
 
+/**
+ * Ctrl/⌘ + wheel zoom factor per scrolled pixel (exponential): one mouse wheel
+ * notch (~100 px) zooms by roughly 15%.
+ */
+
+export const ZOOM_WHEEL_SENSITIVITY = 0.0015
+
+/** Pixels per line for wheel events reported in lines (e.g. Firefox). */
+
+export const WHEEL_LINE_PX = 16
+
 /** Minimum drag width in px for the left (file tree) panel. */
 
 export const PANEL_MIN_WIDTH_LEFT = 200
