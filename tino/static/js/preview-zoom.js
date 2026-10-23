@@ -12,8 +12,9 @@ import {
 const HALF = 2
 
 /**
- * Preview zoom: the zoom buttons and Ctrl/⌘ + wheel, keeping the content under
- * the viewport's centre (buttons) or the cursor (wheel) in place.
+ * Preview zoom: the zoom buttons, fit to width, reset to 100% and Ctrl/⌘ +
+ * wheel, keeping the content under the viewport's centre (buttons) or the
+ * cursor (wheel) in place.
  */
 
 export class PreviewZoom {
@@ -22,26 +23,85 @@ export class PreviewZoom {
 
   constructor(app) {
     this.app = app
+    this._fitWidth = false
   }
 
-  /** Bind the zoom buttons and Ctrl/⌘ + wheel on the preview viewport. */
+  /** Bind the zoom controls and Ctrl/⌘ + wheel on the preview viewport. */
 
   bind() {
+    const viewport = document.getElementById('preview-viewport')
+
     // Buttons snap to the step grid, since wheel zoom leaves arbitrary levels.
     document.getElementById('btn-zoom-in')
       .addEventListener('click', () => {
         const below = Math.floor(this.app.zoom / ZOOM_STEP) * ZOOM_STEP
-        this._setZoom(below + ZOOM_STEP)
+        this._manualZoom(below + ZOOM_STEP)
       })
 
     document.getElementById('btn-zoom-out')
       .addEventListener('click', () => {
         const above = Math.ceil(this.app.zoom / ZOOM_STEP) * ZOOM_STEP
-        this._setZoom(above - ZOOM_STEP)
+        this._manualZoom(above - ZOOM_STEP)
       })
 
-    document.getElementById('preview-viewport')
-      .addEventListener('wheel', ev => this._onWheel(ev), { passive: false })
+    document.getElementById('zoom-level')
+      .addEventListener('click', () => this._manualZoom(100))
+
+    document.getElementById('btn-zoom-fit')
+      .addEventListener('click', () => this._enableFitWidth())
+
+    viewport.addEventListener('wheel', ev => this._onWheel(ev), { passive: false })
+
+    // Keep fitting while the panel is resized (or a scrollbar appears).
+    new ResizeObserver(() => {
+      if (this._fitWidth)
+        this._fit()
+    }).observe(viewport)
+  }
+
+  /** Zoom to an explicit level, which ends fit-to-width mode. */
+
+  _manualZoom(zoom, anchor) {
+    this._fitWidth = false
+    document.getElementById('btn-zoom-fit').classList.remove('active')
+    this._setZoom(zoom, anchor)
+  }
+
+  /** Fit the page to the preview's width, and keep it fitted until the next manual zoom. */
+
+  _enableFitWidth() {
+    this._fitWidth = true
+    document.getElementById('btn-zoom-fit').classList.add('active')
+    this._fit()
+  }
+
+  /**
+   * Zoom so the page fills the viewport's inner width (between its paddings).
+   * Zooming can add or remove the vertical scrollbar, which changes that width,
+   * so it fits a second time when the width changed (reading `clientWidth`
+   * forces the layout, so this doesn't depend on the ResizeObserver firing).
+   */
+
+  _fit() {
+    const viewport = document.getElementById('preview-viewport')
+    const before = viewport.clientWidth
+    this._setZoom(this._fitZoom(viewport))
+    if (viewport.clientWidth !== before)
+      this._setZoom(this._fitZoom(viewport))
+  }
+
+  /**
+   * The zoom at which the page fills the viewport's inner width. The page's
+   * unzoomed width is derived from its current size, so this works for any
+   * page format; the result is clamped like every other zoom level.
+   */
+
+  _fitZoom(viewport) {
+    const style = getComputedStyle(viewport)
+    const available = viewport.clientWidth
+      - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+    const width = this.app.els.previewPage.getBoundingClientRect().width / (this.app.zoom / 100)
+    return available / width * 100
   }
 
   /**
@@ -114,7 +174,7 @@ export class PreviewZoom {
     ev.preventDefault()
     const lines = ev.deltaMode === WheelEvent.DOM_DELTA_LINE
     const pixels = ev.deltaY * (lines ? WHEEL_LINE_PX : SINGLE_ITEM)
-    this._setZoom(this.app.zoom * Math.exp(-pixels * ZOOM_WHEEL_SENSITIVITY), ev)
+    this._manualZoom(this.app.zoom * Math.exp(-pixels * ZOOM_WHEEL_SENSITIVITY), ev)
   }
 
 }

@@ -18,11 +18,9 @@ Tabs are persisted across page reloads.
 Syntax highlighting
 ~~~~~~~~~~~~~~~~~~~~~
 
-``.typ`` files are highlighted with a Typst-aware grammar: comments, strings,
-keywords (``#let``, ``#show``, ``#import``, …), function calls, headings,
-strong and emphasis, math, labels and references, numbers, and punctuation each
-get their own colour. The palette is drawn from the corporate-design colours
-and adapts to the active :ref:`theme <Theming>` (dark and light).
+``.typ`` files are highlighted with a Typst-aware grammar: 
+comments, strings, keywords (``#let``, ``#show``, ``#import``, …), function calls, headings, strong and emphasis, math, labels and references, numbers, and punctuation each get their own colour.
+The palette is drawn from the corporate-design colours and adapts to the active :ref:`theme <Theming>` (dark and light).
 
 Formatting toolbar
 ~~~~~~~~~~~~~~~~~~~~
@@ -74,14 +72,11 @@ For the full syntax reference, see the `Typst documentation <https://typst.app/d
 Indentation
 ~~~~~~~~~~~
 
-The editor indents structurally. Pressing :kbd:`Enter` keeps the surrounding
-indentation, adds a level after an opening bracket (``(``, ``[`` or ``{``), and
-a line that begins with a closing bracket snaps back to match its opener. Plain
-prose is left at its current indentation.
+The editor indents structurally. 
+Pressing :kbd:`Enter` keeps the surrounding indentation, adds a level after an opening bracket (``(``, ``[`` or ``{``), and a line that begins with a closing bracket snaps back to match its opener. 
+Plain prose is left at its current indentation.
 
-Lists continue automatically: pressing :kbd:`Enter` on a list item starts the
-next item (numbered markers increment), while pressing :kbd:`Enter` on an empty
-item ends the list.
+Lists continue automatically: pressing :kbd:`Enter` on a list item starts the next item (numbered markers increment), while pressing :kbd:`Enter` on an empty item ends the list.
 
 Keyboard shortcuts
 ~~~~~~~~~~~~~~~~~~
@@ -114,29 +109,24 @@ Keyboard shortcuts
 Folding and brackets
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Collapse a ``{…}`` or ``[…]`` block from the fold gutter beside the line
-numbers, and click again to expand it. When the cursor sits next to a bracket,
-its matching partner is highlighted.
+Collapse a ``{…}`` or ``[…]`` block from the fold gutter beside the line numbers, and click again to expand it. 
+When the cursor sits next to a bracket, its matching partner is highlighted.
 
 Vim mode
 ~~~~~~~~
 
-Click **Vim** in the toolbar to enable Vim keybindings. A status bar at the
-bottom of the editor shows the current mode and ``:`` command line, and the
-caret becomes a block cursor in normal mode. The setting is remembered per
-browser — click **Vim** again to return to the default editing mode.
+Click **Vim** in the toolbar to enable Vim keybindings. 
+A status bar at the bottom of the editor shows the current mode and ``:`` command line, and the caret becomes a block cursor in normal mode. 
+The setting is remembered per browser — click **Vim** again to return to the default editing mode.
 
-The usual motions and operators apply; ``u`` / :kbd:`Ctrl+R` undo and redo, and
-``:w`` saves the file.
+The usual motions and operators apply; ``u`` / :kbd:`Ctrl+R` undo and redo, and ``:w`` saves the file.
 
 Saving
 ~~~~~~
 
-Files are **auto-saved** a short moment after you stop typing — by default
-250 ms, configurable via
-:attr:`TINO_SAVE_DEBOUNCE_MS <tino.config.TINO_SAVE_DEBOUNCE_MS>`.
-You can also save manually with the **Save** button, :kbd:`Ctrl+S`, or ``:w`` in
-Vim mode. Unsaved files are marked with a dot on their tab.
+Files are **auto-saved** a short moment after you stop typing — by default 250 ms, configurable via :attr:`TINO_SAVE_DEBOUNCE_MS <tino.config.TINO_SAVE_DEBOUNCE_MS>`.
+You can also save manually with the **Save** button, :kbd:`Ctrl+S`, or ``:w`` in Vim mode. 
+Unsaved files are marked with a dot on their tab.
 
 Preview
 ~~~~~~~
@@ -144,7 +134,9 @@ Preview
 The right-hand panel shows an SVG preview of the current ``.typ`` file.
 The preview is re-rendered automatically after each save.
 
-Use the **Zoom in** / **Zoom out** buttons (or the displayed percentage) to adjust the preview scale; the content at the centre of the preview stays in place.
+Use the **Zoom in** / **Zoom out** buttons to adjust the preview scale; the content at the centre of the preview stays in place.
+Click the displayed percentage to reset the zoom to 100%.
+**Fit to width** zooms the page to fill the preview's width, and keeps it fitted while you resize the panel, until you zoom manually again.
 To zoom around a specific spot, hold :kbd:`Ctrl` (or :kbd:`⌘`) and scroll with the mouse over it, or pinch on a trackpad.
 
 DOCX export
