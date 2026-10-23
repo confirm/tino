@@ -1039,10 +1039,23 @@ html, body {
 }
 
 .zoom-level {
-  font-size: 11px;
   min-width: 36px;
+  height: 24px;
+  padding: 0 2px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
   text-align: center;
   color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.zoom-level:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 /* The title takes all free space, so the buttons stay packed against the zoom
@@ -1069,7 +1082,8 @@ html, body {
   color: var(--accent);
 }
 
-#btn-pin-preview.active {
+#btn-pin-preview.active,
+#btn-zoom-fit.active {
   color: var(--accent);
   background: var(--bg-hover);
 }
