@@ -49,6 +49,8 @@ The TINO editor ships with the following features out of the box:
   | Live-rendered preview next to the :ref:`editor <Editor>`, updated on every change.
 - | **PDF export**
   | Compile and download production-ready PDFs directly from the :ref:`editor <Editor>`.
+- | **DOCX export** *(experimental)*
+  | Download an editable Word document from the :ref:`editor <usage/editor:DOCX export>`, with the content but not the page layout.
 - | **Real-time collaboration**
   | :ref:`Concurrent editing <Collaboration>` via CRDT over WebSockets. Changes merge automatically, no conflicts.
 - | **Group-based access control**

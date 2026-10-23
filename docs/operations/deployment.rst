@@ -124,6 +124,7 @@ Prerequisites
 - Python 3.14+
 - `Typst CLI <https://github.com/typst/typst>`_ available on ``$PATH``
 - Git with `Git LFS <https://git-lfs.com/>`_
+- Optional: `pandoc <https://pandoc.org/>`_ on ``$PATH`` for the experimental :ref:`DOCX export <usage/editor:DOCX export>`
 
 Building the wheel
 ~~~~~~~~~~~~~~~~~~

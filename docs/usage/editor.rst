@@ -146,3 +146,39 @@ The preview is re-rendered automatically after each save.
 
 Use the **Zoom in** / **Zoom out** buttons (or the displayed percentage) to adjust the preview scale; the content at the centre of the preview stays in place.
 To zoom around a specific spot, hold :kbd:`Ctrl` (or :kbd:`⌘`) and scroll with the mouse over it, or pinch on a trackpad.
+
+DOCX export
+~~~~~~~~~~~
+
+.. warning::
+
+   The DOCX export is **experimental**.
+
+   It relies on Typst's HTML export, which is still under active development:
+   the Word document keeps the content, but not the page layout, and the result may change between Typst and TINO releases.
+   Use the PDF for documents that need to look exactly right.
+
+Next to the **PDF** button, the **DOCX** button downloads the current ``.typ`` file as a Word document.
+It is only shown when `pandoc <https://pandoc.org/>`_ is installed on the server (it is included in the Docker image for ``amd64`` and ``arm64``).
+
+The document is built from Typst's HTML export, which pandoc converts to DOCX.
+That keeps the content and structure (headings, paragraphs, lists, tables, links and images), but **not the page layout**:
+
+- Page setup, spacing, headers and footers are ignored.
+- The content of ``grid`` elements is dropped. In templates, render a borderless table instead when exporting to HTML:
+
+  .. code-block:: typst
+
+      #let layout-grid(..args) = context {
+        if target() == "html" { table(stroke: none, ..args) } else { grid(..args) }
+      }
+
+  Use ``layout-grid`` wherever the template uses ``grid`` (e.g. for a letterhead or signature rows); the PDF stays unchanged.
+
+To style the Word document (fonts, colours, margins, header and footer), add a ``reference.docx`` next to the ``.typ`` file or at the root of the bucket.
+TINO passes it to pandoc as `reference document <https://pandoc.org/MANUAL.html#option--reference-doc>`_.
+A good starting point is pandoc's default, which you can adjust in Word:
+
+.. code-block:: bash
+
+    pandoc -o reference.docx --print-default-data-file reference.docx

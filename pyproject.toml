@@ -92,6 +92,7 @@ testpaths = ['tests']
 addopts = '--strict-markers'
 markers = [
     'typst: requires the typst CLI on the PATH (skipped otherwise)',
+    'pandoc: requires the pandoc CLI on the PATH (skipped otherwise)',
 ]
 
 
