@@ -3,9 +3,7 @@
 ✏️ Editor
 ---------
 
-TINO's editor is built on `CodeMirror 6 <https://codemirror.net/>`_ and
-offers Typst-aware syntax highlighting, structural indentation, search and
-navigation, code folding, and optional Vim keybindings.
+TINO's editor is built on `CodeMirror 6 <https://codemirror.net/>`_ and offers Typst-aware syntax highlighting, structural indentation, search and navigation, code folding, and optional Vim keybindings.
 
 Tabs
 ~~~~
@@ -18,8 +16,7 @@ Tabs are persisted across page reloads.
 Syntax highlighting
 ~~~~~~~~~~~~~~~~~~~~~
 
-``.typ`` files are highlighted with a Typst-aware grammar: 
-comments, strings, keywords (``#let``, ``#show``, ``#import``, …), function calls, headings, strong and emphasis, math, labels and references, numbers, and punctuation each get their own colour.
+``.typ`` files are highlighted with a Typst-aware grammar: comments, strings, keywords (``#let``, ``#show``, ``#import``, …), function calls, headings, strong and emphasis, math, labels and references, numbers, and punctuation each get their own colour.
 The palette is drawn from the corporate-design colours and adapts to the active :ref:`theme <Theming>` (dark and light).
 
 Formatting toolbar
@@ -146,8 +143,7 @@ DOCX export
 
    The DOCX export is **experimental**.
 
-   It relies on Typst's HTML export, which is still under active development:
-   the Word document keeps the content, but not the page layout, and the result may change between Typst and TINO releases.
+   It relies on Typst's HTML export, which is still under active development: the Word document keeps the content, but not the page layout, and the result may change between Typst and TINO releases.
    Use the PDF for documents that need to look exactly right.
 
 Next to the **PDF** button, the **DOCX** button downloads the current ``.typ`` file as a Word document.
@@ -157,7 +153,8 @@ The document is built from Typst's HTML export, which pandoc converts to DOCX.
 That keeps the content and structure (headings, paragraphs, lists, tables, links and images), but **not the page layout**:
 
 - Page setup, spacing, headers and footers are ignored.
-- The content of ``grid`` elements is dropped. In templates, render a borderless table instead when exporting to HTML:
+- The content of ``grid`` elements is dropped.
+  In templates, render a borderless table instead when exporting to HTML:
 
   .. code-block:: typst
 

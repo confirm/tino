@@ -13,8 +13,7 @@ A third option was to skip real-time collaboration entirely and rely on git merg
 Decision
 --------
 
-TINO uses `Yjs <https://yjs.dev/>`_ (a CRDT library) with a custom WebSocket server backed by `pycrdt <https://github.com/jupyter-server/pycrdt>`_ (the Python
-Yjs binding).
+TINO uses `Yjs <https://yjs.dev/>`_ (a CRDT library) with a custom WebSocket server backed by `pycrdt <https://github.com/jupyter-server/pycrdt>`_ (the Python Yjs binding).
 CodeMirror 6's ``y-codemirror.next`` binding connects the editor state to the shared Yjs document.
 
 Each open file gets a **room** on the server.
