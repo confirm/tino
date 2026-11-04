@@ -237,8 +237,12 @@ class CompilerService:
 
     def _strip_paths(self, text, root):
         '''Strip absolute paths so only bucket-relative ones reach the client.'''
+        # Normalize Windows paths
+        text = text.replace('\\\\?\\', '')
+        text = text.replace('\\', '/')
         for base in (root, self.data_dir):
-            text = text.replace(f'{base}/', '').replace(str(base), '')
+            base_posix = base.as_posix()
+            text = text.replace(f'{base_posix}/', '').replace(base_posix, '')
 
         return text
 
