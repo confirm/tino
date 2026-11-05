@@ -22,7 +22,7 @@ requires-python = '>=3.14'
 
 dependencies = [
     'anyio==4.15.1',
-    'authlib==1.9.1',
+    'authlib==1.9.2',
     'fastapi==0.161.0',
     'mcp>=2.3.0',
     'gitpython==3.2.1',
