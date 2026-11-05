@@ -1,4 +1,4 @@
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 # renovate: github-releases depName=typst/typst
 ARG TYPST_VERSION=0.15.1
