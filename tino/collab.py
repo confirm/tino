@@ -117,12 +117,17 @@ class CollabManager:
             return room
 
     @asynccontextmanager
-    async def lock_path(self, slug: str, file_path: str):
-        '''Hold the per-path lock and evict any existing room without flushing.
+    async def lock_path(self, slug: str, file_path: str, *, flush: bool = False):
+        '''Hold the per-path lock and evict any existing room.
 
         Used by file delete/rename handlers to atomically tear down collab
         state and prevent the race where a pending flush re-creates the file
         the client just asked the server to remove.
+
+        By default the room is evicted without flushing (its unsaved edits are
+        discarded, as for a delete). With *flush*, the room is first written to
+        disk (when auto-save is enabled), so a rename keeps collaborators'
+        unsaved edits instead of losing them.
         '''
         key = (slug, file_path)
         lock = self._get_lock(key)
@@ -133,6 +138,8 @@ class CollabManager:
             room = self._rooms.pop(key, None)
             self._room_tasks.pop(key, None)
             if room:
+                if flush and self._auto_save:
+                    await self._flush_room(slug, file_path, room)
                 try:
                     await room.stop()
                     logger.info('Evicted room for %s/%s', slug, file_path)
@@ -142,14 +149,17 @@ class CollabManager:
 
         self._room_locks.pop(key, None)
 
-    async def evict_under(self, slug: str, prefix: str) -> None:
-        '''Evict every room whose path is under `prefix` (used for dir operations).'''
+    async def evict_under(self, slug: str, prefix: str, *, flush: bool = False) -> None:
+        '''Evict every room whose path is under `prefix` (used for dir operations).
+
+        See :meth:`lock_path` for *flush*.
+        '''
         match = [
             path for (s, path) in list(self._rooms.keys())
             if s == slug and (path == prefix or path.startswith(f'{prefix}/'))
         ]
         for path in match:
-            async with self.lock_path(slug, path):
+            async with self.lock_path(slug, path, flush=flush):
                 pass
 
     async def _flush_room(self, slug: str, file_path: str, room: YRoom) -> None:

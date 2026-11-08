@@ -590,9 +590,9 @@ async def rename_file(bucket: str, old_path: str, new_path: str) -> dict:
     '''
     user = _require(bucket, 'editor')
 
-    # Evict any open collab room for the source (without flushing) so a pending
-    # flush can't re-create the file at its old path after the move.
-    async with get_collab_manager().lock_path(bucket, old_path):
+    # Flush & evict any open collab room for the source, so collaborators'
+    # unsaved edits move along and a later flush can't re-create the old path.
+    async with get_collab_manager().lock_path(bucket, old_path, flush=True):
         if not get_file_service().rename(bucket, old_path, new_path):
             raise ValueError(
                 f'Invalid path or target exists: {old_path} -> {new_path}')
@@ -626,8 +626,8 @@ async def rename_dir(bucket: str, old_path: str, new_path: str) -> dict:
     '''Rename or move a directory and all its contents. Requires the editor role.'''
     user = _require(bucket, 'editor')
 
-    # Evict any open collab rooms under the directory before moving it.
-    await get_collab_manager().evict_under(bucket, old_path)
+    # Flush & evict any open collab rooms under the directory before moving it.
+    await get_collab_manager().evict_under(bucket, old_path, flush=True)
     affected = get_file_service().rename_dir(bucket, old_path, new_path)
 
     if affected is None:
