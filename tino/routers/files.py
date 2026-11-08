@@ -180,7 +180,7 @@ async def rename_file(
     collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Rename/move a single file.'''
-    async with collab.lock_path(slug, body['old_path']):
+    async with collab.lock_path(slug, body['old_path'], flush=True):
         if not svc.rename(slug, body['old_path'], body['new_path']):
             logger.warning(
                 'Rename rejected for %s: %s -> %s (invalid path or target exists) (user: %s)',
@@ -204,7 +204,7 @@ async def rename_dir(
     collab: CollabManager = Depends(get_collab_manager),
 ):
     '''Rename/move a directory and all its contents.'''
-    await collab.evict_under(slug, body['old_path'])
+    await collab.evict_under(slug, body['old_path'], flush=True)
     affected = svc.rename_dir(slug, body['old_path'], body['new_path'])
 
     if affected is None:

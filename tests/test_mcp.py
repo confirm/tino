@@ -551,6 +551,23 @@ async def test_dev_admin_middleware_injects_admin(monkeypatch):
     assert seen['user'] is None
 
 
+
+@pytest.mark.anyio
+async def test_rename_file_keeps_unsaved_room_edits(as_user, proj):
+    collab = dependencies.get_collab_manager()
+    await collab._get_or_create_room(proj, 'main.typ')  # pylint: disable=protected-access
+    try:
+        room = collab._rooms[(proj, 'main.typ')]  # pylint: disable=protected-access
+        room.ydoc.get('content', type=Text).insert(0, '// live\n')
+
+        as_user(EDITOR)
+        await mcp.rename_file(proj, 'main.typ', 'renamed.typ')
+
+        assert mcp.read_file(proj, 'renamed.typ').startswith('// live\n= Hello')
+    finally:
+        for task in collab._room_tasks.values():  # pylint: disable=protected-access
+            task.cancel()
+
 @pytest.mark.anyio
 async def test_tool_annotations():
     tools = {t.name: t.annotations for t in await mcp.mcp.list_tools()}
