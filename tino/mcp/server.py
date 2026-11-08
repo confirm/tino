@@ -28,6 +28,7 @@ from mcp.server.auth.provider import AccessToken, TokenVerifier
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.mcpserver import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
+from mcp.types import ToolAnnotations
 
 from .. import config
 from ..auth import ROLE_HIERARCHY, resolve_role
@@ -317,8 +318,20 @@ def _require(slug: str, min_role: str) -> User:
 
 # ── Tools ──
 
+# Behaviour hints for MCP clients (e.g. to auto-approve reads and confirm writes).
+# All tools act on TINO's own buckets only, hence ``open_world_hint=False``.
 
-@mcp.tool()
+#: Tools that only read state and never modify a bucket.
+_READ_ONLY = ToolAnnotations(read_only_hint=True, open_world_hint=False)
+
+#: Tools that modify a bucket only additively (nothing is overwritten or lost).
+_WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, open_world_hint=False)
+
+#: Tools that modify a bucket and may overwrite or remove existing content.
+_DESTRUCTIVE = ToolAnnotations(read_only_hint=False, destructive_hint=True, open_world_hint=False)
+
+
+@mcp.tool(annotations=_READ_ONLY)
 def list_buckets() -> list[dict]:
     '''List all buckets the current user can access, with their role on each.
 
@@ -349,7 +362,7 @@ def list_buckets() -> list[dict]:
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 def list_files(bucket: str) -> list[dict]:
     '''List all files and directories in a bucket.'''
     logger.debug('MCP list_files called: bucket=%s', bucket)
@@ -357,7 +370,7 @@ def list_files(bucket: str) -> list[dict]:
     return [entry.model_dump() for entry in get_file_service().list(bucket)]
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 def search(query: str, bucket: str | None = None) -> list[dict]:
     '''Search file names and contents across the buckets you can access.
 
@@ -395,7 +408,7 @@ def search(query: str, bucket: str | None = None) -> list[dict]:
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 def read_file(bucket: str, path: str, offset: int | None = None,
               limit: int | None = None) -> str:
     '''Read the text content of a file in a bucket.
@@ -449,7 +462,7 @@ def _numbered_lines(content: str, offset: int, limit: int | None) -> str:
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 async def write_file(bucket: str, path: str, content: str) -> dict:
     '''Create or overwrite a text file in a bucket. Requires the editor role.'''
     user = _require(bucket, 'editor')
@@ -466,7 +479,7 @@ async def write_file(bucket: str, path: str, content: str) -> dict:
     return {'path': path, 'modified': modified}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 async def edit_file(bucket: str, path: str, edits: list[FileEdit]) -> dict:
     '''Change part of an existing text file by exact string replacement. Requires the editor role.
 
@@ -529,7 +542,7 @@ def _decode_base64(content: str) -> bytes:
     return data
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 async def write_binary_file(bucket: str, path: str, content_base64: str) -> dict:
     '''Create or overwrite a binary file (e.g. an image) from base64. Requires the editor role.
 
@@ -552,7 +565,7 @@ async def write_binary_file(bucket: str, path: str, content_base64: str) -> dict
     return {'path': path, 'size': len(data)}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 async def delete_file(bucket: str, path: str) -> dict:
     '''Delete a file from a bucket. Requires the editor role.'''
     user = _require(bucket, 'editor')
@@ -568,7 +581,7 @@ async def delete_file(bucket: str, path: str) -> dict:
     return {'deleted': path}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 async def rename_file(bucket: str, old_path: str, new_path: str) -> dict:
     '''Rename or move a file within a bucket. Requires the editor role.
 
@@ -590,7 +603,7 @@ async def rename_file(bucket: str, old_path: str, new_path: str) -> dict:
     return {'old_path': old_path, 'new_path': new_path}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_WRITE)
 async def create_dir(bucket: str, path: str) -> dict:
     '''Create an empty directory in a bucket. Requires the editor role.
 
@@ -608,7 +621,7 @@ async def create_dir(bucket: str, path: str) -> dict:
     return {'path': path}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 async def rename_dir(bucket: str, old_path: str, new_path: str) -> dict:
     '''Rename or move a directory and all its contents. Requires the editor role.'''
     user = _require(bucket, 'editor')
@@ -627,7 +640,7 @@ async def rename_dir(bucket: str, old_path: str, new_path: str) -> dict:
     return {'old_path': old_path, 'new_path': new_path, 'affected': affected}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 async def delete_dir(bucket: str, path: str) -> dict:
     '''Delete a directory and all its contents. Requires the editor role.'''
     user = _require(bucket, 'editor')
@@ -645,7 +658,7 @@ async def delete_dir(bucket: str, path: str) -> dict:
     return {'deleted': path, 'affected': affected}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 def compile_typst(bucket: str, path: str) -> dict:
     '''Compile a Typst file to verify it is valid.
 
@@ -665,7 +678,7 @@ def compile_typst(bucket: str, path: str) -> dict:
         return {'success': False, 'error': str(exc)}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 def git_status(bucket: str) -> list[dict]:
     '''Return the working-tree status (modified, untracked, deleted) of a bucket.'''
     logger.debug('MCP git_status called: bucket=%s', bucket)
@@ -673,7 +686,7 @@ def git_status(bucket: str) -> list[dict]:
     return [s.model_dump() for s in get_git_service().status(bucket)]
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 def git_log(bucket: str, path: str | None = None, max_count: int = 20) -> list[dict]:
     '''Return commit history for a bucket, optionally filtered to a single file.'''
     logger.debug('MCP git_log called: bucket=%s, path=%s', bucket, path)
@@ -706,7 +719,7 @@ async def commit(bucket: str, message: str, files: list[str] | None = None) -> d
 # Register the commit tool only when enabled, so deployments can offer a
 # read/write-but-no-commit MCP surface (agents edit, humans commit).
 if config.TINO_MCP_COMMIT_ENABLED:
-    mcp.tool()(commit)
+    mcp.tool(annotations=_WRITE)(commit)
 
 
 # Build the ASGI app once. In dev (auth disabled) an admin user is injected;

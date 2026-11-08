@@ -549,3 +549,15 @@ async def test_dev_admin_middleware_injects_admin(monkeypatch):
 
     await middleware({'type': 'lifespan'}, None, None)
     assert seen['user'] is None
+
+
+@pytest.mark.anyio
+async def test_tool_annotations():
+    tools = {t.name: t.annotations for t in await mcp.mcp.list_tools()}
+    read_only = {'list_buckets', 'list_files', 'search', 'read_file',
+                 'compile_typst', 'git_status', 'git_log'}
+
+    assert all(a is not None and a.open_world_hint is False for a in tools.values())
+    assert {n for n, a in tools.items() if a.read_only_hint} == read_only
+    assert not tools['create_dir'].destructive_hint
+    assert tools['delete_file'].destructive_hint
