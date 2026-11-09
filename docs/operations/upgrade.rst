@@ -12,6 +12,24 @@ It is not a full changelog; only changes that ask something of you are recorded 
   Review this page before upgrading.
   Some releases add **required** settings that TINO refuses to start without, so an upgrade can otherwise fail at boot.
 
+1.23.0
+------
+
+MCP tokens must be issued for TINO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`MCP server <MCP server>` now validates the audience of access tokens, as required by the `MCP authorization spec <https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization>`_: the ``aud`` claim must contain TINO's MCP URL (``<TINO_BASE_URL>/mcp``).
+Tokens issued for other clients or resource servers of the same realm are rejected.
+
+This requires `RFC 8707 <https://datatracker.ietf.org/doc/html/rfc8707>`_ resource indicators on the OIDC provider, which most providers don't enable by default (e.g. Keycloak ships them as experimental ``resource-indicators`` feature).
+Otherwise, **all MCP clients are rejected** after upgrading (``401``, logged as ``audience mismatch``).
+
+.. note:: OIDC provider config & fallback
+
+  - Enable resource indicators on your OIDC provider **before** upgrading (see :ref:`MCP integration <operations/deployment:mcp>`).
+  - If your provider doesn't support them yet, set :attr:`TINO_MCP_AUDIENCE_ENABLED <tino.config.TINO_MCP_AUDIENCE_ENABLED>` to ``false`` to restore the previous behaviour.
+  - Nothing changes if the MCP server is disabled.
+
 1.21.0
 ------
 

@@ -17,6 +17,7 @@ __all__ = (
     'TINO_DEFAULT_ROLE',
     'TINO_FONT_DIR',
     'TINO_LOG_LEVEL',
+    'TINO_MCP_AUDIENCE_ENABLED',
     'TINO_MCP_COMMIT_ENABLED',
     'TINO_MCP_ENABLED',
     'TINO_MCP_INSTRUCTIONS',
@@ -168,6 +169,19 @@ TINO_MCP_INSTRUCTIONS = environ.get('TINO_MCP_INSTRUCTIONS') or None
 #: default, so agents can edit and compile files but never commit — humans
 #: review and commit via the UI.
 TINO_MCP_COMMIT_ENABLED = environ.get('TINO_MCP_COMMIT_ENABLED', '').lower() in _TRUEISH
+
+#: ⭕ When set to ``true`` (default), the MCP server only accepts access tokens
+#: whose ``aud`` claim contains its resource URL (``<TINO_BASE_URL>/mcp``), so
+#: tokens issued for other clients or resource servers of the same realm are
+#: rejected, as required by the MCP authorization spec.
+#:
+#: .. important::
+#:  The OIDC provider must stamp the requested resource into ``aud`` via
+#:  `RFC 8707 <https://datatracker.ietf.org/doc/html/rfc8707>`_ resource
+#:  indicators, otherwise **all** MCP tokens are rejected
+#:  (see :ref:`MCP integration <operations/deployment:mcp>`).
+#:  Set it to ``false`` only if your provider doesn't support them yet.
+TINO_MCP_AUDIENCE_ENABLED = environ.get('TINO_MCP_AUDIENCE_ENABLED', 'true').lower() in _TRUEISH
 
 
 # ----- ⚙️ Application settings -----
