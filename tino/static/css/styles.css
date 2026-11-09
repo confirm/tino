@@ -2413,3 +2413,128 @@ textarea.form-input {
   background: transparent;
   color: inherit;
 }
+
+/* ── Clippy easter egg ── */
+
+.clippy {
+  position: fixed;
+  right: 24px;
+  bottom: calc(var(--status-bar-height) + 16px);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.clippy.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.clippy-bubble {
+  position: relative;
+  max-width: 260px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: var(--cd-yellow-90);
+  box-shadow: var(--shadow);
+  color: var(--cd-cold-grey-10);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.clippy-bubble::after {
+  content: "";
+  position: absolute;
+  right: 36px;
+  bottom: -8px;
+  width: 14px;
+  height: 14px;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+.clippy-text {
+  margin-right: 14px;
+}
+
+.clippy-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.clippy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.clippy-body {
+  width: 72px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.clippy.clippy-bounce .clippy-body {
+  animation: clippy-bounce 600ms ease;
+}
+
+.clippy-svg {
+  display: block;
+  width: 100%;
+}
+
+.clippy-wire {
+  fill: none;
+  stroke: var(--cd-cold-grey-60);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.clippy-eye {
+  fill: var(--cd-white);
+  stroke: var(--cd-cold-grey-20);
+  stroke-width: 1.5;
+}
+
+.clippy-pupil {
+  fill: var(--cd-cold-grey-10);
+}
+
+.clippy-brow {
+  fill: none;
+  stroke: var(--cd-cold-grey-10);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.clippy-eyes {
+  transform-origin: 40px 45px;
+  animation: clippy-blink 4s infinite;
+}
+
+@keyframes clippy-bounce {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  30% { transform: translateY(-14px) rotate(-6deg); }
+  60% { transform: translateY(0) rotate(4deg); }
+}
+
+@keyframes clippy-blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.1); }
+}

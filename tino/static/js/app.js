@@ -1,6 +1,7 @@
 import { readRoute, writeRoute } from './router.js'
 import { ApiKeyManager } from './api-key-manager.js'
 import { BucketEvents } from './bucket-events.js'
+import { Clippy } from './clippy.js'
 import { CodeMirrorEditor } from './codemirror-editor.js'
 import { EditorManager } from './editor-manager.js'
 import { FileTree } from './file-tree.js'
@@ -86,6 +87,7 @@ class TinoApp {
     this.apiKeyManager = new ApiKeyManager(this)
     this.templatePicker = new TemplatePicker(this)
     this.searchModal = new SearchModal(this)
+    this.clippy = new Clippy(this)
   }
 
   /** Initialize the app: bind events and load buckets. */
@@ -138,6 +140,7 @@ class TinoApp {
   }
 
   _bindWindowEvents() {
+    this.clippy.bind()
     window.addEventListener('unhandledrejection', evt => {
       const msg = evt.reason && evt.reason.message
       if (msg)
