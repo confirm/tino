@@ -549,3 +549,32 @@ async def test_dev_admin_middleware_injects_admin(monkeypatch):
 
     await middleware({'type': 'lifespan'}, None, None)
     assert seen['user'] is None
+
+
+
+@pytest.mark.anyio
+async def test_rename_file_keeps_unsaved_room_edits(as_user, proj):
+    collab = dependencies.get_collab_manager()
+    await collab._get_or_create_room(proj, 'main.typ')  # pylint: disable=protected-access
+    try:
+        room = collab._rooms[(proj, 'main.typ')]  # pylint: disable=protected-access
+        room.ydoc.get('content', type=Text).insert(0, '// live\n')
+
+        as_user(EDITOR)
+        await mcp.rename_file(proj, 'main.typ', 'renamed.typ')
+
+        assert mcp.read_file(proj, 'renamed.typ').startswith('// live\n= Hello')
+    finally:
+        for task in collab._room_tasks.values():  # pylint: disable=protected-access
+            task.cancel()
+
+@pytest.mark.anyio
+async def test_tool_annotations():
+    tools = {t.name: t.annotations for t in await mcp.mcp.list_tools()}
+    read_only = {'list_buckets', 'list_files', 'search', 'read_file',
+                 'compile_typst', 'git_status', 'git_log'}
+
+    assert all(a is not None and a.open_world_hint is False for a in tools.values())
+    assert {n for n, a in tools.items() if a.read_only_hint} == read_only
+    assert not tools['create_dir'].destructive_hint
+    assert tools['delete_file'].destructive_hint

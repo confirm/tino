@@ -214,3 +214,37 @@ async def test_shutdown_flushes_open_rooms(manager, files, bucket):
     manager._rooms[(bucket, 'a.typ')].ydoc.get('content', type=Text).insert(0, 'live ')  # pylint: disable=protected-access
     await manager.shutdown()
     assert files.read(bucket, 'a.typ')['content'] == 'live disk'
+
+
+async def test_lock_path_flushes_before_evicting(manager, files, bucket):
+    files.write(bucket, 'a.typ', 'disk')
+    await manager._get_or_create_room(bucket, 'a.typ')  # pylint: disable=protected-access
+    manager._rooms[(bucket, 'a.typ')].ydoc.get('content', type=Text).insert(0, 'unsaved ')  # pylint: disable=protected-access
+
+    async with manager.lock_path(bucket, 'a.typ', flush=True):
+        assert manager.get_content(bucket, 'a.typ') is None
+
+    assert files.read(bucket, 'a.typ')['content'] == 'unsaved disk'
+
+
+async def test_lock_path_flush_respects_auto_save(manager, files, bucket):
+    manager._auto_save = False  # pylint: disable=protected-access
+    files.write(bucket, 'a.typ', 'disk')
+    await manager._get_or_create_room(bucket, 'a.typ')  # pylint: disable=protected-access
+    manager._rooms[(bucket, 'a.typ')].ydoc.get('content', type=Text).insert(0, 'unsaved ')  # pylint: disable=protected-access
+
+    async with manager.lock_path(bucket, 'a.typ', flush=True):
+        pass
+
+    assert files.read(bucket, 'a.typ')['content'] == 'disk'
+
+
+async def test_evict_under_flushes(manager, files, bucket):
+    files.write(bucket, 'dir/a.typ', 'disk')
+    await manager._get_or_create_room(bucket, 'dir/a.typ')  # pylint: disable=protected-access
+    manager._rooms[(bucket, 'dir/a.typ')].ydoc.get('content', type=Text).insert(0, 'unsaved ')  # pylint: disable=protected-access
+
+    await manager.evict_under(bucket, 'dir', flush=True)
+
+    assert not manager._rooms  # pylint: disable=protected-access
+    assert files.read(bucket, 'dir/a.typ')['content'] == 'unsaved disk'
