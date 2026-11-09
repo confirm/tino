@@ -2,6 +2,7 @@
 and to `pandoc` for DOCX output.'''
 
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -237,9 +238,12 @@ class CompilerService:
 
     def _strip_paths(self, text, root):
         '''Strip absolute paths so only bucket-relative ones reach the client.'''
-        # Normalize Windows paths
-        text = text.replace('\\\\?\\', '')
-        text = text.replace('\\', '/')
+        # Normalize Windows paths (extended-length prefix & separators). Only on
+        # Windows, as backslashes are legitimate in messages elsewhere (e.g. a
+        # quoted Typst escape sequence).
+        if os.name == 'nt':
+            text = text.replace('\\\\?\\', '')
+            text = text.replace('\\', '/')
         for base in (root, self.data_dir):
             base_posix = base.as_posix()
             text = text.replace(f'{base_posix}/', '').replace(base_posix, '')

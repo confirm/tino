@@ -5,11 +5,12 @@ The ``typst``-marked tests run the real CLI and are skipped when it is missing.
 
 import shutil
 import subprocess
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from types import SimpleNamespace
 
 import pytest
 
+from tino.services import compiler as compiler_module
 from tino.services.compiler import CompileError, CompilerService, parse_diagnostics
 
 needs_typst = pytest.mark.skipif(shutil.which('typst') is None, reason='typst CLI not installed')
@@ -237,3 +238,14 @@ def test_real_compile_error(compiler, files, bucket):
     [diag] = [d for d in exc.value.diagnostics if d['severity'] == 'error']
     assert (diag['file'], diag['line']) == ('a.typ', 2)
     assert str(compiler.data_dir) not in str(exc.value)
+
+
+@pytest.mark.parametrize('os_name, expected', [
+    ('posix', r'error: found `\` in \\?\C:\data\b\a.typ'),
+    ('nt', 'error: found `/` in a.typ'),
+])
+def test_strip_paths_normalizes_backslashes_only_on_windows(compiler, monkeypatch, os_name, expected):
+    monkeypatch.setattr(compiler_module, 'os', SimpleNamespace(name=os_name))
+    text = r'error: found `\` in \\?\C:\data\b\a.typ'
+    root = PureWindowsPath(r'C:\data\b')
+    assert compiler._strip_paths(text, root) == expected  # pylint: disable=protected-access
