@@ -31,6 +31,9 @@ export class EditorInput {
     this.app.openTabs.forEach(tabPath => {
       this._renderTab(bar, tabPath)
     })
+    const active = bar.querySelector('.tab.active')
+    if (active)
+      active.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }
 
   _renderTab(bar, tabPath) {

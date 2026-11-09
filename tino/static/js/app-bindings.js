@@ -113,7 +113,19 @@ const bindVimToggle = app => {
   })
 }
 
+/** Scroll the (scrollbar-less) tab bar sideways with a vertical mouse wheel. */
+
+const bindTabBarWheel = bar => {
+  bar.addEventListener('wheel', evt => {
+    if (evt.ctrlKey || Math.abs(evt.deltaX) > Math.abs(evt.deltaY))
+      return
+    evt.preventDefault()
+    bar.scrollLeft += evt.deltaY
+  }, { passive: false })
+}
+
 const bindTabBar = app => {
+  bindTabBarWheel(app.els.tabBar)
   app.els.tabBar.addEventListener('click', evt => {
     const closeBtn = evt.target.closest('.tab-close')
     if (closeBtn) {
