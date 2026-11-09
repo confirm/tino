@@ -21,9 +21,9 @@ dynamic = [
 requires-python = '>=3.14'
 
 dependencies = [
-    'anyio==4.15.1',
-    'authlib==1.9.1',
-    'fastapi==0.161.0',
+    'anyio==4.16.0',
+    'authlib==1.9.2',
+    'fastapi==0.162.0',
     'mcp>=2.3.0',
     'gitpython==3.2.1',
     'gunicorn==26.2.0',
@@ -31,7 +31,7 @@ dependencies = [
     'itsdangerous==2.2.0',
     'pycrdt==0.14.10',
     'pycrdt-websocket==0.16.5',
-    'python-multipart==0.0.32',
+    'python-multipart==0.0.33',
     'pyyaml==6.0.3',
     'uvicorn[standard]==0.54.0',
 ]
