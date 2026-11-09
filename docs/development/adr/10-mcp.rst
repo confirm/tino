@@ -80,10 +80,11 @@ Negative
   | Not every provider advertises the required ``"none"`` in ``token_endpoint_auth_methods_supported``. Keycloak, for example, omits it (see `tino#23 <https://github.com/confirm/tino/issues/23>`_ & `keycloak#49730 <https://github.com/keycloak/keycloak/issues/49730>`_).
   | Where it is missing, TINO must work around it by proxying the authorization server metadata and injecting the value, which adds (authentication) complexity TINO shouldn't have.
   | The proxy can be removed once the providers advertise ``"none"`` natively (tracked in `tino#23`_).
-- | **No audience binding**
-  | A provider may issue CIMD-flow tokens without an ``aud`` claim — the ephemeral client has no registered entry to carry an audience mapper. Keycloak, for example, omits it (see `tino#24 <https://github.com/confirm/tino/issues/24>`_).
+- | **Audience binding depends on the provider**
+  | A provider may issue CIMD-flow tokens without an ``aud`` claim — the ephemeral client has no registered entry to carry an audience mapper. Keycloak, for example, omits it by default (see `tino#24 <https://github.com/confirm/tino/issues/24>`_).
   | Without ``aud``, TINO cannot bind a token to the ``/mcp`` resource: a valid token issued to another client in the same realm is accepted, constrained only by TINO's per-bucket authorization.
-  | Strict audience validation must first be enabled on the provider — via `RFC 8707 <https://datatracker.ietf.org/doc/html/rfc8707>`_ resource indicators that stamp the requested resource into ``aud`` — before TINO can enforce it (for Keycloak, tracked in `tino#24`_, resp. `keycloak#41526 <https://github.com/keycloak/keycloak/issues/41526>`_).
+  | Providers supporting `RFC 8707 <https://datatracker.ietf.org/doc/html/rfc8707>`_ resource indicators stamp the requested resource into ``aud`` (Keycloak 26.6+ as experimental ``resource-indicators`` feature, see `keycloak#41526 <https://github.com/keycloak/keycloak/issues/41526>`_).
+  | TINO enforces the audience by default, as required by the MCP authorization spec, so providers without resource indicators must opt out via :attr:`TINO_MCP_AUDIENCE_ENABLED <tino.config.TINO_MCP_AUDIENCE_ENABLED>`.
 
 .. note::
 

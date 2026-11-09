@@ -503,6 +503,27 @@ async def test_verify_rejects_bad_claims(verifier, rsa_key, overrides):
     assert await verifier.verify_token(_token(rsa_key, **overrides)) is None
 
 
+RESOURCE = 'https://tino.example/mcp'
+
+
+@pytest.mark.anyio
+async def test_verify_ignores_audience_by_default(verifier, rsa_key):
+    assert await verifier.verify_token(_token(rsa_key, aud='https://other.example')) is not None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize('aud, ok', [
+    (RESOURCE, True),
+    (['https://other.example', RESOURCE], True),
+    ('https://other.example', False),
+    (None, False),
+])
+async def test_verify_audience(verifier, rsa_key, aud, ok):
+    verifier._audience = RESOURCE  # pylint: disable=protected-access
+    token = _token(rsa_key) if aud is None else _token(rsa_key, aud=aud)
+    assert (await verifier.verify_token(token) is not None) is ok
+
+
 @pytest.mark.anyio
 async def test_verify_rejects_foreign_signature(verifier):
     other = rsa.generate_private_key(public_exponent=65537, key_size=2048)

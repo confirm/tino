@@ -72,17 +72,21 @@ class OIDCTokenVerifier(TokenVerifier):  # pylint: disable=too-few-public-method
 
     On success the token's claims are turned into a :class:`~tino.models.User`
     (username + groups) and bound to the request context for the tools to use.
+
+    When ``audience`` is set, the token's ``aud`` claim must contain it (i.e. the
+    MCP resource URL), otherwise the token is rejected.
     '''
 
-    def __init__(self, discovery_url: str, groups_claim: str) -> None:
+    def __init__(self, discovery_url: str, groups_claim: str, audience: str | None = None) -> None:
         self._discovery_url = discovery_url
         self._groups_claim = groups_claim
+        self._audience = audience
         self._issuer: str | None = None
         self._jwks_client: jwt.PyJWKClient | None = None
         self._lock = anyio.Lock()
         logger.debug(
-            'OIDCTokenVerifier configured: discovery=%s, groups_claim=%s',
-            discovery_url, groups_claim,
+            'OIDCTokenVerifier configured: discovery=%s, groups_claim=%s, audience=%s',
+            discovery_url, groups_claim, audience,
         )
 
     async def _ensure_metadata(self) -> None:
@@ -130,7 +134,7 @@ class OIDCTokenVerifier(TokenVerifier):  # pylint: disable=too-few-public-method
         except Exception:  # pylint: disable=broad-exception-caught
             return {}
 
-    async def verify_token(self, token: str) -> AccessToken | None:
+    async def verify_token(self, token: str) -> AccessToken | None:  # pylint: disable=too-many-return-statements
         '''Validate the JWT and bind the resolved user to the request context.'''
         logger.debug('Verifying MCP bearer token (%d chars)', len(token))
         try:
@@ -143,14 +147,15 @@ class OIDCTokenVerifier(TokenVerifier):  # pylint: disable=too-few-public-method
                 signing_key.key,
                 algorithms=['RS256'],
                 issuer=self._issuer,
-                # Signature, issuer and expiry are validated, but NOT the
-                # audience: Keycloak issues CIMD-flow tokens with no ``aud`` claim
-                # (the ephemeral client has no registered entry to carry an
-                # audience mapper), so there is nothing to bind to. A token issued
-                # to another client in the same realm is therefore accepted here
-                # and constrained only by per-bucket authorization. See ADR-10
-                # and tino#24; enable verify_aud once the provider sets ``aud``.
-                options={'verify_aud': False},
+                # Signature, issuer and expiry are always validated, the audience
+                # only when configured: providers issue CIMD-flow tokens without
+                # ``aud`` unless RFC 8707 resource indicators stamp the requested
+                # resource into it (e.g. Keycloak's experimental
+                # ``resource-indicators`` feature). Without it, a token issued to
+                # another client in the same realm is accepted here and
+                # constrained only by per-bucket authorization. See ADR-10.
+                audience=self._audience,
+                options={'verify_aud': self._audience is not None},
             )
         except jwt.ExpiredSignatureError as exc:
             unverified = self._safe_claims(token)
@@ -167,6 +172,16 @@ class OIDCTokenVerifier(TokenVerifier):  # pylint: disable=too-few-public-method
                 ' (iss=%s, exp=%s, azp=%s)',
                 self._issuer, exc, unverified.get('iss'),
                 unverified.get('exp'), unverified.get('azp'),
+            )
+            return None
+        except (jwt.InvalidAudienceError, jwt.MissingRequiredClaimError) as exc:
+            # MissingRequiredClaimError is raised for a token without ``aud``.
+            unverified = self._safe_claims(token)
+            logger.warning(
+                'MCP token rejected (audience mismatch, expected=%s): %s'
+                ' (aud=%r, azp=%s). Enable RFC 8707 resource indicators on the'
+                ' OIDC provider, or set TINO_MCP_AUDIENCE_ENABLED=false',
+                self._audience, exc, unverified.get('aud'), unverified.get('azp'),
             )
             return None
         except jwt.InvalidSignatureError as exc:
@@ -194,9 +209,9 @@ class OIDCTokenVerifier(TokenVerifier):  # pylint: disable=too-few-public-method
         )
         _current_user.set(user)
         logger.info('MCP authenticated user: %s', user.username)
-        # ``aud``/``azp``/``client_id`` are logged for auth diagnostics. Keycloak
-        # CIMD tokens carry no ``aud`` (see the ``verify_aud`` note above); ``azp``
-        # holds the client's CIMD URL. ``aud`` uses %r as it may be a string or list.
+        # ``aud``/``azp``/``client_id`` are logged for auth diagnostics. CIMD tokens
+        # carry no ``aud`` without resource indicators (see the audience note above);
+        # ``azp`` holds the client's CIMD URL. ``aud`` uses %r as it may be a string or list.
         logger.debug(
             'MCP token details: user=%s, email=%s, groups=%s, iss=%s, exp=%s, '
             'aud=%r, azp=%s, client_id=%s',
@@ -247,14 +262,18 @@ def _build_auth_kwargs() -> dict:
         return {}
     issuer = _issuer_url(config.TINO_OIDC_DISCOVERY_URL)
     resource_url = f'{config.TINO_BASE_URL}/mcp'
-    logger.info('MCP auth: issuer=%s, resource=%s', issuer, resource_url)
+    audience = resource_url if config.TINO_MCP_AUDIENCE_ENABLED else None
+    logger.info('MCP auth: issuer=%s, resource=%s, audience=%s', issuer, resource_url, audience)
     return {
         'token_verifier': OIDCTokenVerifier(
-            config.TINO_OIDC_DISCOVERY_URL, config.TINO_OIDC_GROUPS_CLAIM,
+            config.TINO_OIDC_DISCOVERY_URL, config.TINO_OIDC_GROUPS_CLAIM, audience,
         ),
         'auth': AuthSettings(
             issuer_url=issuer,
             resource_server_url=resource_url,
+            # The audience is checked by OIDCTokenVerifier (TINO_MCP_AUDIENCE_ENABLED),
+            # which rejects foreign tokens before binding the user to the request.
+            validate_token_resource=False,
             required_scopes=[],
         ),
     }

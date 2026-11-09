@@ -246,6 +246,23 @@ No additional client registration is needed.
     On `Keycloak <https://www.keycloak.org/>`_ this requires version `26.6.0 <https://www.keycloak.org/2026/04/keycloak-2660-released>`_ or later, where `Client ID Metadata Document <https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/>`_ support ships as an experimental feature.
     Check out the `Client Registration <https://www.keycloak.org/securing-apps/mcp-authz-server#_client_registration>`_ docs for more information.
 
+Audience
+^^^^^^^^
+
+TINO only accepts access tokens issued for its MCP server, i.e. whose ``aud`` claim contains TINO's MCP URL (``<TINO_BASE_URL>/mcp``).
+This requires the OIDC provider to support `RFC 8707 <https://datatracker.ietf.org/doc/html/rfc8707>`_ resource indicators: MCP clients send TINO's MCP URL as ``resource``, and the provider puts it into ``aud``.
+If your provider doesn't support them, set :attr:`TINO_MCP_AUDIENCE_ENABLED <tino.config.TINO_MCP_AUDIENCE_ENABLED>` to ``false``, so TINO accepts any valid access token of the realm.
+
+On Keycloak 26.6 or later:
+
+1. Enable the experimental ``resource-indicators`` feature (e.g. ``KC_FEATURES=cimd,resource-indicators``).
+2. Add TINO's MCP URL to the *Resource indicator allow list* of the CIMD executor (realm *Client policies*).
+3. Enable *Add to access token* on the mapper of the :attr:`groups claim <tino.config.TINO_OIDC_GROUPS_CLAIM>`, otherwise MCP users have no group memberships.
+
+.. warning::
+
+    Without resource indicators (or the audience check disabled), TINO rejects all MCP tokens with a ``401``.
+
 .. seealso::
 
     Check out the :ref:`MCP authentication <usage/authentication:MCP>` for how the auth flow works, and the :ref:`MCP server <MCP server>` documentation for usage and settings.
