@@ -121,14 +121,14 @@ async def oauth_protected_resource():
         logger.warning('Protected resource metadata unavailable: %s', reason)
         return JSONResponse({'error': 'MCP not enabled'}, status_code=404)
 
+    resource_url = f'{config.TINO_BASE_URL}/mcp'
     payload = {
-        'resource': config.TINO_BASE_URL,
+        'resource': resource_url,
         'authorization_servers': [config.TINO_BASE_URL],
         'scopes_supported': ['openid', 'profile', 'email', 'groups'],
         'bearer_methods_supported': ['header'],
     }
-    logger.info('Protected resource metadata: resource=%s, AS=self',
-                config.TINO_BASE_URL)
+    logger.info('Protected resource metadata: resource=%s, AS=self', resource_url)
     return JSONResponse(payload)
 
 
