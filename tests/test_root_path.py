@@ -156,7 +156,7 @@ def test_protected_resource_metadata_paths(sub_client, monkeypatch, path):
     monkeypatch.setattr(config, 'TINO_MCP_ENABLED', True)
     resp = sub_client.get(path)
     assert resp.status_code == 200
-    assert resp.json()['resource'] == f'http://localhost:8000{ROOT}'
+    assert resp.json()['resource'] == f'http://localhost:8000{ROOT}/mcp'
 
 
 def test_authorization_server_metadata_path_inserted(sub_client, sub_app, monkeypatch):

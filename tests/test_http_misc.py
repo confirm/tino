@@ -281,7 +281,7 @@ def test_protected_resource_metadata(client, monkeypatch):
     assert client.get('/.well-known/oauth-protected-resource').status_code == 404
     monkeypatch.setattr(config, 'TINO_MCP_ENABLED', True)
     data = client.get('/.well-known/oauth-protected-resource').json()
-    assert data['resource'] == 'http://localhost:8000'
+    assert data['resource'] == 'http://localhost:8000/mcp'
     assert data['authorization_servers'] == ['http://localhost:8000']
 
 
