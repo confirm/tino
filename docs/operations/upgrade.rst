@@ -12,6 +12,20 @@ It is not a full changelog; only changes that ask something of you are recorded 
   Review this page before upgrading.
   Some releases add **required** settings that TINO refuses to start without, so an upgrade can otherwise fail at boot.
 
+1.24.0
+------
+
+OIDC issuer URL as alternative to the discovery URL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The OIDC provider can now be configured via :attr:`TINO_OIDC_ISSUER_URL <tino.config.TINO_OIDC_ISSUER_URL>` as well, from which TINO derives the discovery URL itself (``<issuer>/.well-known/openid-configuration``).
+:attr:`TINO_OIDC_DISCOVERY_URL <tino.config.TINO_OIDC_DISCOVERY_URL>` keeps working, so no action is required.
+
+.. note:: Mutually exclusive
+
+  - Set **exactly one** of both variables: if both are set, TINO refuses to start.
+  - To switch, drop the ``/.well-known/openid-configuration`` suffix and rename the variable, e.g. ``TINO_OIDC_DISCOVERY_URL=https://sso.example.com/realms/example/.well-known/openid-configuration`` becomes ``TINO_OIDC_ISSUER_URL=https://sso.example.com/realms/example``.
+
 1.23.0
 ------
 

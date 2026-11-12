@@ -13,7 +13,10 @@ def valid(tmp_path, monkeypatch):
         'TINO_BASE_URL': 'https://tino.example.com',
         'TINO_ADMIN_GROUPS': {'admins'},
         'TINO_AUTH_DISABLED': False,
+        'TINO_OIDC_ISSUER_URL': 'https://sso.example',
         'TINO_OIDC_DISCOVERY_URL': 'https://sso.example/.well-known/openid-configuration',
+        '_OIDC_ISSUER_URL_ENV': None,
+        '_OIDC_DISCOVERY_URL_ENV': None,
         'TINO_OIDC_CLIENT_ID': 'tino',
         'TINO_OIDC_CLIENT_SECRET': 's3cret',
         'TINO_OIDC_GROUPS_CLAIM': 'groups',
@@ -37,7 +40,7 @@ def test_local_http_base_url_allowed(valid, url):
 
 def test_auth_disabled_skips_oidc_checks(valid):
     valid.setattr(config, 'TINO_AUTH_DISABLED', True)
-    valid.setattr(config, 'TINO_OIDC_DISCOVERY_URL', None)
+    valid.setattr(config, 'TINO_OIDC_ISSUER_URL', None)
     valid.setattr(config, 'TINO_OIDC_CLIENT_SECRET', None)
     config.sanity_checks()
 
@@ -46,6 +49,7 @@ def test_auth_disabled_skips_oidc_checks(valid):
     ('TINO_BASE_URL', None),
     ('TINO_BASE_URL', 'http://tino.example.com'),
     ('TINO_ADMIN_GROUPS', set()),
+    ('TINO_OIDC_ISSUER_URL', None),
     ('TINO_OIDC_DISCOVERY_URL', None),
     ('TINO_OIDC_CLIENT_ID', ''),
     ('TINO_OIDC_CLIENT_SECRET', None),
@@ -58,6 +62,14 @@ def test_invalid_setting_exits(valid, name, value):
     with pytest.raises(SystemExit) as exc:
         config.sanity_checks()
     assert exc.value.code == 1
+
+
+def test_oidc_issuer_and_discovery_url_exclusive(valid):
+    valid.setattr(config, '_OIDC_ISSUER_URL_ENV', 'https://sso.example')
+    valid.setattr(config, '_OIDC_DISCOVERY_URL_ENV',
+                  'https://sso.example/.well-known/openid-configuration')
+    with pytest.raises(SystemExit):
+        config.sanity_checks()
 
 
 def test_missing_data_dir_exits(valid, tmp_path):

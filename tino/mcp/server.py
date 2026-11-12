@@ -43,8 +43,6 @@ logger = logging.getLogger(__name__)
 #: The authenticated user for the in-flight MCP request.
 _current_user: ContextVar[User | None] = ContextVar('mcp_user', default=None)
 
-_DISCOVERY_SUFFIX = '/.well-known/openid-configuration'
-
 _INSTRUCTIONS = server_instructions()
 
 #: Search queries shorter than this are ignored (the tool returns an empty list).
@@ -55,13 +53,6 @@ MCP_MAX_RESULTS = 50
 
 #: Maximum decoded size (bytes) of a file written via ``write_binary_file``.
 MCP_MAX_BINARY_BYTES = 1_000_000
-
-
-def _issuer_url(discovery_url: str) -> str:
-    '''Derive the OAuth issuer URL from the OIDC discovery URL.'''
-    if discovery_url.endswith(_DISCOVERY_SUFFIX):
-        return discovery_url[:-len(_DISCOVERY_SUFFIX)]
-    return discovery_url
 
 
 # ── Authentication (OAuth Resource Server) ──
@@ -257,10 +248,10 @@ def _build_auth_kwargs() -> dict:
     if config.TINO_AUTH_DISABLED:
         logger.info('MCP auth disabled (TINO_AUTH_DISABLED)')
         return {}
-    if not (config.TINO_OIDC_DISCOVERY_URL and config.TINO_BASE_URL):
-        logger.warning('MCP auth not configured (missing OIDC_DISCOVERY_URL or BASE_URL)')
+    if not (config.TINO_OIDC_ISSUER_URL and config.TINO_BASE_URL):
+        logger.warning('MCP auth not configured (missing OIDC_ISSUER_URL or BASE_URL)')
         return {}
-    issuer = _issuer_url(config.TINO_OIDC_DISCOVERY_URL)
+    issuer = config.TINO_OIDC_ISSUER_URL
     resource_url = f'{config.TINO_BASE_URL}/mcp'
     audience = resource_url if config.TINO_MCP_AUDIENCE_ENABLED else None
     logger.info('MCP auth: issuer=%s, resource=%s, audience=%s', issuer, resource_url, audience)
