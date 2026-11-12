@@ -40,7 +40,7 @@ services:
       TINO_BASE_URL: https://tino.example.com
 
       # Your OIDC provider's discovery endpoint.
-      TINO_OIDC_DISCOVERY_URL: https://sso.example.com/.well-known/openid-configuration
+      TINO_OIDC_ISSUER_URL: https://sso.example.com/realms/example
 
       # OIDC client secret — replace this.
       #

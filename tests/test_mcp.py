@@ -39,14 +39,6 @@ def proj(acl_bucket):  # pylint: disable=unused-argument
 
 # ── helpers ──
 
-@pytest.mark.parametrize('url, issuer', [
-    ('https://sso/realms/x/.well-known/openid-configuration', 'https://sso/realms/x'),
-    ('https://sso/realms/x', 'https://sso/realms/x'),
-])
-def test_issuer_url(url, issuer):
-    assert mcp._issuer_url(url) == issuer  # pylint: disable=protected-access
-
-
 def test_server_instructions(monkeypatch):
     monkeypatch.setattr(config, 'TINO_MCP_INSTRUCTIONS', None)
     assert instructions.server_instructions() == instructions.BASE_INSTRUCTIONS
@@ -59,9 +51,10 @@ def test_build_auth_kwargs(monkeypatch):
     assert mcp._build_auth_kwargs() == {}  # pylint: disable=protected-access
 
     monkeypatch.setattr(config, 'TINO_AUTH_DISABLED', False)
-    monkeypatch.setattr(config, 'TINO_OIDC_DISCOVERY_URL', None)
+    monkeypatch.setattr(config, 'TINO_OIDC_ISSUER_URL', None)
     assert mcp._build_auth_kwargs() == {}  # pylint: disable=protected-access
 
+    monkeypatch.setattr(config, 'TINO_OIDC_ISSUER_URL', 'https://sso')
     monkeypatch.setattr(config, 'TINO_OIDC_DISCOVERY_URL',
                         'https://sso/.well-known/openid-configuration')
     monkeypatch.setattr(config, 'TINO_BASE_URL', 'https://tino.example')

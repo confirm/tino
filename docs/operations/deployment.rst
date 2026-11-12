@@ -79,7 +79,7 @@ To deploy TINO via a simple ``docker`` command, use the following CLI arguments:
     docker run -d \
         --name tino \
         -e TINO_BASE_URL=https://tino.example.com \
-        -e TINO_OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration \
+        -e TINO_OIDC_ISSUER_URL=https://sso.example.com/realms/example \
         -e TINO_OIDC_CLIENT_SECRET=change-me \
         -p 5000:5000 \
         -v data:/data \
@@ -148,7 +148,7 @@ Running
 .. code-block:: bash
 
     export TINO_BASE_URL=https://tino.example.com
-    export TINO_OIDC_DISCOVERY_URL=https://sso.example.com/.well-known/openid-configuration
+    export TINO_OIDC_ISSUER_URL=https://sso.example.com/realms/example
     export TINO_OIDC_CLIENT_SECRET=change-me
     # … set any other TINO_* variables (see Configuration)
 
@@ -207,6 +207,8 @@ OIDC
 
 TINO requires an **OAuth 2.0** / OpenID Connect (OIDC) provider for authentication.
 Any provider that supports `OpenID Connect Discovery <https://openid.net/specs/openid-connect-discovery-1_0.html>`_ is supported (e.g. Keycloak, Authentik, Azure AD, Okta, Zitadel).
+
+Point TINO to the provider via **either** :attr:`TINO_OIDC_ISSUER_URL <tino.config.TINO_OIDC_ISSUER_URL>` **or** :attr:`TINO_OIDC_DISCOVERY_URL <tino.config.TINO_OIDC_DISCOVERY_URL>` (mutually exclusive), the other one is derived.
 
 Register a new client (application) with your OIDC provider:
 

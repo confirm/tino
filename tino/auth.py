@@ -34,7 +34,7 @@ def get_api_key_service() -> ApiKeyService:
 
 async def setup_oauth():
     '''Register the OIDC provider with authlib and pre-fetch discovery metadata.'''
-    logger.info('Registering OIDC provider: %s', config.TINO_OIDC_DISCOVERY_URL)
+    logger.info('Registering OIDC provider: %s', config.TINO_OIDC_ISSUER_URL)
     oauth.register(
         name='oidc',
         client_id=config.TINO_OIDC_CLIENT_ID,

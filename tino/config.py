@@ -25,6 +25,7 @@ __all__ = (
     'TINO_OIDC_CLIENT_SECRET',
     'TINO_OIDC_DISCOVERY_URL',
     'TINO_OIDC_GROUPS_CLAIM',
+    'TINO_OIDC_ISSUER_URL',
     'TINO_PACKAGE_DIR',
     'TINO_ROOM_TTL',
     'TINO_ROOT_PATH',
@@ -139,8 +140,28 @@ TINO_ADMIN_GROUPS: set[str] = {g.strip() for g in _ADMIN_GROUPS_RAW.split(',') i
 
 # ----- 🔑 OIDC settings -----
 
-#: 🔴 The OIDC discovery URL (e.g. ``https://sso.example.com/.well-known/openid-configuration``).
-TINO_OIDC_DISCOVERY_URL = environ.get('TINO_OIDC_DISCOVERY_URL')
+_OIDC_DISCOVERY_SUFFIX = '/.well-known/openid-configuration'
+_OIDC_ISSUER_URL_ENV = (environ.get('TINO_OIDC_ISSUER_URL') or '').rstrip('/') or None
+_OIDC_DISCOVERY_URL_ENV = environ.get('TINO_OIDC_DISCOVERY_URL') or None
+
+#: 🔴 The OIDC issuer URL (e.g. ``https://sso.example.com/realms/example``).
+#:
+#: .. important::
+#:  Mutually exclusive with :attr:`TINO_OIDC_DISCOVERY_URL`, set exactly one of them.
+#:  When unset, it's derived from the discovery URL (without ``/.well-known/openid-configuration``).
+TINO_OIDC_ISSUER_URL = _OIDC_ISSUER_URL_ENV or (
+    _OIDC_DISCOVERY_URL_ENV and _OIDC_DISCOVERY_URL_ENV.removesuffix(_OIDC_DISCOVERY_SUFFIX)
+)
+
+#: 🔴 The OIDC discovery URL
+#: (e.g. ``https://sso.example.com/realms/example/.well-known/openid-configuration``).
+#:
+#: .. important::
+#:  Mutually exclusive with :attr:`TINO_OIDC_ISSUER_URL`, set exactly one of them.
+#:  When unset, it's derived from the issuer URL (``<issuer>/.well-known/openid-configuration``).
+TINO_OIDC_DISCOVERY_URL = _OIDC_DISCOVERY_URL_ENV or (
+    _OIDC_ISSUER_URL_ENV and f'{_OIDC_ISSUER_URL_ENV}{_OIDC_DISCOVERY_SUFFIX}'
+)
 
 #: ⭕ The OIDC client ID.
 TINO_OIDC_CLIENT_ID = environ.get('TINO_OIDC_CLIENT_ID', 'tino')
@@ -238,8 +259,14 @@ def sanity_checks():  # pylint: disable=too-complex,too-many-branches
         errors['TINO_ADMIN_GROUPS'] = 'Set to a comma-separated list of admin groups'
 
     if not TINO_AUTH_DISABLED:
-        if not TINO_OIDC_DISCOVERY_URL:
-            errors['TINO_OIDC_DISCOVERY_URL'] = 'Set to the OIDC discovery URL'
+        if _OIDC_ISSUER_URL_ENV and _OIDC_DISCOVERY_URL_ENV:
+            errors['TINO_OIDC_ISSUER_URL'] = (
+                'Mutually exclusive with TINO_OIDC_DISCOVERY_URL, set only one'
+            )
+        elif not (TINO_OIDC_ISSUER_URL and TINO_OIDC_DISCOVERY_URL):
+            errors['TINO_OIDC_ISSUER_URL'] = (
+                'Set to the OIDC issuer URL (or set TINO_OIDC_DISCOVERY_URL instead)'
+            )
 
         if not TINO_OIDC_CLIENT_ID:
             errors['TINO_OIDC_CLIENT_ID'] = 'Set to the OIDC client ID'

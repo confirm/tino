@@ -48,7 +48,7 @@ These defaults are overridable from your shell or the command line — for examp
 
     make server \
         TINO_AUTH_DISABLED=false \
-        TINO_OIDC_DISCOVERY_URL=https://<sso-host>/realms/<realm>/.well-known/openid-configuration \
+        TINO_OIDC_ISSUER_URL=https://<sso-host>/realms/<realm> \
         TINO_OIDC_CLIENT_ID=tino \
         TINO_OIDC_CLIENT_SECRET=<secret>
 
@@ -66,7 +66,7 @@ The easiest way to get one during development is a `Cloudflare Tunnel <https://d
     TINO_AUTH_DISABLED=false \
     TINO_BASE_URL=https://<tunnel-host> \
     TINO_MCP_ENABLED=true \
-    TINO_OIDC_DISCOVERY_URL=https://<sso-host>/realms/<realm>/.well-known/openid-configuration \
+    TINO_OIDC_ISSUER_URL=https://<sso-host>/realms/<realm> \
     TINO_OIDC_CLIENT_ID=tino \
     TINO_OIDC_CLIENT_SECRET=<secret> \
     make server
