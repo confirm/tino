@@ -6,6 +6,7 @@ from pathlib import Path
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse
+from starlette.requests import HTTPConnection
 
 from . import config
 from .models import AccessEntry, User
@@ -53,7 +54,7 @@ _NOAUTH_USER = User(
 )
 
 
-def get_current_user(request: Request) -> User:
+def get_current_user(request: HTTPConnection) -> User:
     '''Extract the authenticated user from the session or an API key Bearer token.'''
     if config.TINO_AUTH_DISABLED:
         logger.debug('Auth disabled, returning noauth user')
