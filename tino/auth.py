@@ -4,7 +4,7 @@ from logging import getLogger
 from pathlib import Path
 
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketException
 from fastapi.responses import FileResponse, RedirectResponse
 from starlette.requests import HTTPConnection
 
@@ -80,6 +80,14 @@ def get_current_user(request: HTTPConnection) -> User:
         logger.debug('No session user for %s', request.url.path)
         raise HTTPException(401, 'Not authenticated')
     return User(**user_data)
+
+
+def get_current_user_for_websocket(websocket: WebSocket) -> User:
+    '''Extract the authenticated user for a WebSocket, closing with 4401 on failure.'''
+    try:
+        return get_current_user(websocket)
+    except HTTPException as exc:
+        raise WebSocketException(code=4401, reason=exc.detail) from exc
 
 
 # ── Authorization ──

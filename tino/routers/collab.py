@@ -4,7 +4,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 
-from ..auth import check_access, get_current_user
+from ..auth import check_access, get_current_user_for_websocket
 from ..dependencies import get_bucket_service, get_collab_manager
 from ..models import User
 
@@ -18,7 +18,7 @@ async def collab_websocket(
     websocket: WebSocket,
     slug: str,
     path: str,
-    user: User = Depends(get_current_user)
+    user: User = Depends(get_current_user_for_websocket)
 ):
     '''Yjs WebSocket endpoint for real-time collaborative editing of a file.'''
     bucket = get_bucket_service().get(slug)
