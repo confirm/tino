@@ -1,5 +1,7 @@
 '''HTTP tests for the git endpoints.'''
 
+import os
+
 import pytest
 
 from tino import dependencies
@@ -69,7 +71,7 @@ def test_unknown_diff_ref_is_404(login, repo):  # pylint: disable=unused-argumen
 
 def test_show(login, repo):
     data = login(VIEWER).get(f'{BASE}/show/{repo[0]}/content/a.typ').json()
-    assert data == {'ref': repo[0], 'path': 'a.typ', 'content': 'v1\n', 'binary': False}
+    assert data == {'ref': repo[0], 'path': 'a.typ', 'content': f'v1{os.linesep}', 'binary': False}
 
 
 def test_show_raw(login, repo):
