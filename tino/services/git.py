@@ -92,7 +92,7 @@ class GitService:
                 kwargs['paths'] = path
 
             commits      = [c for c in repo.iter_commits(**kwargs)
-                            if 'true' not in c.trailers.get('Tino-Meta', [])][:max_count]
+                            if 'true' not in c.trailers_dict.get('Tino-Meta', [])][:max_count]
             deleted_shas = self._deleted_shas(repo, path) if path else set()
 
             return [self._to_commit_info(c, c.hexsha in deleted_shas) for c in commits]
