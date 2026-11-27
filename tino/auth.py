@@ -4,8 +4,9 @@ from logging import getLogger
 from pathlib import Path
 
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketException
 from fastapi.responses import FileResponse, RedirectResponse
+from starlette.requests import HTTPConnection
 
 from . import config
 from .models import AccessEntry, User
@@ -53,7 +54,7 @@ _NOAUTH_USER = User(
 )
 
 
-def get_current_user(request: Request) -> User:
+def get_current_user(request: HTTPConnection) -> User:
     '''Extract the authenticated user from the session or an API key Bearer token.'''
     if config.TINO_AUTH_DISABLED:
         logger.debug('Auth disabled, returning noauth user')
@@ -79,6 +80,14 @@ def get_current_user(request: Request) -> User:
         logger.debug('No session user for %s', request.url.path)
         raise HTTPException(401, 'Not authenticated')
     return User(**user_data)
+
+
+def get_current_user_for_websocket(websocket: WebSocket) -> User:
+    '''Extract the authenticated user for a WebSocket, closing with 4401 on failure.'''
+    try:
+        return get_current_user(websocket)
+    except HTTPException as exc:
+        raise WebSocketException(code=4401, reason=exc.detail) from exc
 
 
 # ── Authorization ──
