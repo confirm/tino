@@ -1,7 +1,6 @@
 '''Bucket management service. Each bucket is a git repo on disk with a .meta.yml.'''
 
 import logging
-import shutil
 import threading
 from pathlib import Path
 
@@ -181,7 +180,10 @@ class BucketService:
         if not path.is_dir():
             return False
 
-        shutil.rmtree(path)
+        # We use git's rmtree() here because Git marks files in .git/objects/
+        # as read-only, which causes shutil.rmtree() to raise PermissionError on Windows.
+        # git's rmtree() handles this transparently on all platforms...
+        git.rmtree(path)
         logger.info('Deleted bucket %s', slug)
 
         return True
